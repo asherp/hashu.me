@@ -100,11 +100,6 @@
           :auto-add="true"
         />
       </div>
-
-      <!-- Discover mints on nostr (global) -->
-      <div>
-        <MintDiscovery :autoDiscover="true" :allowCreateReview="false" />
-      </div>
     </div>
 
     <AddMintDialog
@@ -128,11 +123,11 @@ import { notifyError, notifySuccess } from "src/js/notify";
 import AddMintDialog from "src/components/AddMintDialog.vue";
 import NostrMintRestore from "src/components/NostrMintRestore.vue";
 import { useNostrMintBackupStore } from "src/stores/nostrMintBackup";
-import MintDiscovery from "../../components/MintDiscovery.vue";
+import { DEFAULT_MINT_URL } from "src/js/hashu";
 
 export default {
   name: "WelcomeMintSetup",
-  components: { AddMintDialog, NostrMintRestore, MintDiscovery },
+  components: { AddMintDialog, NostrMintRestore },
   setup() {
     const welcome = useWelcomeStore();
     const restore = useRestoreStore();
@@ -183,6 +178,10 @@ export default {
     // Users can proceed with or without adding mints
     onMounted(() => {
       welcome.mintSetupCompleted = true;
+      // hashu.me: suggest Hashu's own mint until the wallet has one.
+      if (mints.mints.length === 0 && !addMintData.url) {
+        addMintData.url = DEFAULT_MINT_URL;
+      }
     });
 
     return {

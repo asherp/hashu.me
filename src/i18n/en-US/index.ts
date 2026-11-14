@@ -177,7 +177,7 @@ export default {
       title: "Settings",
       backup: {
         title: "Backup & Restore",
-        caption: "Seed phrase and ecash recovery",
+        caption: "Seed phrase and vouchers recovery",
       },
       lightning_address: {
         title: "Lightning Address",
@@ -189,7 +189,7 @@ export default {
       },
       payment_requests: {
         title: "Payment Requests",
-        caption: "Receive ecash payments via nostr",
+        caption: "Receive vouchers payments via nostr",
       },
       nwc: {
         title: "Nostr Wallet Connect",
@@ -201,7 +201,7 @@ export default {
       },
       p2pk: {
         title: "P2PK",
-        caption: "Receive ecash locked to your keys",
+        caption: "Receive vouchers locked to your keys",
       },
       privacy: {
         title: "Privacy",
@@ -269,9 +269,9 @@ export default {
         seed_phrase_label: "Seed phrase",
       },
       restore_ecash: {
-        title: "Restore ecash",
+        title: "Restore vouchers",
         description:
-          "The restore wizard lets you recover lost ecash from a mnemonic seed phrase. The seed phrase of your current wallet will remain unaffected, the wizard will only allow you to restore ecash from another seed phrase.",
+          "The restore wizard lets you recover lost vouchers from a mnemonic seed phrase. The seed phrase of your current wallet will remain unaffected, the wizard will only allow you to restore vouchers from another seed phrase.",
         button: "Restore",
       },
     },
@@ -365,20 +365,20 @@ export default {
         quick_access: {
           toggle: "Quick access to NFC",
           description:
-            "Quickly scan NFC cards in the Receive Ecash menu. This option adds an NFC button the Receive Ecash menu.",
+            "Quickly scan NFC cards in the Receive Vouchers menu. This option adds an NFC button the Receive Vouchers menu.",
         },
       },
     },
     p2pk_features: {
       title: "P2PK",
       description:
-        "Generate a key pair to receive P2PK-locked ecash. Warning: This feature is experimental. Only use with small amounts. If you lose your private keys, nobody will be able to unlock the ecash locked to it anymore.",
+        "Generate a key pair to receive P2PK-locked vouchers. Warning: This feature is experimental. Only use with small amounts. If you lose your private keys, nobody will be able to unlock the vouchers locked to it anymore.",
       generate_button: "Generate key",
       import_button: "Import nsec",
       quick_access: {
         toggle: "Quick access to lock",
         description:
-          "Use this to quickly show your P2PK locking key in the receive ecash menu.",
+          "Use this to quickly show your P2PK locking key in the receive vouchers menu.",
       },
       keys_expansion: {
         label: "Click to browse {count} keys",
@@ -404,7 +404,7 @@ export default {
           "If enabled, the wallet will periodically check unpaid invoices in the background for up to two weeks. This increases the wallet's online activity which makes fingerprinting easier. You can manually check unpaid invoices in the Invoices tab.",
       },
       check_sent: {
-        toggle: "Check sent ecash",
+        toggle: "Check sent vouchers",
         description:
           "If enabled, the wallet will use periodic background checks to determine if sent tokens have been redeemed. This increases the wallet's online activity which makes fingerprinting easier.",
       },
@@ -430,12 +430,12 @@ export default {
         toggle: "Receive swaps",
         badge: "Beta",
         description:
-          "Option to swap received Ecash to your active mint in the Receive Ecash dialog.",
+          "Option to swap received Vouchers to your active mint in the Receive Vouchers dialog.",
       },
       auto_paste: {
-        toggle: "Paste Ecash automatically",
+        toggle: "Paste Vouchers automatically",
         description:
-          "Automatically paste ecash in your clipboard when you press Receive, then Ecash, then Paste. Automatic pasting can cause UI glitches in iOS, turn it off if you experience issues.",
+          "Automatically paste vouchers in your clipboard when you press Receive, then Vouchers, then Paste. Automatic pasting can cause UI glitches in iOS, turn it off if you experience issues.",
       },
       auditor: {
         toggle: "Enable auditor",
@@ -524,7 +524,7 @@ export default {
         remove_spent: {
           button: "Remove spent proofs",
           description:
-            "Check if the ecash tokens from your active mints are spent and remove the spent ones from your wallet. Only use this if your wallet is stuck.",
+            "Check if the vouchers from your active mints are spent and remove the spent ones from your wallet. Only use this if your wallet is stuck.",
         },
         debug_console: {
           button: "Toggle Debug Console",
@@ -545,7 +545,7 @@ export default {
         unset_reserved: {
           button: "Unset all reserved tokens",
           description:
-            'This wallet marks pending outgoing ecash as reserved (and subtracts it from your balance) to prevent double-spend attempts. This button will unset all reserved tokens so they can be used again. If you do this, your wallet might include spent proofs. Press the "Remove spent proofs" button to get rid of them.',
+            'This wallet marks pending outgoing vouchers as reserved (and subtracts it from your balance) to prevent double-spend attempts. This button will unset all reserved tokens so they can be used again. If you do this, your wallet might include spent proofs. Press the "Remove spent proofs" button to get rid of them.',
         },
         show_onboarding: {
           button: "Show onboarding",
@@ -579,13 +579,13 @@ export default {
   NoMintWarnBanner: {
     title: "Join a mint",
     subtitle:
-      "You haven't joined any Cashu mint yet. Add a mint URL in the settings or receive ecash from a new mint to get started.",
+      "You haven't joined a Hashu mint yet. Add https://mint.hashu.io in the settings or receive vouchers from a mint to get started.",
     actions: {
       add_mint: {
         label: "@:global.actions.add_mint.label",
       },
       receive: {
-        label: "Receive Ecash",
+        label: "Receive Vouchers",
       },
     },
   },
@@ -658,27 +658,27 @@ export default {
     },
   },
   WelcomeSlide1: {
-    title: "Welcome to Cashu",
-    text: "Cashu.me is a free and open-source Bitcoin wallet that uses ecash to keep your funds secure and private.",
+    title: "Welcome to hashu.me",
+    text: "hashu.me is a free and open-source wallet for Chaumian hashrate vouchers. Each voucher is a claim on hashes (TiH, 2^40 hashes) that you can point at any mining pool.",
     actions: {
       more: {
         label: "Click to learn more",
       },
     },
     p1: {
-      text: "Cashu is a free and open-source ecash protocol for Bitcoin. You can learn more about it at { link }.",
+      text: "Hashu vouchers are built on Cashu, a free and open-source Chaumian token protocol. You can learn more about it at { link }.",
       link: {
         text: "cashu.space",
       },
     },
     p2: {
-      text: "This wallet is not affiliated with any mint. To use this wallet, you need to connect to one or more Cashu mints that you trust.",
+      text: "Vouchers are issued by Hashu mints, which sell hashrate from their miners. Connect to the mints you trust; mint.hashu.io is added by default.",
     },
     p3: {
-      text: "This wallet stores ecash that only you have access to. If you delete your browser data without a seed phrase backup, you will lose your tokens.",
+      text: "This wallet stores vouchers that only you have access to. If you delete your browser data without a seed phrase backup, you will lose your tokens.",
     },
     p4: {
-      text: "This wallet is in beta. We hold no responsibility for people losing access to funds. Use at your own risk! This code is open-source and licensed under the MIT license.",
+      text: "This wallet is in beta. We hold no responsibility for people losing access to their vouchers. Use at your own risk! This code is open-source and licensed under the MIT license.",
     },
   },
   WelcomeSlide2: {
@@ -772,13 +772,13 @@ export default {
       },
       recover: {
         title: "Recover wallet",
-        subtitle: "Enter your seed phrase, restore mints and ecash.",
+        subtitle: "Enter your seed phrase, restore mints and vouchers.",
       },
     },
   },
   WelcomeMintSetup: {
     title: "Add mints",
-    text: "Mints are servers that help you send and receive ecash. Choose a discovered mint or add one manually. Skip to add mints later.",
+    text: "Mints issue hashrate vouchers and route hashrate to your pool when you redeem them. Hashu's own mint is filled in below; add it, or enter another Hashu mint.",
     sections: {
       your_mints: "Your mints",
     },
@@ -800,7 +800,7 @@ export default {
       "Your seed phrase is only used locally to derive your wallet keys.",
   },
   WelcomeRestoreEcash: {
-    title: "Restore your ecash",
+    title: "Restore your vouchers",
     text: "Scan for unspent proofs on your configured mints and add them to your wallet.",
   },
   MintRatings: {
@@ -852,7 +852,7 @@ export default {
     information: {
       label: "Information",
       caption:
-        "The wizard will only restore ecash from another seed phrase, you will not be able to use this seed phrase or change the seed phrase of the wallet that you're currently using. This means that restored ecash will not be protected by your current seed phrase as long as you don't send the ecash to yourself once.",
+        "The wizard will only restore vouchers from another seed phrase, you will not be able to use this seed phrase or change the seed phrase of the wallet that you're currently using. This means that restored vouchers will not be protected by your current seed phrase as long as you don't send the vouchers to yourself once.",
     },
     restore_mints: {
       label: "Restore Mints",
@@ -1032,7 +1032,7 @@ export default {
     title: "Send",
     actions: {
       ecash: {
-        label: "Ecash",
+        label: "Vouchers",
         error_no_mints: "No mints available",
       },
       lightning: {
@@ -1042,8 +1042,8 @@ export default {
     },
   },
   SendTokenDialog: {
-    title: "Send Ecash",
-    title_ecash_text: "Ecash",
+    title: "Send Vouchers",
+    title_ecash_text: "Vouchers",
     badge_offline_text: "Offline",
     inputs: {
       amount: {
@@ -1073,7 +1073,7 @@ export default {
         tooltip_text: "Copy link",
       },
       share: {
-        tooltip_text: "Share ecash",
+        tooltip_text: "Share vouchers",
       },
       lock: {
         label: "@:global.actions.lock.label",
@@ -1100,7 +1100,7 @@ export default {
     },
     errors: {
       amount_required: "Enter an amount first.",
-      serialization_failed: "Could not prepare ecash token.",
+      serialization_failed: "Could not prepare vouchers token.",
       mint_not_allowed_by_request:
         "The selected mint is not accepted by this payment request.",
     },
@@ -1130,7 +1130,7 @@ export default {
     title: "Receive",
     actions: {
       ecash: {
-        label: "Ecash",
+        label: "Vouchers",
         error_no_mints: "No mints available",
       },
       lightning: {
@@ -1141,7 +1141,7 @@ export default {
     },
   },
   ReceiveEcashDrawer: {
-    title: "Receive Ecash",
+    title: "Receive Vouchers",
     actions: {
       paste: {
         label: "@:global.actions.paste.label",
@@ -1162,8 +1162,8 @@ export default {
     },
   },
   ReceiveTokenDialog: {
-    title: "Receive Ecash",
-    title_ecash_text: "Ecash",
+    title: "Receive Vouchers",
+    title_ecash_text: "Vouchers",
     inputs: {
       tokens_base64: {
         label: "Paste Cashu token",
@@ -1223,8 +1223,8 @@ export default {
       later: {
         label: "Receive later",
         tooltip_text: "Add to history to receive later",
-        already_in_history_success_text: "Ecash already in History",
-        added_to_history_success_text: "Ecash added to History",
+        already_in_history_success_text: "Vouchers already in History",
+        added_to_history_success_text: "Vouchers added to History",
       },
       nfc: {
         label: "NFC",
@@ -1238,7 +1238,7 @@ export default {
   P2PKDialog: {
     p2pk: {
       caption: "P2PK Key",
-      description: "Receive ecash locked to this key",
+      description: "Receive vouchers locked to this key",
       used_warning_text:
         "Warning: This key was used before. Use a new key for better privacy.",
     },
@@ -1370,7 +1370,7 @@ export default {
   HistoryTable: {
     empty_text: "No history yet",
     row: {
-      type_label: "Ecash",
+      type_label: "Vouchers",
       date_label: "{ value } ago",
     },
     actions: {
@@ -1417,7 +1417,7 @@ export default {
       label: "Balances",
     },
     warning_text:
-      "Note: Because this wallet is paranoid, your ecash from this mint will not be actually deleted but will remain stored on your device. You will see it reappear if you re-add this mint later again.",
+      "Note: Because this wallet is paranoid, your vouchers from this mint will not be actually deleted but will remain stored on your device. You will see it reappear if you re-add this mint later again.",
     inputs: {
       mint_url: {
         label: "@:global.inputs.mint_url.label",

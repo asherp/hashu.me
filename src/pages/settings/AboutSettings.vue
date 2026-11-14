@@ -92,7 +92,7 @@ export default defineComponent({
           title: this.$t("MainHeader.menu.links.github.title"),
           caption: this.$t("MainHeader.menu.links.github.caption"),
           icon: markRaw(CodeIcon),
-          link: "https://github.com/cashubtc/cashu.me",
+          link: "https://github.com/asherp/hashu.me",
         },
         {
           title: this.$t("MainHeader.menu.links.telegram.title"),
