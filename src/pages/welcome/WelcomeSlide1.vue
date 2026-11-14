@@ -4,7 +4,7 @@
     <!-- Logo -->
     <div class="logo">
       <transition appear enter-active-class="animated bounce">
-        <img src="/clean.png" alt="Cashu Logo" class="logo-image" />
+        <img src="/clean.png" alt="Hashu logo" class="logo-image" />
       </transition>
     </div>
 
