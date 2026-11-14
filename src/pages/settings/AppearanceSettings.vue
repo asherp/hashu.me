@@ -40,6 +40,39 @@
       </q-item>
     </SettingsSection>
 
+    <!-- hashu.me: display unit for TiH vouchers -->
+    <SettingsSection
+      :title="$t('Settings.appearance.hashu_unit.title')"
+      :caption="$t('Settings.appearance.hashu_unit.description')"
+    >
+      <q-item
+        v-for="unit in hashuDisplayUnits"
+        :key="unit"
+        clickable
+        data-testid="hashu-display-unit"
+        :data-unit="unit"
+        @click="hashuDisplayUnit = unit"
+        :active="hashuDisplayUnit === unit"
+        active-class="text-weight-bold text-primary"
+      >
+        <q-item-section avatar>
+          <q-icon
+            :color="hashuDisplayUnit === unit ? 'primary' : 'grey'"
+            :name="
+              hashuDisplayUnit === unit
+                ? 'check_circle'
+                : 'radio_button_unchecked'
+            "
+          />
+        </q-item-section>
+        <q-item-section>
+          <q-item-label>{{
+            $t(`Settings.appearance.hashu_unit.units.${unit}`)
+          }}</q-item-label>
+        </q-item-section>
+      </q-item>
+    </SettingsSection>
+
     <!-- theme -->
     <SettingsSection
       :title="$t('Settings.appearance.theme.title')"
@@ -77,6 +110,7 @@
 </template>
 
 <script lang="ts">
+import { DISPLAY_UNITS } from "src/js/hashu";
 import { defineComponent } from "vue";
 import { mapWritableState } from "pinia";
 import { useSettingsStore } from "src/stores/settings";
@@ -121,7 +155,11 @@ export default defineComponent({
     ...mapWritableState(useSettingsStore, [
       "useNumericKeyboard",
       "bip177BitcoinSymbol",
+      "hashuDisplayUnit",
     ]),
+    hashuDisplayUnits() {
+      return Object.keys(DISPLAY_UNITS);
+    },
     visibleThemeOptions() {
       return this.themeOptions.filter((theme) =>
         this.themes.includes(theme.name)

@@ -67,7 +67,10 @@
                         (val) => formatCurrency(val, secondaryUnit(unit))
                       "
                     />
-                    <q-tooltip>
+                    <q-tooltip v-if="isTihUnit(unit)">
+                      1 PiH = {{ formatMsatPerPih() }} msat
+                    </q-tooltip>
+                    <q-tooltip v-else>
                       1 BTC =
                       {{
                         formatCurrency(
@@ -150,6 +153,7 @@ import { useUiStore } from "src/stores/ui";
 import { useWalletStore } from "src/stores/wallet";
 import { usePriceStore } from "src/stores/price";
 import AnimatedNumber from "src/components/AnimatedNumber.vue";
+import { UNIT_TIH, tihToSats } from "src/js/hashu";
 import { sumProofAmounts } from "src/js/proofs";
 import { useProofsStore } from "src/stores/proofs";
 
@@ -179,7 +183,11 @@ export default defineComponent({
       "bitcoinPrice",
       "bitcoinPrices",
       "currentCurrencyPrice",
+      "hashuPrices",
     ]),
+    msatPerPih: function (): number {
+      return this.hashuPrices[this.activeMintUrl]?.msatPerPih || 0;
+    },
     ...mapState(useSettingsStore, ["bitcoinPriceCurrency"]),
     ...mapWritableState(useMintsStore, ["activeUnit"]),
     ...mapWritableState(useUiStore, ["hideBalance", "lastBalanceCached"]),
@@ -245,8 +253,12 @@ export default defineComponent({
   },
   mounted() {
     this.fetchBitcoinPrice();
+    this.fetchHashuPrice(this.activeMintUrl);
   },
   watch: {
+    activeMintUrl(url: string) {
+      this.fetchHashuPrice(url);
+    },
     balanceUnits: {
       immediate: true,
       handler(units: string[]) {
@@ -258,7 +270,7 @@ export default defineComponent({
   },
   methods: {
     ...mapActions(useWalletStore, ["checkPendingTokens"]),
-    ...mapActions(usePriceStore, ["fetchBitcoinPrice"]),
+    ...mapActions(usePriceStore, ["fetchBitcoinPrice", "fetchHashuPrice"]),
     setActiveUnit(unit: string) {
       this.activeUnit = unit;
     },
@@ -294,6 +306,12 @@ export default defineComponent({
     activeBalanceForUnit(unit: string) {
       return this.activeMint().unitBalance(unit);
     },
+    isTihUnit(unit: string) {
+      return unit.toLowerCase() === UNIT_TIH;
+    },
+    formatMsatPerPih() {
+      return new Intl.NumberFormat(navigator.language).format(this.msatPerPih);
+    },
     isSatUnit(unit: string) {
       return unit.toLowerCase() === "sat";
     },
@@ -321,6 +339,7 @@ export default defineComponent({
       return "sat";
     },
     showSecondaryBalance(unit: string) {
+      if (this.isTihUnit(unit)) return this.msatPerPih > 0;
       return (
         Boolean(this.bitcoinPriceForUnit(unit)) &&
         (this.isSatUnit(unit) || this.isFiatUnit(unit))
@@ -328,6 +347,9 @@ export default defineComponent({
     },
     secondaryBalanceValue(unit: string) {
       const balance = this.totalBalanceForUnit(unit);
+      if (this.isTihUnit(unit)) {
+        return Math.round(tihToSats(balance, this.msatPerPih));
+      }
       const bitcoinPrice = this.bitcoinPriceForUnit(unit);
       if (!bitcoinPrice) return 0;
       if (this.isSatUnit(unit)) {

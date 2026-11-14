@@ -1,3 +1,4 @@
+import { DEFAULT_DISPLAY_UNIT, type DisplayUnit } from "src/js/hashu";
 import { defineStore } from "pinia";
 import { useLocalStorage } from "@vueuse/core";
 
@@ -81,6 +82,11 @@ export const useSettingsStore = defineStore("settings", {
       bip177BitcoinSymbol: useLocalStorage<boolean>(
         "cashu.settings.bip177",
         true
+      ),
+      // hashu.me: unit for showing TiH amounts (TiH, PiH, EiH, THH).
+      hashuDisplayUnit: useLocalStorage<DisplayUnit>(
+        "hashu.settings.displayUnit",
+        DEFAULT_DISPLAY_UNIT
       ),
       multinutEnabled: useLocalStorage<boolean>(
         "cashu.settings.multinutEnabled",

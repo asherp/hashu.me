@@ -1,4 +1,9 @@
-import { UNIT_TIH, formatTih } from "src/js/hashu";
+import {
+  UNIT_TIH,
+  formatTih,
+  isDisplayUnit,
+  DEFAULT_DISPLAY_UNIT,
+} from "src/js/hashu";
 import { defineStore } from "pinia";
 import { useMintsStore } from "./mints";
 import { useLocalStorage } from "@vueuse/core";
@@ -168,6 +173,14 @@ export const useUiStore = defineStore("ui", {
       if (useUiStore().hideBalance && !showBalance) {
         return "****";
       }
+      if (currency == UNIT_TIH) {
+        const unit = useSettingsStore().hashuDisplayUnit;
+        return formatTih(
+          value,
+          navigator.language,
+          isDisplayUnit(unit) ? unit : DEFAULT_DISPLAY_UNIT
+        );
+      }
       if (typeof value === "bigint") {
         return formatBigIntCurrency(
           value,
@@ -176,7 +189,6 @@ export const useUiStore = defineStore("ui", {
           useSettingsStore().bip177BitcoinSymbol
         );
       }
-      if (currency == UNIT_TIH) return formatTih(value, navigator.language);
       if (currency == "sat") return this.formatSat(value);
       if (currency == "msat") return this.fromMsat(value);
       if (currency == "usd") value = value / 100;

@@ -1,4 +1,4 @@
-import { UNIT_TIH, UNIT_TIH_LABEL } from "src/js/hashu";
+import { UNIT_TIH, UNIT_TIH_LABEL, isDisplayUnit } from "src/js/hashu";
 import { defineStore } from "pinia";
 import { useLocalStorage } from "@vueuse/core";
 import { useWorkersStore } from "./workers";
@@ -230,7 +230,8 @@ export const useMintsStore = defineStore("mints", {
       } else if (activeUnit == "msat") {
         return "mSAT";
       } else if (activeUnit == UNIT_TIH) {
-        return UNIT_TIH_LABEL;
+        const unit = this.settingsStoreGlobal.hashuDisplayUnit;
+        return isDisplayUnit(unit) ? unit : UNIT_TIH_LABEL;
       } else {
         return activeUnit;
       }
