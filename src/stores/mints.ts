@@ -1,3 +1,4 @@
+import { UNIT_TIH, UNIT_TIH_LABEL } from "src/js/hashu";
 import { defineStore } from "pinia";
 import { useLocalStorage } from "@vueuse/core";
 import { useWorkersStore } from "./workers";
@@ -109,7 +110,7 @@ export const useMintsStore = defineStore("mints", {
   state: () => {
     const t = i18n.global.t;
     const activeProofs = ref<WalletProof[]>([]);
-    const activeUnit = useLocalStorage<string>("cashu.activeUnit", "sat");
+    const activeUnit = useLocalStorage<string>("cashu.activeUnit", UNIT_TIH);
     const activeMintUrl = useLocalStorage<string>("cashu.activeMintUrl", "");
     const addMintData = ref({
       url: "",
@@ -228,6 +229,8 @@ export const useMintsStore = defineStore("mints", {
         return "EUR";
       } else if (activeUnit == "msat") {
         return "mSAT";
+      } else if (activeUnit == UNIT_TIH) {
+        return UNIT_TIH_LABEL;
       } else {
         return activeUnit;
       }

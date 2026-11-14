@@ -1,7 +1,7 @@
 {
-  "name": "Cashu.me",
-  "short_name": "Cashu.me",
-  "description": "A Cashu Ecash wallet for the web.",
+  "name": "hashu.me",
+  "short_name": "hashu.me",
+  "description": "A wallet for Chaumian hashrate vouchers.",
   "display": "standalone",
   "orientation": "portrait",
   "background_color": "#000000",

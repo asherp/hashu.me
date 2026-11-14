@@ -1,3 +1,5 @@
+import { UNIT_TIH, formatTih } from "src/js/hashu";
+
 /** Format integer Cashu amounts without converting large values to numbers. */
 export function formatBigIntCurrency(
   value: bigint,
@@ -15,6 +17,7 @@ export function formatBigIntCurrency(
     return `${numberFormat.format(value)} sat`;
   }
   if (currency === "msat") return `${numberFormat.format(value)} msat`;
+  if (currency === UNIT_TIH) return formatTih(value, locale);
 
   try {
     const formatter = new Intl.NumberFormat(locale, {
