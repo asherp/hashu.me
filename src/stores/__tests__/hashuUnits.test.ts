@@ -40,6 +40,24 @@ describe("hashu price", () => {
     expect(price.msatPerPihForMint("https://mint.example")).toBe(600);
   });
 
+  it("keeps the mint's hashrate and queue for estimates", async () => {
+    vi.spyOn(axios, "get").mockResolvedValue({
+      data: {
+        msat_per_pih: 600,
+        capacity_ends_ms: 1_900_000_000_000,
+        delivery: { hashrate_hs: 5e11, queue_tih: 12.5, open_redemptions: 2 },
+      },
+    } as any);
+    const price = usePriceStore();
+    await price.fetchHashuInfo("https://eta.example");
+    expect(price.hashuDelivery["https://eta.example"]).toMatchObject({
+      hashrate_hs: 5e11,
+      queue_tih: 12.5,
+      open_redemptions: 2,
+      capacityEndsMs: 1_900_000_000_000,
+    });
+  });
+
   it("ignores mints without a Hashu price", async () => {
     vi.spyOn(axios, "get").mockRejectedValue(new Error("404"));
     const price = usePriceStore();

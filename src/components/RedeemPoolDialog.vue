@@ -36,6 +36,13 @@
           :error-message="amountError"
           data-testid="redeem-amount"
         />
+        <div
+          v-if="estimateText"
+          class="text-grey-5 text-body2"
+          data-testid="redeem-estimate"
+        >
+          {{ estimateText }}
+        </div>
         <q-btn
           rounded
           unelevated
@@ -81,6 +88,13 @@
             }}
           </div>
         </template>
+        <div
+          v-if="rateText"
+          class="text-grey-5 text-body2"
+          data-testid="redeem-rate"
+        >
+          {{ rateText }}
+        </div>
         <div v-else-if="progressUnavailable" class="text-grey-5 text-body2">
           {{ $t("RedeemPoolDialog.status.no_progress") }}
         </div>
@@ -116,12 +130,19 @@ import {
   isStratumUrl,
   resolvePoolUrl,
   redemptionId,
+  estimateRedeemSeconds,
+  formatDuration,
+  formatHashrate,
+  secondsLeft,
+  trackRate,
   redemptionUrl,
   type RedemptionProgress,
 } from "src/js/hashu-redeem";
 import { TIH_PER_PIH, formatTih, isDisplayUnit } from "src/js/hashu";
 
 const POLL_MS = 5000;
+/** How often the open form refreshes the mint's hashrate and queue. */
+const INFO_MS = 30000;
 
 export default defineComponent({
   name: "RedeemPoolDialog",
@@ -137,13 +158,14 @@ export default defineComponent({
       progress: null as RedemptionProgress | null,
       progressUnavailable: false,
       pollTimer: null as ReturnType<typeof setInterval> | null,
+      infoTimer: null as ReturnType<typeof setInterval> | null,
       progressUrl: "",
     };
   },
   computed: {
     ...mapWritableState(useUiStore, ["showRedeemPoolDialog"]),
     ...mapState(useMintsStore, ["activeMintUrl", "activeBalance"]),
-    ...mapState(usePriceStore, ["hashuPrices"]),
+    ...mapState(usePriceStore, ["hashuPrices", "hashuDelivery"]),
     ...mapState(useSettingsStore, {
       poolId: "hashuPoolId",
       poolUrl: "hashuPoolUrl",
@@ -191,6 +213,44 @@ export default defineComponent({
         this.amountError === ""
       );
     },
+    delivery() {
+      return this.hashuDelivery[this.activeMintUrl];
+    },
+    estimateText(): string {
+      const d = this.delivery;
+      const a = this.amountTih;
+      if (!d || !a || a <= 0 || this.amountError !== "") return "";
+      const secs = estimateRedeemSeconds(a, d);
+      if (secs == null) return this.$t("RedeemPoolDialog.estimate.no_hashrate");
+      let t = this.$t("RedeemPoolDialog.estimate.time", {
+        time: formatDuration(secs),
+        rate: formatHashrate(d.hashrate_hs),
+      });
+      if (d.queue_tih >= 1) {
+        t +=
+          " " +
+          this.$t("RedeemPoolDialog.estimate.queue", {
+            queue: this.formatCurrency(Math.round(d.queue_tih), "tih"),
+          });
+      }
+      if (d.capacityEndsMs && Date.now() + secs * 1000 > d.capacityEndsMs) {
+        t += " " + this.$t("RedeemPoolDialog.estimate.past_rental");
+      }
+      return t;
+    },
+    rateText(): string {
+      const p = this.progress;
+      if (!p?.track || this.settled) return "";
+      const rate = trackRate(p.track, p.now_ms ?? Date.now());
+      if (!(rate > 0)) return "";
+      const left = secondsLeft(p);
+      return left == null
+        ? formatHashrate(rate)
+        : this.$t("RedeemPoolDialog.status.rate", {
+            rate: formatHashrate(rate),
+            time: formatDuration(left),
+          });
+    },
     progressRatio(): number {
       const p = this.progress;
       if (!p || !p.amount_tih) return 0;
@@ -199,15 +259,28 @@ export default defineComponent({
   },
   watch: {
     showRedeemPoolDialog(open: boolean) {
-      if (open) this.fetchHashuPrice(this.activeMintUrl);
+      if (open) this.startInfo();
+      else this.stopInfo();
     },
   },
   beforeUnmount() {
     this.stopPolling();
+    this.stopInfo();
   },
   methods: {
     ...mapActions(useWalletStore, ["redeemToPool", "checkOutgoingInvoice"]),
-    ...mapActions(usePriceStore, ["fetchHashuPrice"]),
+    ...mapActions(usePriceStore, ["fetchHashuInfo"]),
+    startInfo() {
+      this.stopInfo();
+      this.fetchHashuInfo(this.activeMintUrl);
+      this.infoTimer = setInterval(() => {
+        if (!this.started) this.fetchHashuInfo(this.activeMintUrl);
+      }, INFO_MS);
+    },
+    stopInfo() {
+      if (this.infoTimer) clearInterval(this.infoTimer);
+      this.infoTimer = null;
+    },
     async redeem() {
       if (!this.canRedeem) return;
       this.busy = true;
@@ -277,6 +350,7 @@ export default defineComponent({
     },
     reset() {
       this.stopPolling();
+      this.stopInfo();
       if (this.started) {
         this.started = false;
         this.settled = false;

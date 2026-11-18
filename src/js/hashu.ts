@@ -88,6 +88,21 @@ export type HashuMintPrice = {
   msat_per_pih?: number | null;
   min_buy_tih?: number | null;
   min_redeem_tih?: number | null;
+  capacity_ends_ms?: number | null;
+  delivery?: MintDelivery | null;
+};
+
+/**
+ * What a Hashu mint reports for delivery estimates (`delivery` in
+ * `/checkout/api/info`): its hashrate over the last few minutes, and the
+ * TiH still owed to open redemptions, which are served before a new one.
+ */
+export type MintDelivery = {
+  /** null from the mint until it has seen shares; stored as 0. */
+  hashrate_hs: number;
+  window_s?: number;
+  queue_tih: number;
+  open_redemptions: number;
 };
 
 /** URL of a mint's Hashu price endpoint. */

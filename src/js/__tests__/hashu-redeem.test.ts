@@ -76,3 +76,50 @@ describe("resolvePoolUrl", () => {
     ).toBe("stratum+tcp://pool.example:3333");
   });
 });
+
+describe("redemption time estimates", () => {
+  it("counts the queue ahead at the mint's hashrate", async () => {
+    const { estimateRedeemSeconds } = await import("src/js/hashu-redeem");
+    const d = { hashrate_hs: 2 ** 40, queue_tih: 100, open_redemptions: 1 };
+    expect(estimateRedeemSeconds(1024, d)).toBe(1124);
+    expect(estimateRedeemSeconds(1024, { ...d, hashrate_hs: 0 })).toBeNull();
+  });
+
+  it("takes a redemption's rate over its last minute", async () => {
+    const { trackRate, secondsLeft } = await import("src/js/hashu-redeem");
+    const T = 2 ** 40;
+    const track = {
+      opened_ms: 0,
+      points: [
+        [0, 0],
+        [60_000, 30 * T],
+        [120_000, 90 * T],
+      ] as [number, number][],
+    };
+    expect(trackRate(track, 120_000)).toBe(T);
+    expect(
+      secondsLeft({
+        state: "active",
+        amount_tih: 1114,
+        filled_tih: 90,
+        track,
+        now_ms: 120_000,
+      })
+    ).toBe(1024);
+    expect(
+      secondsLeft({ state: "completed", amount_tih: 1, filled_tih: 1, track })
+    ).toBeNull();
+  });
+
+  it("formats rates and durations", async () => {
+    const { formatHashrate, formatDuration } = await import(
+      "src/js/hashu-redeem"
+    );
+    expect(formatHashrate(1.2e12)).toBe("1.2 TH/s");
+    expect(formatHashrate(0)).toBe("0 H/s");
+    expect(formatDuration(45)).toBe("45 s");
+    expect(formatDuration(720)).toBe("12 min");
+    expect(formatDuration(12_000)).toBe("3 h 20 min");
+    expect(formatDuration(2 * 86400 + 5 * 3600)).toBe("2 d 5 h");
+  });
+});

@@ -1089,6 +1089,15 @@ export default {
       },
     },
     guide: "Pool setup guide",
+    estimate: {
+      time: "Estimated time to redeem: about { time } at the mint's current { rate }.",
+      queue:
+        "That includes { queue } still owed to earlier redemptions, which go first.",
+      past_rental:
+        "That runs past the mint's current hashrate rental, so it may take longer.",
+      no_hashrate:
+        "The mint has no hashrate right now, so delivery starts when its miners are back.",
+    },
     actions: {
       redeem: { label: "Redeem" },
       close: { label: "Close" },
@@ -1097,6 +1106,7 @@ export default {
       opened: "Redemption open. Hashrate is going to { worker }.",
       settled: "Redemption finished. Change, if any, is back in your wallet.",
       progress: "{ filled } of { amount } delivered",
+      rate: "{ rate } · about { time } left",
       waiting: "Waiting for the first shares…",
       charged: "Charged { spent }; { change } came back as change.",
       no_progress:
