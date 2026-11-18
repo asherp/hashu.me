@@ -498,6 +498,7 @@ export default {
           PiH: "PiH: pebihash, 1,024 TiH",
           EiH: "EiH: exbihash, 1,048,576 TiH",
           THH: "THH: terahash-hour, 1 TH/s for an hour (≈ 3,274 TiH)",
+          PHH: "PHH: petahash-hour, 1 PH/s for an hour (1,000 THH)",
         },
       },
     },

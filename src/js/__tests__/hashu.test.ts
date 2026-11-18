@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { formatBigIntCurrency } from "src/js/format-currency";
 import {
   DEFAULT_MINT_URL,
+  TIH_PER_PHH,
   TIH_PER_THH,
   formatTih,
   hashuInfoUrl,
@@ -29,6 +30,8 @@ describe("display units", () => {
     // 1 THH = 3.6e15 hashes = 3,274.2 TiH
     expect(TIH_PER_THH).toBeCloseTo(3274.2, 1);
     expect(tihToDisplay(3274, "THH")).toBeCloseTo(1, 3);
+    expect(TIH_PER_PHH).toBeCloseTo(3_274_200, -2);
+    expect(tihToDisplay(TIH_PER_PHH, "PHH")).toBe(1);
   });
 
   it("formats each display unit", () => {
@@ -37,6 +40,7 @@ describe("display units", () => {
     expect(formatTih(4096, "en-US", "THH")).toBe("1.251 THH");
     expect(formatTih(1024, "en-US", "EiH")).toBe("0.000977 EiH");
     expect(formatTih(0, "en-US", "PiH")).toBe("0 PiH");
+    expect(formatTih(3_274_200, "en-US", "PHH")).toBe("1 PHH");
     expect(formatTih(4096n, "en-US", "TiH")).toBe("4,096 TiH");
   });
 

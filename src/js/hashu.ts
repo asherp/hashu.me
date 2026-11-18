@@ -25,12 +25,16 @@ export const TIH_PER_PIH = 1024;
 /** TiH in one terahash-hour (1 TH/s for 3,600 s = 3.6e15 hashes), ≈ 3,274. */
 export const TIH_PER_THH = 3.6e15 / HASHES_PER_TIH;
 
+/** TiH in one petahash-hour (1,000 THH), ≈ 3.27 million. */
+export const TIH_PER_PHH = 1000 * TIH_PER_THH;
+
 /** Units the wallet can show TiH amounts in, as TiH per display unit. */
 export const DISPLAY_UNITS = {
   TiH: 1,
   PiH: TIH_PER_PIH,
   EiH: TIH_PER_PIH * TIH_PER_PIH,
   THH: TIH_PER_THH,
+  PHH: TIH_PER_PHH,
 } as const;
 
 export type DisplayUnit = keyof typeof DISPLAY_UNITS;
