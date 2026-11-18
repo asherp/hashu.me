@@ -53,6 +53,7 @@ import {
   Globe as GlobeIcon,
   Terminal as TerminalIcon,
   Info as InfoIcon,
+  Pickaxe as PickaxeIcon,
   ChevronRight as ChevronRightIcon,
 } from "lucide-vue-next";
 
@@ -70,6 +71,11 @@ export default defineComponent({
         {
           name: "wallet",
           entries: [
+            {
+              key: "pool",
+              path: "/settings/pool",
+              icon: markRaw(PickaxeIcon),
+            },
             {
               key: "backup",
               path: "/settings/backup",

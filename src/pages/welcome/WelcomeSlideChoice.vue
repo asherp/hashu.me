@@ -66,7 +66,7 @@
 </template>
 
 <script lang="ts">
-import { useWelcomeStore } from "src/stores/welcome";
+import { useWelcomeStore, WELCOME_SLIDES } from "src/stores/welcome";
 import { useWalletStore } from "src/stores/wallet";
 export default {
   name: "WelcomeSlideChoice",
@@ -76,7 +76,7 @@ export default {
     const choose = (path: "new" | "recover") => {
       welcomeStore.setPath(path);
       // advance to next stage immediately for snappier UX
-      welcomeStore.setCurrentSlide(3);
+      welcomeStore.setCurrentSlide(WELCOME_SLIDES.seed);
     };
     return { welcomeStore, walletStore, choose };
   },

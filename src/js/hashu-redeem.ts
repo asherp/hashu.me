@@ -89,6 +89,18 @@ export type HashrateRequest = {
   nonce?: string;
 };
 
+/** Pool choice id for a pool that isn't in POOL_PRESETS. */
+export const OTHER_POOL_ID = "other";
+
+export function poolPreset(poolId: string): PoolPreset | undefined {
+  return POOL_PRESETS.find((p) => p.id === poolId);
+}
+
+/** The stratum URL for a saved pool choice: the preset's, else the custom one. */
+export function resolvePoolUrl(poolId: string, customUrl: string): string {
+  return poolPreset(poolId)?.url ?? customUrl.trim();
+}
+
 /** A stratum URL the mint's proxy can dial. */
 export function isStratumUrl(url: string): boolean {
   return /^stratum\+(tcp|ssl):\/\/[^\s/:]+:\d{1,5}\/?$/.test(url.trim());

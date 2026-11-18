@@ -14,6 +14,17 @@ export type WelcomeState = {
   ecashRestoreCompleted: boolean;
 };
 
+/** Onboarding slide indices (the carousel names in WelcomePage.vue). */
+export const WELCOME_SLIDES = {
+  intro: 0,
+  pool: 1,
+  pwa: 2,
+  choice: 3,
+  seed: 4,
+  mints: 5,
+  restore: 6,
+} as const;
+
 // Define the Pinia store
 export const useWelcomeStore = defineStore("welcome", {
   state: (): WelcomeState => ({
@@ -45,34 +56,42 @@ export const useWelcomeStore = defineStore("welcome", {
     // Determines if the current slide is the last one
     isLastSlide: (state) => {
       // Slides:
-      // 0 Intro, 1 PWA, 2 Choice,
-      // New: 3 Seed, 4 Mints (no more terms screen)
-      // Recover: 3 SeedIn, 4 Mints, 5 Restore (no more terms screen)
-      if (state.onboardingPath === "recover") return state.currentSlide === 5;
-      if (state.onboardingPath === "new") return state.currentSlide === 4;
+      // 0 Intro, 1 Pool, 2 PWA, 3 Choice,
+      // New: 4 Seed, 5 Mints (no more terms screen)
+      // Recover: 4 SeedIn, 5 Mints, 6 Restore (no more terms screen)
+      if (state.onboardingPath === "recover")
+        return state.currentSlide === WELCOME_SLIDES.restore;
+      if (state.onboardingPath === "new")
+        return state.currentSlide === WELCOME_SLIDES.mints;
       // before choosing a path
       return false;
     },
 
     // Determines if the user can proceed to the next slide
     canProceed: (state) => {
-      // 0 Intro
-      if (state.currentSlide === 0) return true;
-      // 1 PWA
-      if (state.currentSlide === 1) return true;
-      // 2 Choice
-      if (state.currentSlide === 2) return state.onboardingPath !== "";
-      // 3 (seed phrase for both paths)
-      if (state.currentSlide === 3) {
-        if (state.onboardingPath === "new") return state.seedPhraseValidated;
-        if (state.onboardingPath === "recover") return state.seedEnteredValid;
-      }
-      // 4 (mints setup for both paths - last step for "new" path)
-      if (state.currentSlide === 4) return state.mintSetupCompleted || true;
-      // 5 (restore step for recover path - last step for "recover" path)
-      if (state.currentSlide === 5) {
-        if (state.onboardingPath === "recover")
-          return state.ecashRestoreCompleted || true;
+      switch (state.currentSlide) {
+        case WELCOME_SLIDES.intro:
+          return true;
+        // The pool can be set later in Settings > Pool.
+        case WELCOME_SLIDES.pool:
+          return true;
+        case WELCOME_SLIDES.pwa:
+          return true;
+        case WELCOME_SLIDES.choice:
+          return state.onboardingPath !== "";
+        // seed phrase for both paths
+        case WELCOME_SLIDES.seed:
+          if (state.onboardingPath === "new") return state.seedPhraseValidated;
+          if (state.onboardingPath === "recover") return state.seedEnteredValid;
+          return false;
+        // mints setup for both paths - last step for "new" path
+        case WELCOME_SLIDES.mints:
+          return state.mintSetupCompleted || true;
+        // restore step for recover path - last step for "recover" path
+        case WELCOME_SLIDES.restore:
+          if (state.onboardingPath === "recover")
+            return state.ecashRestoreCompleted || true;
+          return false;
       }
       return false;
     },
