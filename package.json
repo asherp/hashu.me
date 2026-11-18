@@ -2,7 +2,7 @@
   "name": "cashu",
   "version": "0.0.1",
   "description": "Wallet for Chaumian hashrate vouchers",
-  "productName": "hashu.me",
+  "productName": "app.hashu.io",
   "author": "Hashu",
   "private": true,
   "scripts": {
