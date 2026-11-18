@@ -2,6 +2,7 @@ import { defineStore } from "pinia";
 import { useSettingsStore } from "./settings";
 import { useLocalStorage } from "@vueuse/core";
 import axios from "axios";
+import { hashuInfoUrl, type HashuMintPrice } from "src/js/hashu";
 
 export const usePriceStore = defineStore("price", {
   state: () => ({
@@ -14,6 +15,12 @@ export const usePriceStore = defineStore("price", {
     bitcoinPrices: useLocalStorage(
       "cashu.price.bitcoinPrices",
       {} as Record<string, number>
+    ),
+    // hashu.me: msat per PiH by mint URL, from each Hashu mint's
+    // /checkout/api/info. Missing for mints that don't publish a price.
+    hashuPrices: useLocalStorage(
+      "hashu.price.msatPerPih",
+      {} as Record<string, { msatPerPih: number; updated: number }>
     ),
   }),
   actions: {
@@ -50,6 +57,34 @@ export const usePriceStore = defineStore("price", {
       } catch (error) {
         console.error("Failed to fetch bitcoin price:", error);
       }
+    },
+    /** Fetch a Hashu mint's voucher price; quietly skips non-Hashu mints. */
+    fetchHashuPrice: async function (mintUrl: string) {
+      if (!mintUrl) return;
+      const cached = this.hashuPrices[mintUrl];
+      if (
+        cached &&
+        Date.now() - cached.updated < this.bitcoinPriceMinRefreshInterval
+      ) {
+        return;
+      }
+      try {
+        const { data } = await axios.get<HashuMintPrice>(
+          hashuInfoUrl(mintUrl),
+          { timeout: 5000 }
+        );
+        const msatPerPih = Number(data?.msat_per_pih);
+        if (!Number.isFinite(msatPerPih) || msatPerPih <= 0) return;
+        this.hashuPrices = {
+          ...this.hashuPrices,
+          [mintUrl]: { msatPerPih, updated: Date.now() },
+        };
+      } catch (error) {
+        console.debug(`No Hashu price from ${mintUrl}:`, error);
+      }
+    },
+    msatPerPihForMint: function (mintUrl: string): number {
+      return this.hashuPrices[mintUrl]?.msatPerPih || 0;
     },
     updateBitcoinPriceForCurrentCurrency: function () {
       const settingsStore = useSettingsStore();

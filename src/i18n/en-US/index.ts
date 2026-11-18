@@ -213,7 +213,7 @@ export default {
       },
       appearance: {
         title: "Appearance",
-        caption: "Theme, keyboard, and Bitcoin symbol",
+        caption: "Theme, keyboard, Bitcoin symbol and hashrate unit",
       },
       language: {
         title: "Language",
@@ -488,6 +488,18 @@ export default {
         title: "Bitcoin symbol",
         description: "Use ₿ symbol instead of sats.",
         toggle: "Use ₿ symbol",
+      },
+      hashu_unit: {
+        title: "Hashrate unit",
+        description:
+          "Unit for showing hashrate voucher amounts. Vouchers are counted in TiH (2^40 hashes); this only changes how amounts are shown.",
+        units: {
+          TiH: "TiH: tebihash, 2^40 hashes",
+          PiH: "PiH: pebihash, 1,024 TiH",
+          EiH: "EiH: exbihash, 1,048,576 TiH",
+          THH: "THH: terahash-hour, 1 TH/s for an hour (≈ 3,274 TiH)",
+          PHH: "PHH: petahash-hour, 1 PH/s for an hour (1,000 THH)",
+        },
       },
     },
     web_of_trust: {

@@ -45,6 +45,7 @@ import { mapState } from "pinia";
 import { useMintsStore } from "src/stores/mints";
 import { useSettingsStore } from "src/stores/settings";
 import { usePriceStore } from "src/stores/price";
+import { UNIT_TIH, formatTih, isDisplayUnit, tihToSats } from "src/js/hashu";
 declare const windowMixin: any;
 
 const MAX_AMOUNT = 999_999_999;
@@ -97,9 +98,38 @@ export default defineComponent({
       ["activeUnit", "activeUnitLabel", "activeUnitCurrencyMultiplyer"] as any
     ),
     ...mapState(useSettingsStore, ["bitcoinPriceCurrency"]),
-    ...mapState(usePriceStore, ["bitcoinPrice", "currentCurrencyPrice"]),
+    ...mapState(usePriceStore, [
+      "bitcoinPrice",
+      "currentCurrencyPrice",
+      "hashuPrices",
+    ]),
+    // hashu.me: sats value of a TiH amount at the active mint's price.
+    tihSatsDisplay(): string {
+      const mintUrl = useMintsStore().activeMintUrl;
+      const msatPerPih = this.hashuPrices[mintUrl]?.msatPerPih;
+      if (this.activeUnit !== UNIT_TIH) return "";
+      const amount = this.modelValue || 0;
+      const parts: string[] = [];
+      const unit = useSettingsStore().hashuDisplayUnit;
+      if (isDisplayUnit(unit) && unit !== "TiH" && amount > 0) {
+        parts.push(formatTih(amount, navigator.language, unit));
+      }
+      if (msatPerPih) {
+        const sats = tihToSats(amount, msatPerPih);
+        const shown = new Intl.NumberFormat(navigator.language, {
+          maximumFractionDigits: sats < 10 ? 3 : 0,
+        }).format(sats);
+        parts.push(`≈ ${shown} sat`);
+      }
+      return parts.join(" · ");
+    },
     formattedAmountDisplay(): string {
       const amount = this.modelValue || 0;
+      // hashu.me: amounts are typed in whole TiH, so show them in TiH here
+      // whatever the display unit; the secondary line converts.
+      if (this.activeUnit === UNIT_TIH) {
+        return formatTih(amount, navigator.language, "TiH");
+      }
       return (this as any).formatCurrency(
         amount * this.activeUnitCurrencyMultiplyer,
         this.activeUnit,
@@ -132,6 +162,7 @@ export default defineComponent({
       return fiat;
     },
     secondaryDisplay(): string {
+      if (this.activeUnit === UNIT_TIH) return this.tihSatsDisplay;
       if (this.fiatMode) {
         // show converted sats (actual emitted amount)
         if (!this.currentCurrencyPrice || this.activeUnit !== "sat") return "";
