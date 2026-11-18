@@ -2,7 +2,11 @@ import { defineStore } from "pinia";
 import { useSettingsStore } from "./settings";
 import { useLocalStorage } from "@vueuse/core";
 import axios from "axios";
-import { hashuInfoUrl, type HashuMintPrice } from "src/js/hashu";
+import {
+  hashuInfoUrl,
+  type HashuMintPrice,
+  type MintDelivery,
+} from "src/js/hashu";
 
 export const usePriceStore = defineStore("price", {
   state: () => ({
@@ -25,6 +29,12 @@ export const usePriceStore = defineStore("price", {
         { msatPerPih: number; minRedeemTih?: number; updated: number }
       >
     ),
+    // Delivery figures by mint URL, for redemption time estimates. Not
+    // persisted: they go stale in minutes.
+    hashuDelivery: {} as Record<
+      string,
+      MintDelivery & { capacityEndsMs?: number; updated: number }
+    >,
   }),
   actions: {
     fetchBitcoinPrice: async function () {
@@ -71,11 +81,31 @@ export const usePriceStore = defineStore("price", {
       ) {
         return;
       }
+      await this.fetchHashuInfo(mintUrl);
+    },
+    /** Fetch a Hashu mint's info now: its price and delivery figures. */
+    fetchHashuInfo: async function (mintUrl: string) {
+      if (!mintUrl) return;
       try {
         const { data } = await axios.get<HashuMintPrice>(
           hashuInfoUrl(mintUrl),
           { timeout: 5000 }
         );
+        const d = data?.delivery;
+        // hashrate_hs is null while the mint has seen no shares yet.
+        if (d && typeof d === "object") {
+          this.hashuDelivery = {
+            ...this.hashuDelivery,
+            [mintUrl]: {
+              hashrate_hs: Number(d.hashrate_hs) || 0,
+              window_s: d.window_s,
+              queue_tih: Number(d.queue_tih) || 0,
+              open_redemptions: Number(d.open_redemptions) || 0,
+              capacityEndsMs: Number(data?.capacity_ends_ms) || undefined,
+              updated: Date.now(),
+            },
+          };
+        }
         const msatPerPih = Number(data?.msat_per_pih);
         if (!Number.isFinite(msatPerPih) || msatPerPih <= 0) return;
         this.hashuPrices = {
@@ -87,7 +117,7 @@ export const usePriceStore = defineStore("price", {
           },
         };
       } catch (error) {
-        console.debug(`No Hashu price from ${mintUrl}:`, error);
+        console.debug(`No Hashu info from ${mintUrl}:`, error);
       }
     },
     msatPerPihForMint: function (mintUrl: string): number {

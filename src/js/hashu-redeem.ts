@@ -1,3 +1,5 @@
+import { HASHES_PER_TIH, type MintDelivery } from "src/js/hashu";
+
 /**
  * Redeeming TiH vouchers as hashrate on a Hashu mint.
  *
@@ -165,6 +167,14 @@ export async function redemptionId(request: string): Promise<string> {
   ).join("");
 }
 
+/** A redemption's delivered work over time, as the mint's meter saw it. */
+export type RedemptionTrack = {
+  opened_ms: number;
+  completed_ms?: number | null;
+  /** `[Unix ms, accumulated hashes]`, oldest first. */
+  points: [number, number][];
+};
+
 /** Progress as `GET /checkout/api/redemption/{id}` reports it. */
 export type RedemptionProgress = {
   state: string;
@@ -173,7 +183,68 @@ export type RedemptionProgress = {
   floor_tih?: number;
   spent_tih?: number;
   change_tih?: number;
+  track?: RedemptionTrack | null;
+  now_ms?: number;
 };
+
+/** Seconds a new redemption of `amountTih` should take at the mint's
+ * current hashrate, counting what earlier redemptions are still owed.
+ * Null when the mint has no hashrate right now. */
+export function estimateRedeemSeconds(
+  amountTih: number,
+  delivery: MintDelivery
+): number | null {
+  const hs = Number(delivery.hashrate_hs) || 0;
+  if (!(hs > 0)) return null;
+  const queue = Math.max(0, Number(delivery.queue_tih) || 0);
+  return ((queue + amountTih) * HASHES_PER_TIH) / hs;
+}
+
+/** Hashes per second a redemption is getting, over its last minute (the
+ * checkout page's rule). 0 before there are two points to compare. */
+export function trackRate(track: RedemptionTrack, endMs: number): number {
+  const pts = track.points;
+  if (!pts.length) return 0;
+  let base = pts[0];
+  for (const p of pts) if (p[0] <= endMs - 60_000) base = p;
+  const last = pts[pts.length - 1];
+  return endMs > base[0] ? ((last[1] - base[1]) * 1000) / (endMs - base[0]) : 0;
+}
+
+/** Seconds left on an open redemption at its recent rate; null if unknown. */
+export function secondsLeft(p: RedemptionProgress): number | null {
+  if (!p.track || p.state === "completed" || p.state === "settled") return null;
+  const rate = trackRate(p.track, p.now_ms ?? Date.now());
+  const remaining = (p.amount_tih - p.filled_tih) * HASHES_PER_TIH;
+  return rate > 0 && remaining > 0 ? remaining / rate : null;
+}
+
+export function formatHashrate(hs: number): string {
+  if (!(hs > 0)) return "0 H/s";
+  const units = ["H/s", "kH/s", "MH/s", "GH/s", "TH/s", "PH/s", "EH/s"];
+  let i = 0;
+  while (hs >= 1000 && i < units.length - 1) {
+    hs /= 1000;
+    i++;
+  }
+  return `${hs.toFixed(hs >= 100 ? 0 : 1)} ${units[i]}`;
+}
+
+/** A rough duration: "45 s", "12 min", "3 h 20 min", "2 d 5 h". */
+export function formatDuration(seconds: number): string {
+  if (!Number.isFinite(seconds) || seconds < 0) return "—";
+  const s = Math.round(seconds);
+  if (s < 60) return `${s} s`;
+  if (s < 3600) return `${Math.round(s / 60)} min`;
+  if (s < 86400) {
+    const h = Math.floor(s / 3600);
+    const m = Math.round((s % 3600) / 60);
+    return m ? `${h} h ${m} min` : `${h} h`;
+  }
+  const d = Math.floor(s / 86400);
+  const h = Math.round((s % 86400) / 3600);
+  return h ? `${d} d ${h} h` : `${d} d`;
+}
 
 export function redemptionUrl(mintUrl: string, id: string): string {
   return `${mintUrl.replace(/\/+$/, "")}/checkout/api/redemption/${id}`;
