@@ -1,3 +1,9 @@
+import {
+  UNIT_TIH,
+  formatTih,
+  isDisplayUnit,
+  DEFAULT_DISPLAY_UNIT,
+} from "src/js/hashu";
 import { copyToClipboard } from "quasar";
 import { useUiStore } from "stores/ui";
 import { Clipboard } from "@capacitor/clipboard";
@@ -145,6 +151,15 @@ window.windowMixin = {
       }
       if (useUiStore().hideBalance && !showBalance) {
         return "****";
+      }
+      // hashu.me: TiH vouchers follow the chosen display unit.
+      if (currency == UNIT_TIH) {
+        const unit = useSettingsStore().hashuDisplayUnit;
+        return formatTih(
+          value,
+          window.LOCALE,
+          isDisplayUnit(unit) ? unit : DEFAULT_DISPLAY_UNIT
+        );
       }
       if (typeof value === "bigint") {
         return formatBigIntCurrency(

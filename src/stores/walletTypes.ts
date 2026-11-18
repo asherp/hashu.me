@@ -4,6 +4,8 @@ export enum PaymentMethod {
   Bolt12Subpayment = "bolt12-subpayment",
   Onchain = "onchain",
   OnchainSubpayment = "onchain-subpayment",
+  // hashu.me: redeem TiH vouchers as hashrate sent to a mining pool.
+  Hashrate = "hashrate",
 }
 
 export enum UnifiedTransactionType {

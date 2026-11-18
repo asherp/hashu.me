@@ -368,6 +368,9 @@ export default defineComponent({
       if (transaction.type === UnifiedTransactionType.Onchain) {
         return "On-chain";
       }
+      if (transaction.method === PaymentMethod.Hashrate) {
+        return "Redeemed to pool";
+      }
       return transaction.type === UnifiedTransactionType.Lightning
         ? "Lightning"
         : "Ecash";
