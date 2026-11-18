@@ -17,36 +17,42 @@
         class="flex-1"
         style="height: 100%"
       >
-        <q-carousel-slide :name="0">
+        <q-carousel-slide :name="slides.intro">
           <WelcomeSlide1 />
         </q-carousel-slide>
-        <q-carousel-slide :name="1">
+        <q-carousel-slide :name="slides.pool">
+          <WelcomePoolSetup />
+        </q-carousel-slide>
+        <q-carousel-slide :name="slides.pwa">
           <WelcomeSlide2 />
         </q-carousel-slide>
-        <q-carousel-slide :name="2">
+        <q-carousel-slide :name="slides.choice">
           <WelcomeSlideChoice />
         </q-carousel-slide>
-        <!-- New wallet flow: seed display at slide 3 -->
+        <!-- New wallet flow: seed display -->
         <q-carousel-slide
-          :name="3"
+          :name="slides.seed"
           v-if="welcomeStore.onboardingPath === 'new'"
         >
           <WelcomeSlide3 />
         </q-carousel-slide>
-        <!-- Recover flow: seed input at slide 3 -->
+        <!-- Recover flow: seed input -->
         <q-carousel-slide
-          :name="3"
+          :name="slides.seed"
           v-else-if="welcomeStore.onboardingPath === 'recover'"
         >
           <WelcomeRecoverSeed />
         </q-carousel-slide>
-        <!-- Mints setup at slide 4 (both paths) -->
-        <q-carousel-slide :name="4" v-if="welcomeStore.onboardingPath">
+        <!-- Mints setup (both paths) -->
+        <q-carousel-slide
+          :name="slides.mints"
+          v-if="welcomeStore.onboardingPath"
+        >
           <WelcomeMintSetup />
         </q-carousel-slide>
-        <!-- Recover flow: restore ecash at slide 5 -->
+        <!-- Recover flow: restore ecash -->
         <q-carousel-slide
-          :name="5"
+          :name="slides.restore"
           v-if="welcomeStore.onboardingPath === 'recover'"
         >
           <WelcomeRestoreEcash />
@@ -89,7 +95,8 @@
           :disable="!welcomeStore.canProceed"
           @click="welcomeStore.goToNextSlide"
           v-if="
-            welcomeStore.currentSlide > 0 && welcomeStore.currentSlide !== 2
+            welcomeStore.currentSlide > 0 &&
+            welcomeStore.currentSlide !== slides.choice
           "
         />
       </div>
@@ -99,7 +106,7 @@
 
 <script lang="ts">
 import { onMounted, ref } from "vue";
-import { useWelcomeStore } from "src/stores/welcome";
+import { useWelcomeStore, WELCOME_SLIDES } from "src/stores/welcome";
 import { useStorageStore } from "src/stores/storage";
 import WelcomeSlide1 from "./welcome/WelcomeSlide1.vue";
 import WelcomeSlide2 from "./welcome/WelcomeSlide2.vue";
@@ -107,6 +114,7 @@ import WelcomeSlide3 from "./welcome/WelcomeSlide3.vue";
 import WelcomeSlideChoice from "./welcome/WelcomeSlideChoice.vue";
 import WelcomeRecoverSeed from "./welcome/WelcomeRecoverSeed.vue";
 import WelcomeMintSetup from "./welcome/WelcomeMintSetup.vue";
+import WelcomePoolSetup from "./welcome/WelcomePoolSetup.vue";
 import WelcomeRestoreEcash from "./welcome/WelcomeRestoreEcash.vue";
 
 export default {
@@ -118,6 +126,7 @@ export default {
     WelcomeSlideChoice,
     WelcomeRecoverSeed,
     WelcomeMintSetup,
+    WelcomePoolSetup,
     WelcomeRestoreEcash,
   },
   data() {
@@ -187,6 +196,7 @@ export default {
 
     return {
       welcomeStore,
+      slides: WELCOME_SLIDES,
       fileUpload,
       onChangeFileUpload,
       dragFile,

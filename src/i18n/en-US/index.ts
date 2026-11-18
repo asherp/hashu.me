@@ -179,6 +179,10 @@ export default {
         title: "Backup & Restore",
         caption: "Seed phrase and vouchers recovery",
       },
+      pool: {
+        title: "Pool",
+        caption: "Where your hashrate goes when you redeem",
+      },
       lightning_address: {
         title: "Lightning Address",
         caption: "Receive payments to your Lightning address",
@@ -227,6 +231,11 @@ export default {
         title: "About",
         caption: "Terms and links",
       },
+    },
+    pool: {
+      title: "Your pool",
+      description:
+        "Redeem to pool sends hashrate to this pool and worker. Change it any time; each redemption uses what's saved here.",
     },
     language: {
       title: "Language",
@@ -787,6 +796,10 @@ export default {
         subtitle: "Enter your seed phrase, restore mints and vouchers.",
       },
     },
+  },
+  WelcomePoolSetup: {
+    title: "Choose your pool",
+    text: "When you redeem vouchers, the mint points hashrate at your pool account and the pool pays you. Pick your pool and enter the worker name it expects. You can skip this and set it later in Settings > Pool.",
   },
   WelcomeMintSetup: {
     title: "Add mints",

@@ -53,6 +53,10 @@ const routes = [
         component: () => import("src/pages/settings/ExperimentalSettings.vue"),
       },
       {
+        path: "pool",
+        component: () => import("src/pages/settings/PoolSettings.vue"),
+      },
+      {
         path: "appearance",
         component: () => import("src/pages/settings/AppearanceSettings.vue"),
       },

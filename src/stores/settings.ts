@@ -1,4 +1,5 @@
 import { DEFAULT_DISPLAY_UNIT, type DisplayUnit } from "src/js/hashu";
+import { POOL_PRESETS } from "src/js/hashu-redeem";
 import { defineStore } from "pinia";
 import { useLocalStorage } from "@vueuse/core";
 
@@ -87,6 +88,18 @@ export const useSettingsStore = defineStore("settings", {
       hashuDisplayUnit: useLocalStorage<DisplayUnit>(
         "hashu.settings.displayUnit",
         DEFAULT_DISPLAY_UNIT
+      ),
+      // hashu.me: the pool and worker that redemptions send hashrate to.
+      // Set during onboarding or in Settings > Pool, used by Redeem to pool.
+      hashuPoolId: useLocalStorage<string>(
+        "hashu.settings.poolId",
+        POOL_PRESETS[0].id
+      ),
+      hashuPoolUrl: useLocalStorage<string>("hashu.settings.poolUrl", ""),
+      hashuWorkerName: useLocalStorage<string>("hashu.settings.workerName", ""),
+      hashuWorkerPassword: useLocalStorage<string>(
+        "hashu.settings.workerPassword",
+        ""
       ),
       multinutEnabled: useLocalStorage<boolean>(
         "cashu.settings.multinutEnabled",

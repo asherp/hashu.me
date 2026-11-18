@@ -30,6 +30,9 @@ export class WalletPage {
   async onboard(mintUrl: string) {
     await this.goto();
     await this.page.getByTestId("onboarding-start").click();
+    // Pool step: optional, skip it.
+    await expect(this.page.getByTestId("onboarding-pool")).toBeVisible();
+    await this.page.getByTestId("onboarding-next").click();
     await this.page.getByTestId("onboarding-next").click();
     await this.page.getByTestId("onboarding-create-wallet").click();
     await this.page.getByTestId("onboarding-seed-confirmed").click();

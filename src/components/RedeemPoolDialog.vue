@@ -23,43 +23,7 @@
         <div class="text-grey-5 text-body2">
           {{ $t("RedeemPoolDialog.text") }}
         </div>
-        <q-select
-          v-model="poolId"
-          :options="poolOptions"
-          emit-value
-          map-options
-          outlined
-          rounded
-          :label="$t('RedeemPoolDialog.inputs.pool.label')"
-          data-testid="redeem-pool-select"
-        />
-        <q-input
-          v-if="poolId === 'other'"
-          v-model="poolUrl"
-          outlined
-          rounded
-          :label="$t('RedeemPoolDialog.inputs.pool_url.label')"
-          :hint="$t('RedeemPoolDialog.inputs.pool_url.hint')"
-          :error="poolUrl.length > 0 && !poolUrlValid"
-          :error-message="$t('RedeemPoolDialog.inputs.pool_url.invalid')"
-          data-testid="redeem-pool-url"
-        />
-        <q-input
-          v-model="workerName"
-          outlined
-          rounded
-          :label="$t('RedeemPoolDialog.inputs.worker.label')"
-          :placeholder="preset?.worker"
-          :hint="preset?.hint"
-          data-testid="redeem-worker"
-        />
-        <q-input
-          v-model="workerPassword"
-          outlined
-          rounded
-          :label="$t('RedeemPoolDialog.inputs.password.label')"
-          data-testid="redeem-password"
-        />
+        <PoolSettingsForm :mint-url="activeMintUrl" />
         <q-input
           v-model.number="amountTih"
           type="number"
@@ -72,16 +36,6 @@
           :error-message="amountError"
           data-testid="redeem-amount"
         />
-        <div v-if="guideUrl" class="text-caption">
-          <a
-            :href="guideUrl"
-            target="_blank"
-            rel="noopener"
-            class="text-primary"
-          >
-            {{ $t("RedeemPoolDialog.guide") }}
-          </a>
-        </div>
         <q-btn
           rounded
           unelevated
@@ -157,9 +111,10 @@ import { useMintsStore } from "src/stores/mints";
 import { useWalletStore } from "src/stores/wallet";
 import { usePriceStore } from "src/stores/price";
 import { useSettingsStore } from "src/stores/settings";
+import PoolSettingsForm from "src/components/PoolSettingsForm.vue";
 import {
-  POOL_PRESETS,
   isStratumUrl,
+  resolvePoolUrl,
   redemptionId,
   redemptionUrl,
   type RedemptionProgress,
@@ -170,14 +125,10 @@ const POLL_MS = 5000;
 
 export default defineComponent({
   name: "RedeemPoolDialog",
-  components: { XIcon },
+  components: { XIcon, PoolSettingsForm },
   mixins: [windowMixin],
   data() {
     return {
-      poolId: POOL_PRESETS[0].id as string,
-      poolUrl: "",
-      workerName: "",
-      workerPassword: "",
       amountTih: null as number | null,
       busy: false,
       started: false,
@@ -193,29 +144,17 @@ export default defineComponent({
     ...mapWritableState(useUiStore, ["showRedeemPoolDialog"]),
     ...mapState(useMintsStore, ["activeMintUrl", "activeBalance"]),
     ...mapState(usePriceStore, ["hashuPrices"]),
-    poolOptions() {
-      return [
-        ...POOL_PRESETS.map((p) => ({ label: p.name, value: p.id })),
-        {
-          label: this.$t("RedeemPoolDialog.inputs.other_pool"),
-          value: "other",
-        },
-      ];
-    },
-    preset() {
-      return POOL_PRESETS.find((p) => p.id === this.poolId);
-    },
+    ...mapState(useSettingsStore, {
+      poolId: "hashuPoolId",
+      poolUrl: "hashuPoolUrl",
+      workerName: "hashuWorkerName",
+      workerPassword: "hashuWorkerPassword",
+    }),
     resolvedPoolUrl(): string {
-      return this.preset ? this.preset.url : this.poolUrl.trim();
+      return resolvePoolUrl(this.poolId, this.poolUrl);
     },
     poolUrlValid(): boolean {
       return isStratumUrl(this.resolvedPoolUrl);
-    },
-    guideUrl(): string {
-      if (!this.preset || !this.activeMintUrl) return "";
-      return `${this.activeMintUrl.replace(/\/+$/, "")}/redeem/${
-        this.preset.id
-      }/`;
     },
     minTih(): number {
       return this.hashuPrices[this.activeMintUrl]?.minRedeemTih || TIH_PER_PIH;

@@ -64,3 +64,15 @@ describe("redemption id", () => {
     );
   });
 });
+
+describe("resolvePoolUrl", () => {
+  it("uses the preset's URL, else the custom one", async () => {
+    const { resolvePoolUrl, POOL_PRESETS, OTHER_POOL_ID } = await import(
+      "src/js/hashu-redeem"
+    );
+    expect(resolvePoolUrl("ocean", "ignored")).toBe(POOL_PRESETS[0].url);
+    expect(
+      resolvePoolUrl(OTHER_POOL_ID, " stratum+tcp://pool.example:3333 ")
+    ).toBe("stratum+tcp://pool.example:3333");
+  });
+});
