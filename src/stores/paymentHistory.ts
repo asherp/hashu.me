@@ -10,7 +10,8 @@ export type PaymentStatus = "pending" | "paid";
 export type QuoteMethod =
   | PaymentMethod.Bolt11
   | PaymentMethod.Bolt12
-  | PaymentMethod.Onchain;
+  | PaymentMethod.Onchain
+  | PaymentMethod.Hashrate;
 
 export type MintQuoteRow = {
   quote: string;
@@ -105,6 +106,7 @@ type BuiltRows = {
 };
 
 function normalizeMethod(method?: string | PaymentMethod): QuoteMethod {
+  if (method === PaymentMethod.Hashrate) return PaymentMethod.Hashrate;
   if (
     method === PaymentMethod.Onchain ||
     method === PaymentMethod.OnchainSubpayment

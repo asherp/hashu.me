@@ -136,6 +136,7 @@
 
     <!-- INPUT PARSER  -->
     <PayInvoiceDialog v-model="payInvoiceData.show" />
+    <RedeemPoolDialog />
 
     <!-- QR CODE SCANNER  -->
     <q-dialog v-model="camera.show" backdrop-filter="blur(2px) brightness(60%)">
@@ -222,6 +223,7 @@ import NoMintWarnBanner from "components/NoMintWarnBanner.vue";
 import WelcomeDialog from "components/WelcomeDialog.vue";
 import SendTokenDialog from "components/SendTokenDialog.vue";
 import PayInvoiceDialog from "components/PayInvoiceDialog.vue";
+import RedeemPoolDialog from "components/RedeemPoolDialog.vue";
 import InvoiceDetailDialog from "components/InvoiceDetailDialog.vue";
 import CreateInvoiceDialog from "components/CreateInvoiceDialog.vue";
 import SendDialog from "components/SendDialog.vue";
@@ -277,6 +279,7 @@ export default {
     SendTokenDialog,
     ReceiveTokenDialog,
     PayInvoiceDialog,
+    RedeemPoolDialog,
     InvoiceDetailDialog,
     CreateInvoiceDialog,
     QrcodeReader,

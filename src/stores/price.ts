@@ -20,7 +20,10 @@ export const usePriceStore = defineStore("price", {
     // /checkout/api/info. Missing for mints that don't publish a price.
     hashuPrices: useLocalStorage(
       "hashu.price.msatPerPih",
-      {} as Record<string, { msatPerPih: number; updated: number }>
+      {} as Record<
+        string,
+        { msatPerPih: number; minRedeemTih?: number; updated: number }
+      >
     ),
   }),
   actions: {
@@ -77,7 +80,11 @@ export const usePriceStore = defineStore("price", {
         if (!Number.isFinite(msatPerPih) || msatPerPih <= 0) return;
         this.hashuPrices = {
           ...this.hashuPrices,
-          [mintUrl]: { msatPerPih, updated: Date.now() },
+          [mintUrl]: {
+            msatPerPih,
+            minRedeemTih: Number(data?.min_redeem_tih) || undefined,
+            updated: Date.now(),
+          },
         };
       } catch (error) {
         console.debug(`No Hashu price from ${mintUrl}:`, error);

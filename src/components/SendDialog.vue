@@ -72,6 +72,28 @@
           </div>
 
           <div
+            v-if="canRedeemHashrate"
+            class="action-row"
+            role="button"
+            tabindex="0"
+            data-testid="send-hashrate-option"
+            @click="showRedeemPool"
+            @keydown.enter.prevent="showRedeemPool"
+            @keydown.space.prevent="showRedeemPool"
+          >
+            <div class="row items-center no-wrap">
+              <div class="icon-circle">
+                <PickaxeIcon :size="24" />
+              </div>
+              <div class="col q-ml-md">
+                <div class="text-body1 text-weight-medium">
+                  {{ $t("SendDialog.actions.hashrate.label") }}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div
             v-if="canSendOnchain"
             class="action-row"
             role="button"
@@ -112,12 +134,14 @@ import {
   Scan as ScanIcon,
   Coins as CoinsIcon,
   Bitcoin as BitcoinIcon,
+  Pickaxe as PickaxeIcon,
 } from "lucide-vue-next";
 import { PaymentMethod } from "src/stores/walletTypes";
 import { notifyWarning } from "src/js/notify";
 import {
   ensurePaymentMintActive,
   firstMintSupportingPaymentMethods,
+  mintSupportsPaymentMethod,
 } from "src/js/mint-payment-methods";
 
 export default defineComponent({
@@ -128,6 +152,7 @@ export default defineComponent({
     ZapIcon,
     ScanIcon,
     BitcoinIcon,
+    PickaxeIcon,
   },
   mixins: [windowMixin],
   props: {},
@@ -144,6 +169,7 @@ export default defineComponent({
       "tab",
       "showSendDialog",
       "showReceiveDialog",
+      "showRedeemPoolDialog",
     ]),
     ...mapWritableState(useWalletStore, [
       "invoiceHistory",
@@ -174,6 +200,22 @@ export default defineComponent({
         )
       );
     },
+    // hashu.me: the active mint redeems this unit as hashrate (NUT-05
+    // method "hashrate"), i.e. a Hashu mint with TiH active.
+    canRedeemHashrate: function (): boolean {
+      const mint = (this.mints as any[]).find(
+        (m) => m.url === this.activeMintUrl
+      );
+      return Boolean(
+        mint &&
+          mintSupportsPaymentMethod(
+            mint,
+            PaymentMethod.Hashrate,
+            "melt",
+            this.activeUnit as string
+          )
+      );
+    },
     canSendOnchain: function (): boolean {
       return Boolean(
         firstMintSupportingPaymentMethods(
@@ -189,6 +231,10 @@ export default defineComponent({
   methods: {
     ...mapActions(useMintsStore, ["selectMintUrl"]),
     ...mapActions(useCameraStore, ["closeCamera", "showCamera"]),
+    showRedeemPool: function () {
+      this.showSendDialog = false;
+      this.showRedeemPoolDialog = true;
+    },
     showParseDialog: async function () {
       const mintResult = await ensurePaymentMintActive(
         this.mints as any,

@@ -73,6 +73,8 @@ export const useUiStore = defineStore("ui", {
     showSendDialog: false,
     showReceiveDialog: false,
     showReceiveEcashDrawer: false,
+    // hashu.me: redeem TiH vouchers as hashrate to a pool
+    showRedeemPoolDialog: false,
     showNumericKeyboard: false,
     tab: useLocalStorage("cashu.ui.tab", "history" as string),
     expandHistory: useLocalStorage("cashu.ui.expandHistory", true as boolean),
@@ -99,6 +101,7 @@ export const useUiStore = defineStore("ui", {
           this.showSendDialog ||
           this.showReceiveDialog ||
           this.showReceiveEcashDrawer ||
+          this.showRedeemPoolDialog ||
           this.openLocalSheets > 0
       );
     },
@@ -108,6 +111,7 @@ export const useUiStore = defineStore("ui", {
       this.showSendDialog = false;
       this.showReceiveDialog = false;
       this.showReceiveEcashDrawer = false;
+      this.showRedeemPoolDialog = false;
       this.closeLocalSheetsSignal = Date.now();
     },
     async lockMutex(priority: MutexPriority = "normal") {

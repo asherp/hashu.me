@@ -1051,6 +1051,45 @@ export default {
         label: "Lightning",
         error_no_mints: "No mints available",
       },
+      hashrate: {
+        label: "Redeem to pool",
+      },
+    },
+  },
+  RedeemPoolDialog: {
+    title: "Redeem to pool",
+    text: "Point hashrate at your pool. You pay for the work delivered; anything undelivered comes back to this wallet as change.",
+    inputs: {
+      pool: { label: "Pool" },
+      other_pool: "Other pool",
+      pool_url: {
+        label: "Pool URL",
+        hint: "stratum+tcp://host:port",
+        invalid: "Use stratum+tcp://host:port",
+      },
+      worker: { label: "Worker name" },
+      password: { label: "Worker password (optional)" },
+      amount: {
+        label: "Amount (TiH)",
+        min: "At least { min }",
+        too_much: "More than your balance ({ balance })",
+      },
+    },
+    guide: "Pool setup guide",
+    actions: {
+      redeem: { label: "Redeem" },
+      close: { label: "Close" },
+    },
+    status: {
+      opened: "Redemption open. Hashrate is going to { worker }.",
+      settled: "Redemption finished. Change, if any, is back in your wallet.",
+      progress: "{ filled } of { amount } delivered",
+      waiting: "Waiting for the first shares…",
+      charged: "Charged { spent }; { change } came back as change.",
+      no_progress:
+        "Progress isn't available from this mint. The wallet checks the redemption in the background and adds the change when it ends.",
+      background:
+        "You can close this. The wallet keeps checking and adds the change when delivery ends.",
     },
   },
   SendTokenDialog: {

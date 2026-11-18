@@ -24,6 +24,11 @@ import {
   handleBolt11InvoiceBolt11,
 } from "./walletBolt11";
 import {
+  meltQuoteHashrate,
+  redeemToPool,
+  checkOutgoingHashrate,
+} from "./walletHashrate";
+import {
   requestMintBolt12,
   checkOfferAndMintBolt12,
   checkOutgoingInvoiceBolt12,
@@ -936,6 +941,10 @@ export const useWalletStore = defineStore("wallet", {
       }
     },
     meltGeneric: meltGeneric,
+    // hashu.me: redeem TiH vouchers as hashrate to a pool
+    meltQuoteHashrate: meltQuoteHashrate,
+    redeemToPool: redeemToPool,
+    checkOutgoingHashrate: checkOutgoingHashrate,
     melt: meltBolt11,
 
     // Alias functions for bolt11 compatibility
@@ -1116,6 +1125,9 @@ export const useWalletStore = defineStore("wallet", {
       if (!invoice) {
         throw new Error("invoice not found");
       }
+      if (invoice.type === PaymentMethod.Hashrate) {
+        return await checkOutgoingHashrate.call(this, quote, verbose);
+      }
       if (invoice.type === PaymentMethod.Onchain) {
         return await this.checkOutgoingOnchain(quote, verbose);
       }
@@ -1281,7 +1293,10 @@ export const useWalletStore = defineStore("wallet", {
         amount: -(quote.amount + quote.fee_reserve),
         request: this.payInvoiceData.input.request,
         quote: quote.quote,
-        memo: "Outgoing invoice",
+        memo:
+          method === PaymentMethod.Hashrate
+            ? "Redeemed to pool"
+            : "Outgoing invoice",
         date: currentDateStr(),
         status: "pending",
         mint: mint,
