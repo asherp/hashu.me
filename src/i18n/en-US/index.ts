@@ -670,8 +670,8 @@ export default {
     },
   },
   WelcomeSlide1: {
-    title: "Welcome to hashu.me",
-    text: "hashu.me is a free and open-source wallet for Chaumian hashrate vouchers. Each voucher is a claim on hashes (TiH, 2^40 hashes) that you can point at any mining pool.",
+    title: "Welcome to app.hashu.io",
+    text: "app.hashu.io is a free and open-source wallet for Chaumian hashrate vouchers. Each voucher is a claim on hashes (TiH, 2^40 hashes) that you can point at any mining pool.",
     actions: {
       more: {
         label: "Click to learn more",
