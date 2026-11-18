@@ -1058,7 +1058,7 @@ export default {
   },
   RedeemPoolDialog: {
     title: "Redeem to pool",
-    text: "Point hashrate at your pool. You pay for the work delivered; anything undelivered comes back to this wallet as change.",
+    text: "Point hashrate at your pool. Only the hashes delivered are deducted from your balance. The rest comes back as change for future redemption.",
     inputs: {
       pool: { label: "Pool" },
       other_pool: "Other pool",
