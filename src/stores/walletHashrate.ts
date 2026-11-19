@@ -5,7 +5,11 @@ import { type MutexPriority } from "src/stores/ui";
 import { PaymentMethod } from "src/stores/walletTypes";
 import { notifyApiError } from "src/js/notify";
 import { type AppMeltQuote, normalizeMeltQuote } from "./walletMelt";
-import { HASHRATE_METHOD, hashrateRequest } from "src/js/hashu-redeem";
+import {
+  HASHRATE_METHOD,
+  hashrateRequest,
+  type FallbackPoolRequest,
+} from "src/js/hashu-redeem";
 import { UNIT_TIH } from "src/js/hashu";
 
 export type RedeemToPoolInput = {
@@ -13,6 +17,8 @@ export type RedeemToPoolInput = {
   workerName: string;
   workerPassword?: string;
   amountTih: number;
+  /** Backup pools, in order. Leave empty for mints that don't take them. */
+  fallbackPools?: FallbackPoolRequest[];
 };
 
 /** Ask the active mint for a `hashrate` melt quote. */
@@ -30,7 +36,9 @@ export async function meltQuoteHashrate(
     input.poolUrl,
     input.workerName,
     input.amountTih,
-    input.workerPassword
+    input.workerPassword,
+    undefined,
+    input.fallbackPools ?? []
   );
   try {
     // cdk's custom-method handler also wants the method in the body.

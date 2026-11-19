@@ -11,6 +11,14 @@
         <PoolSettingsForm :mint-url="activeMintUrl" />
       </div>
     </SettingsSection>
+    <SettingsSection
+      :title="$t('FallbackPools.title')"
+      :caption="$t('FallbackPools.description')"
+    >
+      <div class="q-pa-md">
+        <FallbackPoolsForm />
+      </div>
+    </SettingsSection>
   </SettingsPageShell>
 </template>
 
@@ -19,12 +27,18 @@ import { defineComponent } from "vue";
 import { mapState } from "pinia";
 import { useMintsStore } from "src/stores/mints";
 import PoolSettingsForm from "src/components/PoolSettingsForm.vue";
+import FallbackPoolsForm from "src/components/FallbackPoolsForm.vue";
 import SettingsPageShell from "./SettingsPageShell.vue";
 import SettingsSection from "./SettingsSection.vue";
 
 export default defineComponent({
   name: "PoolSettings",
-  components: { PoolSettingsForm, SettingsPageShell, SettingsSection },
+  components: {
+    PoolSettingsForm,
+    FallbackPoolsForm,
+    SettingsPageShell,
+    SettingsSection,
+  },
   computed: {
     ...mapState(useMintsStore, ["activeMintUrl"]),
   },

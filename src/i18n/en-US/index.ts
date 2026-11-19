@@ -1069,6 +1069,21 @@ export default {
       },
     },
   },
+  FallbackPools: {
+    title: "Backup pools",
+    description:
+      "Where hashrate goes if your pool is down. Tried in order, up to three.",
+    text: "If your pool can't be reached or refuses the work, the mint's miners switch to the next backup and keep filling the same redemption. They go back to your pool once it answers again.",
+    item: "Backup { n }",
+    add: "Add a backup pool",
+    remove: "Remove",
+    summary: "Backup pools ({ n })",
+    summary_none: "Add a backup pool (optional)",
+    unsupported:
+      "This mint doesn't take backup pools yet, so this redemption uses only your main pool.",
+    on_backup:
+      "Your pool isn't taking the work right now, so hashrate is going to your backup { pool }.",
+  },
   RedeemPoolDialog: {
     title: "Redeem to pool",
     text: "Point hashrate at your pool. Only the hashes delivered are deducted from your balance. The rest comes back as change for future redemption.",

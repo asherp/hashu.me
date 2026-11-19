@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   POOL_PRESETS,
+  fallbackPoolsFor,
   hashrateRequest,
   isStratumUrl,
   parseHashrateRequest,
@@ -39,6 +40,68 @@ describe("hashrate melt request", () => {
   it("rejects non-JSON requests", () => {
     expect(parseHashrateRequest("lnbc1...")).toBeNull();
     expect(parseHashrateRequest(undefined)).toBeNull();
+  });
+});
+
+describe("backup pools", () => {
+  it("adds fallback_pools after the nonce, only when there are some", () => {
+    const r = hashrateRequest("stratum+tcp://h:1", "w", 1024, "", "n", [
+      { pool_url: "stratum+tcp://b:2", worker_name: "w2" },
+    ]);
+    expect(r).toBe(
+      '{"pool_url":"stratum+tcp://h:1","worker_name":"w","amount_tih":1024,"nonce":"n","fallback_pools":[{"pool_url":"stratum+tcp://b:2","worker_name":"w2"}]}'
+    );
+    expect(
+      hashrateRequest("stratum+tcp://h:1", "w", 1, "", "n", [])
+    ).not.toContain("fallback");
+  });
+
+  it("sends only complete saved backups, presets resolved, at most max", () => {
+    const ocean = POOL_PRESETS.find((p) => p.id === "ocean")!;
+    const out = fallbackPoolsFor(
+      [
+        {
+          poolId: "ocean",
+          poolUrl: "",
+          workerName: " bc1q.b ",
+          workerPassword: "",
+        },
+        {
+          poolId: "other",
+          poolUrl: "stratum+tcp://half",
+          workerName: "w",
+          workerPassword: "",
+        },
+        {
+          poolId: "other",
+          poolUrl: "stratum+ssl://b:443",
+          workerName: "",
+          workerPassword: "",
+        },
+        {
+          poolId: "other",
+          poolUrl: " stratum+ssl://c:443 ",
+          workerName: "w3",
+          workerPassword: " pw ",
+        },
+        {
+          poolId: "other",
+          poolUrl: "stratum+tcp://d:1",
+          workerName: "w4",
+          workerPassword: "",
+        },
+      ],
+      2
+    );
+    expect(out).toEqual([
+      { pool_url: ocean.url, worker_name: "bc1q.b" },
+      {
+        pool_url: "stratum+ssl://c:443",
+        worker_name: "w3",
+        worker_password: "pw",
+      },
+    ]);
+    expect(fallbackPoolsFor(undefined)).toEqual([]);
   });
 });
 

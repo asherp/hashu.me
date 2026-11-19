@@ -35,6 +35,9 @@ export const usePriceStore = defineStore("price", {
       string,
       MintDelivery & { capacityEndsMs?: number; updated: number }
     >,
+    // Backup pools each Hashu mint takes per redemption (0 = none, so the
+    // wallet leaves them out of the request). Not persisted.
+    hashuMaxFallbackPools: {} as Record<string, number>,
   }),
   actions: {
     fetchBitcoinPrice: async function () {
@@ -91,6 +94,13 @@ export const usePriceStore = defineStore("price", {
           hashuInfoUrl(mintUrl),
           { timeout: 5000 }
         );
+        this.hashuMaxFallbackPools = {
+          ...this.hashuMaxFallbackPools,
+          [mintUrl]: Math.max(
+            0,
+            Math.floor(Number(data?.max_fallback_pools) || 0)
+          ),
+        };
         const d = data?.delivery;
         // hashrate_hs is null while the mint has seen no shares yet.
         if (d && typeof d === "object") {
