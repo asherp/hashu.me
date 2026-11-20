@@ -117,9 +117,10 @@
                       data-testid="mint-hashrate"
                     >
                       <span class="currency-unit-text">
-                        <q-icon name="bolt" size="xs" class="q-mr-xs" />{{
-                          formatHashrate(mintHashrate(mint.url))
-                        }}
+                        <PickaxeIcon
+                          :size="14"
+                          class="q-mr-xs hashrate-icon"
+                        />{{ formatHashrate(mintHashrate(mint.url)) }}
                       </span>
                       <q-tooltip>
                         {{ $t("MintSettings.hashrate_tooltip") }}
@@ -379,6 +380,7 @@ import { useMintRecommendationsStore } from "src/stores/mintRecommendations";
 import MintInfoContainer from "./MintInfoContainer.vue";
 import { usePriceStore } from "src/stores/price";
 import { formatHashrate } from "src/js/hashu-redeem";
+import { Pickaxe as PickaxeIcon } from "lucide-vue-next";
 
 // Mints that should not show reviews
 const EXCLUDED_FROM_REVIEWS = [
@@ -392,6 +394,7 @@ export default defineComponent({
   components: {
     AddMintDialog,
     MintInfoContainer,
+    PickaxeIcon,
   },
   props: {},
   setup() {
@@ -700,6 +703,9 @@ export default defineComponent({
 
 <style>
 @import "src/css/mintlist.css";
+.hashrate-icon {
+  vertical-align: -2px;
+}
 
 /* Add Mint Section Styles */
 .add-mint-container {

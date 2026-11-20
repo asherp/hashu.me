@@ -251,7 +251,7 @@
             data-testid="mint-details-hashrate"
           >
             <div class="detail-label">
-              <gauge-icon size="20" color="#9E9E9E" class="detail-icon" />
+              <pickaxe-icon size="20" color="#9E9E9E" class="detail-icon" />
               <div class="detail-name">
                 {{ $t("MintDetailsDialog.details.hashrate.label") }}
               </div>
@@ -376,7 +376,7 @@ import {
   Trash as TrashIcon,
   Building as BuildingIcon,
   Banknote as BanknoteIcon,
-  Gauge as GaugeIcon,
+  Pickaxe as PickaxeIcon,
 } from "lucide-vue-next";
 import { usePriceStore } from "src/stores/price";
 import { formatHashrate } from "src/js/hashu-redeem";
@@ -397,7 +397,7 @@ export default defineComponent({
     TrashIcon,
     BuildingIcon,
     BanknoteIcon,
-    GaugeIcon,
+    PickaxeIcon,
     EditMintDialog,
     RemoveMintDialog,
     MintMotdMessage,
