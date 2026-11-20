@@ -24,6 +24,25 @@
           {{ $t("RedeemPoolDialog.text") }}
         </div>
         <PoolSettingsForm :mint-url="activeMintUrl" />
+        <q-expansion-item
+          dense
+          dense-toggle
+          expand-separator
+          :label="backupLabel"
+          header-class="text-primary q-px-none"
+          data-testid="redeem-backups"
+        >
+          <div class="q-pt-sm">
+            <FallbackPoolsForm />
+          </div>
+        </q-expansion-item>
+        <div
+          v-if="backupsUnsupported"
+          class="text-grey-5 text-caption"
+          data-testid="redeem-backups-unsupported"
+        >
+          {{ $t("FallbackPools.unsupported") }}
+        </div>
         <q-input
           v-model.number="amountTih"
           type="number"
@@ -64,6 +83,13 @@
               ? $t("RedeemPoolDialog.status.settled")
               : $t("RedeemPoolDialog.status.opened", { worker: workerName })
           }}
+        </div>
+        <div
+          v-if="backupNotice"
+          class="text-warning text-body2"
+          data-testid="redeem-on-backup"
+        >
+          {{ backupNotice }}
         </div>
         <template v-if="progress">
           <q-linear-progress
@@ -126,9 +152,11 @@ import { useWalletStore } from "src/stores/wallet";
 import { usePriceStore } from "src/stores/price";
 import { useSettingsStore } from "src/stores/settings";
 import PoolSettingsForm from "src/components/PoolSettingsForm.vue";
+import FallbackPoolsForm from "src/components/FallbackPoolsForm.vue";
 import {
   isStratumUrl,
   resolvePoolUrl,
+  fallbackPoolsFor,
   redemptionId,
   estimateRedeemSeconds,
   formatDuration,
@@ -146,7 +174,7 @@ const INFO_MS = 30000;
 
 export default defineComponent({
   name: "RedeemPoolDialog",
-  components: { XIcon, PoolSettingsForm },
+  components: { XIcon, PoolSettingsForm, FallbackPoolsForm },
   mixins: [windowMixin],
   data() {
     return {
@@ -165,13 +193,46 @@ export default defineComponent({
   computed: {
     ...mapWritableState(useUiStore, ["showRedeemPoolDialog"]),
     ...mapState(useMintsStore, ["activeMintUrl", "activeBalance"]),
-    ...mapState(usePriceStore, ["hashuPrices", "hashuDelivery"]),
+    ...mapState(usePriceStore, [
+      "hashuPrices",
+      "hashuDelivery",
+      "hashuMaxFallbackPools",
+    ]),
     ...mapState(useSettingsStore, {
       poolId: "hashuPoolId",
       poolUrl: "hashuPoolUrl",
       workerName: "hashuWorkerName",
       workerPassword: "hashuWorkerPassword",
+      savedFallbacks: "hashuFallbackPools",
     }),
+    /** Backup pools the active mint takes (0 if it takes none). */
+    maxFallbacks(): number {
+      return this.hashuMaxFallbackPools[this.activeMintUrl] ?? 0;
+    },
+    /** Saved backups that are complete, in order. */
+    readyFallbacks() {
+      return fallbackPoolsFor(this.savedFallbacks);
+    },
+    /** What this redemption sends: none to a mint that doesn't take them. */
+    sentFallbacks() {
+      return this.readyFallbacks.slice(0, this.maxFallbacks);
+    },
+    backupsUnsupported(): boolean {
+      return this.readyFallbacks.length > 0 && this.maxFallbacks === 0;
+    },
+    backupLabel(): string {
+      const n = this.readyFallbacks.length;
+      return n
+        ? this.$t("FallbackPools.summary", { n })
+        : this.$t("FallbackPools.summary_none");
+    },
+    backupNotice(): string {
+      const p = this.progress;
+      if (!p || this.settled || !(Number(p.serving_pool) > 0)) return "";
+      return this.$t("FallbackPools.on_backup", {
+        pool: p.serving_pool_url ?? "",
+      });
+    },
     resolvedPoolUrl(): string {
       return resolvePoolUrl(this.poolId, this.poolUrl);
     },
@@ -290,6 +351,7 @@ export default defineComponent({
           workerName: this.workerName,
           workerPassword: this.workerPassword,
           amountTih: this.amountTih as number,
+          fallbackPools: this.sentFallbacks,
         });
         this.quoteId = res.quote.quote;
         this.started = true;

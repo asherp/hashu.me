@@ -83,13 +83,68 @@ export const POOL_PRESETS: PoolPreset[] = [
   },
 ];
 
+/** A backup pool in a melt request (`fallback_pools`). */
+export type FallbackPoolRequest = {
+  pool_url: string;
+  worker_name: string;
+  worker_password?: string;
+};
+
 export type HashrateRequest = {
   pool_url: string;
   worker_name: string;
   worker_password?: string;
   amount_tih: number;
   nonce?: string;
+  fallback_pools?: FallbackPoolRequest[];
 };
+
+/** Most backup pools a Hashu mint takes after the main one. */
+export const MAX_FALLBACK_POOLS = 3;
+
+/** A backup pool as saved in settings (same shape as the main pool). */
+export type SavedPool = {
+  poolId: string;
+  poolUrl: string;
+  workerName: string;
+  workerPassword: string;
+};
+
+/** A blank backup pool entry for settings. */
+export function emptySavedPool(): SavedPool {
+  return {
+    poolId: OTHER_POOL_ID,
+    poolUrl: "",
+    workerName: "",
+    workerPassword: "",
+  };
+}
+
+/**
+ * The saved backup pools that are filled in well enough to send: a
+ * stratum URL the proxy can dial and a worker name. Half-filled entries
+ * are skipped rather than failing the redemption. At most `max`.
+ */
+export function fallbackPoolsFor(
+  saved: SavedPool[] | undefined,
+  max: number = MAX_FALLBACK_POOLS
+): FallbackPoolRequest[] {
+  const out: FallbackPoolRequest[] = [];
+  for (const p of saved ?? []) {
+    const url = resolvePoolUrl(p.poolId, p.poolUrl ?? "");
+    const worker = (p.workerName ?? "").trim();
+    if (!isStratumUrl(url) || !worker) continue;
+    const f: FallbackPoolRequest = {
+      pool_url: url.trim(),
+      worker_name: worker,
+    };
+    const pw = p.workerPassword?.trim();
+    if (pw) f.worker_password = pw;
+    out.push(f);
+    if (out.length >= max) break;
+  }
+  return out;
+}
 
 /** Pool choice id for a pool that isn't in POOL_PRESETS. */
 export const OTHER_POOL_ID = "other";
@@ -118,7 +173,8 @@ export function hashrateRequest(
   workerName: string,
   amountTih: number,
   workerPassword?: string,
-  nonce: string = randomNonce()
+  nonce: string = randomNonce(),
+  fallbackPools: FallbackPoolRequest[] = []
 ): string {
   const req: HashrateRequest = {
     pool_url: poolUrl.trim(),
@@ -128,6 +184,8 @@ export function hashrateRequest(
   const pw = workerPassword?.trim();
   if (pw) req.worker_password = pw;
   req.nonce = nonce;
+  // Only when there are some: older mints refuse unknown fields.
+  if (fallbackPools.length) req.fallback_pools = fallbackPools;
   return JSON.stringify(req);
 }
 
@@ -183,6 +241,12 @@ export type RedemptionProgress = {
   floor_tih?: number;
   spent_tih?: number;
   change_tih?: number;
+  /** Backup pools the redemption listed (no passwords). */
+  fallback_pools?: { pool_url: string; worker_name: string }[];
+  /** Which pool is getting the hashrate: 0 = the main pool, then the
+   * backups in order; null while no rig is on it. */
+  serving_pool?: number | null;
+  serving_pool_url?: string | null;
   track?: RedemptionTrack | null;
   now_ms?: number;
 };

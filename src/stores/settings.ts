@@ -1,5 +1,5 @@
 import { DEFAULT_DISPLAY_UNIT, type DisplayUnit } from "src/js/hashu";
-import { POOL_PRESETS } from "src/js/hashu-redeem";
+import { POOL_PRESETS, type SavedPool } from "src/js/hashu-redeem";
 import { defineStore } from "pinia";
 import { useLocalStorage } from "@vueuse/core";
 
@@ -100,6 +100,12 @@ export const useSettingsStore = defineStore("settings", {
       hashuWorkerPassword: useLocalStorage<string>(
         "hashu.settings.workerPassword",
         ""
+      ),
+      // Backup pools, tried in order when the main pool can't be reached
+      // or refuses the work. Same fields as the main pool.
+      hashuFallbackPools: useLocalStorage<SavedPool[]>(
+        "hashu.settings.fallbackPools",
+        []
       ),
       multinutEnabled: useLocalStorage<boolean>(
         "cashu.settings.multinutEnabled",

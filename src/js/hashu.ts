@@ -88,6 +88,8 @@ export type HashuMintPrice = {
   msat_per_pih?: number | null;
   min_buy_tih?: number | null;
   min_redeem_tih?: number | null;
+  /** Backup pools a redemption may list; missing on mints without them. */
+  max_fallback_pools?: number | null;
   capacity_ends_ms?: number | null;
   delivery?: MintDelivery | null;
 };
