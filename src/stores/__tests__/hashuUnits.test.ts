@@ -65,3 +65,31 @@ describe("hashu price", () => {
     expect(price.msatPerPihForMint("https://sat.example")).toBe(0);
   });
 });
+
+describe("retired units", () => {
+  const mint = {
+    url: "https://mint.example",
+    keys: [],
+    keysets: [
+      { id: "00tih", unit: "tih", active: true, input_fee_ppk: 0 },
+      { id: "00thh", unit: "thh", active: false, input_fee_ppk: 0 },
+    ],
+  } as any;
+
+  it("hides a unit whose keysets are all retired when nothing is held in it", async () => {
+    const { MintClass } = await import("src/stores/mints");
+    const { useProofsStore } = await import("src/stores/proofs");
+    useProofsStore().proofs = [];
+    expect(new MintClass(mint).units).toEqual(["tih"]);
+  });
+
+  it("keeps a retired unit while the wallet still holds proofs in it", async () => {
+    const { MintClass } = await import("src/stores/mints");
+    const { useProofsStore } = await import("src/stores/proofs");
+    useProofsStore().proofs = [
+      { id: "00thh", amount: 2, secret: "s", C: "c", reserved: false },
+    ] as any;
+    expect(new MintClass(mint).units).toEqual(["tih", "thh"]);
+    useProofsStore().proofs = [];
+  });
+});

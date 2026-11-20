@@ -63,9 +63,18 @@ export class MintClass {
   }
 
   get units() {
+    // hashu.me: a unit whose keysets are all retired (e.g. a mint's old
+    // "thh" keysets from before the TiH cutover) is only shown while the
+    // wallet still holds proofs in it, so it doesn't show up as a second,
+    // empty balance next to TiH.
     return this.mint.keysets
       .map((k) => k.unit)
-      .filter((value, index, self) => self.indexOf(value) === index);
+      .filter((value, index, self) => self.indexOf(value) === index)
+      .filter(
+        (unit) =>
+          this.mint.keysets.some((k) => k.unit === unit && k.active) ||
+          this.unitBalance(unit) > 0
+      );
   }
 
   unitKeysets(unit: string): MintKeyset[] {

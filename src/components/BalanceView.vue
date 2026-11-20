@@ -63,9 +63,7 @@
                   <strong v-if="showSecondaryBalance(unit)">
                     <AnimatedNumber
                       :value="secondaryBalanceValue(unit)"
-                      :format="
-                        (val) => formatCurrency(val, secondaryUnit(unit))
-                      "
+                      :format="(val) => formatSecondary(val, unit)"
                     />
                     <q-tooltip v-if="isTihUnit(unit)">
                       1 PiH = {{ formatMsatPerPih() }} msat
@@ -204,7 +202,16 @@ export default defineComponent({
       const advertisedUnits = [...nut4Methods, ...nut5Methods]
         .map((method) => method.unit)
         .filter(Boolean);
-      const units = [...mint.units, ...advertisedUnits].filter(Boolean);
+      // A unit the mint only has retired keysets for (its old "thh") is not
+      // a balance the wallet can hold any more, even if still advertised.
+      const retired = (unit: string) => {
+        const keysets = mint.mint.keysets.filter((k) => k.unit === unit);
+        return keysets.length > 0 && !keysets.some((k) => k.active);
+      };
+      const units = [
+        ...mint.units,
+        ...advertisedUnits.filter((u) => !retired(u)),
+      ].filter(Boolean);
       const uniqueUnits = [...new Set(units)];
       if (!uniqueUnits.length) {
         return [this.activeUnit || "sat"];
@@ -344,6 +351,18 @@ export default defineComponent({
         Boolean(this.bitcoinPriceForUnit(unit)) &&
         (this.isSatUnit(unit) || this.isFiatUnit(unit))
       );
+    },
+    formatSecondary(val: number, unit: string) {
+      // hashu.me: under TiH this is what the vouchers cost at the mint's
+      // price, in sats. Spell the unit out: "₿2" reads as two bitcoin.
+      if (this.isTihUnit(unit)) {
+        return this.$t(
+          "BalanceView.tih_value",
+          { amount: new Intl.NumberFormat(navigator.language).format(val) },
+          Math.round(val)
+        );
+      }
+      return this.formatCurrency(val, this.secondaryUnit(unit));
     },
     secondaryBalanceValue(unit: string) {
       const balance = this.totalBalanceForUnit(unit);
