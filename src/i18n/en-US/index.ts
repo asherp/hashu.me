@@ -1105,7 +1105,7 @@ export default {
       pool_url: {
         label: "Pool URL",
         hint: "stratum+tcp://host:port",
-        invalid: "Use stratum+tcp://host:port",
+        invalid: "Use stratum+tcp://host:port, stratum+ssl://host:port, or stratum2+tcp://host/key for Stratum V2",
       },
       worker: { label: "Worker name" },
       password: { label: "Worker password (optional)" },

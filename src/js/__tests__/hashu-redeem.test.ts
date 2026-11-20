@@ -113,6 +113,14 @@ describe("pool URLs", () => {
     expect(isStratumUrl("stratum+tcp://pool.example")).toBe(false);
   });
 
+  it("accepts Stratum V2 URLs with an authority key", () => {
+    const key = "9auqWEzQDVyd2oe1JVGFLMLHZtCo2FFqZwtKA5gd9xbuEu7PH72";
+    expect(isStratumUrl(`stratum2+tcp://v2.stratum.braiins.com/${key}`)).toBe(true);
+    expect(isStratumUrl(`stratum2+tcp://pool.example:3336/${key}`)).toBe(true);
+    expect(isStratumUrl("stratum2+tcp://pool.example:3336")).toBe(false);
+    expect(isStratumUrl("stratum2+tcp://pool.example:3336/0OIl")).toBe(false);
+  });
+
   it("presets are all valid stratum URLs", () => {
     for (const p of POOL_PRESETS) expect(isStratumUrl(p.url)).toBe(true);
   });
