@@ -111,6 +111,20 @@
                         }}
                       </span>
                     </div>
+                    <div
+                      v-if="mintHashrate(mint.url) !== null"
+                      class="currency-unit-badge"
+                      data-testid="mint-hashrate"
+                    >
+                      <span class="currency-unit-text">
+                        <q-icon name="bolt" size="xs" class="q-mr-xs" />{{
+                          formatHashrate(mintHashrate(mint.url))
+                        }}
+                      </span>
+                      <q-tooltip>
+                        {{ $t("MintSettings.hashrate_tooltip") }}
+                      </q-tooltip>
+                    </div>
                   </div>
                 </div>
                 <div
@@ -363,6 +377,8 @@ import { EventBus } from "../js/eventBus";
 import AddMintDialog from "src/components/AddMintDialog.vue";
 import { useMintRecommendationsStore } from "src/stores/mintRecommendations";
 import MintInfoContainer from "./MintInfoContainer.vue";
+import { usePriceStore } from "src/stores/price";
+import { formatHashrate } from "src/js/hashu-redeem";
 
 // Mints that should not show reviews
 const EXCLUDED_FROM_REVIEWS = [
@@ -393,12 +409,22 @@ export default defineComponent({
       }
     };
 
+    // hashu.me: keep each Hashu mint's hashrate fresh while the list shows.
+    const priceStore = usePriceStore();
+    const mintsStore = useMintsStore();
+    const refreshHashrates = () =>
+      mintsStore.mints.forEach((m) => priceStore.fetchHashuInfo(m.url));
+    let hashrateTimer: ReturnType<typeof setInterval> | undefined;
+
     onMounted(() => {
       EventBus.on("scrollToAddMintDiv", scrollToAddMintDiv);
+      refreshHashrates();
+      hashrateTimer = setInterval(refreshHashrates, 60_000);
     });
 
     onBeforeUnmount(() => {
       EventBus.off("scrollToAddMintDiv", scrollToAddMintDiv);
+      clearInterval(hashrateTimer);
     });
     return {
       addMintDiv,
@@ -440,6 +466,7 @@ export default defineComponent({
     ...mapWritableState(useMintsStore, ["addMintData", "showAddMintDialog"]),
     ...mapState(useUiStore, ["tickerShort"]),
     ...mapState(useSwapStore, ["swapAmountData"]),
+    ...mapState(usePriceStore, ["hashuDelivery"]),
     ...mapWritableState(useSwapStore, ["swapBlocking"]),
     discoverList() {
       return this.recommendations.filter((r) => !this.isExistingMint(r.url));
@@ -457,6 +484,12 @@ export default defineComponent({
     },
   },
   methods: {
+    formatHashrate,
+    /** What a Hashu mint's rigs deliver right now, in H/s; null if it doesn't say. */
+    mintHashrate(url: string): number | null {
+      const d = this.hashuDelivery[url];
+      return d ? d.hashrate_hs : null;
+    },
     ...mapActions(useNostrStore, [
       "init",
       "initNdkReadOnly",

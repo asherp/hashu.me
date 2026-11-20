@@ -934,6 +934,8 @@ export default {
     },
   },
   MintSettings: {
+    hashrate_tooltip:
+      "Hashrate this mint's rigs are delivering right now, measured over the last few minutes. Redemptions share it.",
     add: {
       title: "Add mint",
       description:
@@ -1456,6 +1458,12 @@ export default {
       },
       currencies: {
         label: "@:MintDetailsDialog.details.currency.label",
+      },
+      hashrate: {
+        label: "Hashrate",
+        idle: "Available now, no redemptions running",
+        redeeming:
+          "Shared by { count } running redemption | Shared by { count } running redemptions",
       },
       version: {
         label: "Version",

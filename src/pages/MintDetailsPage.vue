@@ -244,6 +244,34 @@
             </div>
           </div>
 
+          <!-- hashu.me: hashrate the mint's rigs deliver right now -->
+          <div
+            class="detail-item q-mb-md"
+            v-if="mintDelivery"
+            data-testid="mint-details-hashrate"
+          >
+            <div class="detail-label">
+              <gauge-icon size="20" color="#9E9E9E" class="detail-icon" />
+              <div class="detail-name">
+                {{ $t("MintDetailsDialog.details.hashrate.label") }}
+              </div>
+            </div>
+            <div class="detail-value text-right">
+              {{ formatHashrate(mintDelivery.hashrate_hs) }}
+              <div class="text-caption text-grey-6">
+                {{
+                  mintDelivery.open_redemptions > 0
+                    ? $t(
+                        "MintDetailsDialog.details.hashrate.redeeming",
+                        { count: mintDelivery.open_redemptions },
+                        mintDelivery.open_redemptions
+                      )
+                    : $t("MintDetailsDialog.details.hashrate.idle")
+                }}
+              </div>
+            </div>
+          </div>
+
           <!-- Version -->
           <div class="detail-item" v-if="mintData.info?.version">
             <div class="detail-label">
@@ -348,7 +376,10 @@ import {
   Trash as TrashIcon,
   Building as BuildingIcon,
   Banknote as BanknoteIcon,
+  Gauge as GaugeIcon,
 } from "lucide-vue-next";
+import { usePriceStore } from "src/stores/price";
+import { formatHashrate } from "src/js/hashu-redeem";
 
 export default defineComponent({
   name: "MintDetailsPage",
@@ -366,6 +397,7 @@ export default defineComponent({
     TrashIcon,
     BuildingIcon,
     BanknoteIcon,
+    GaugeIcon,
     EditMintDialog,
     RemoveMintDialog,
     MintMotdMessage,
@@ -434,6 +466,10 @@ export default defineComponent({
       }
       return result;
     },
+    ...mapState(usePriceStore, ["hashuDelivery"]),
+    mintDelivery() {
+      return this.mintData?.url ? this.hashuDelivery[this.mintData.url] : null;
+    },
     mintUnits() {
       if (this.mintData) {
         const mintClassInstance = new MintClass(this.mintData);
@@ -443,6 +479,8 @@ export default defineComponent({
     },
   },
   methods: {
+    formatHashrate,
+    ...mapActions(usePriceStore, ["fetchHashuInfo"]),
     ...mapActions(useMintsStore, [
       "removeMint",
       "fetchMintInfo",
@@ -514,6 +552,7 @@ export default defineComponent({
       if (mint) {
         this.mintData = mint;
         this.refreshMintInfo();
+        this.fetchHashuInfo(mint.url);
       } else {
         // Mint not found, redirect back
         this.$router.push("/");
