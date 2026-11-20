@@ -126,6 +126,20 @@
                         {{ $t("MintSettings.hashrate_tooltip") }}
                       </q-tooltip>
                     </div>
+                    <div
+                      v-if="mintEta(mint).kind === 'eta'"
+                      class="currency-unit-badge"
+                      data-testid="mint-redeem-eta"
+                    >
+                      <span class="currency-unit-text">
+                        <TimerIcon :size="14" class="q-mr-xs hashrate-icon" />{{
+                          formatDuration(mintEta(mint).seconds)
+                        }}
+                      </span>
+                      <q-tooltip>
+                        {{ $t("MintSettings.eta_tooltip") }}
+                      </q-tooltip>
+                    </div>
                   </div>
                 </div>
                 <div
@@ -379,8 +393,13 @@ import AddMintDialog from "src/components/AddMintDialog.vue";
 import { useMintRecommendationsStore } from "src/stores/mintRecommendations";
 import MintInfoContainer from "./MintInfoContainer.vue";
 import { usePriceStore } from "src/stores/price";
-import { formatHashrate } from "src/js/hashu-redeem";
-import { Pickaxe as PickaxeIcon } from "lucide-vue-next";
+import {
+  balanceRedeemEta,
+  formatDuration,
+  formatHashrate,
+} from "src/js/hashu-redeem";
+import { UNIT_TIH } from "src/js/hashu";
+import { Pickaxe as PickaxeIcon, Timer as TimerIcon } from "lucide-vue-next";
 
 // Mints that should not show reviews
 const EXCLUDED_FROM_REVIEWS = [
@@ -395,6 +414,7 @@ export default defineComponent({
     AddMintDialog,
     MintInfoContainer,
     PickaxeIcon,
+    TimerIcon,
   },
   props: {},
   setup() {
@@ -469,7 +489,7 @@ export default defineComponent({
     ...mapWritableState(useMintsStore, ["addMintData", "showAddMintDialog"]),
     ...mapState(useUiStore, ["tickerShort"]),
     ...mapState(useSwapStore, ["swapAmountData"]),
-    ...mapState(usePriceStore, ["hashuDelivery"]),
+    ...mapState(usePriceStore, ["hashuDelivery", "hashuPrices"]),
     ...mapWritableState(useSwapStore, ["swapBlocking"]),
     discoverList() {
       return this.recommendations.filter((r) => !this.isExistingMint(r.url));
@@ -488,6 +508,17 @@ export default defineComponent({
   },
   methods: {
     formatHashrate,
+    formatDuration,
+    /** How long redeeming the wallet's whole TiH balance here would take now. */
+    mintEta(mint) {
+      const d = this.hashuDelivery[mint.url];
+      if (!d) return { kind: "empty" };
+      return balanceRedeemEta(
+        this.mintClass(mint).unitBalance(UNIT_TIH),
+        d,
+        this.hashuPrices[mint.url]?.minRedeemTih
+      );
+    },
     /** What a Hashu mint's rigs deliver right now, in H/s; null if it doesn't say. */
     mintHashrate(url: string): number | null {
       const d = this.hashuDelivery[url];

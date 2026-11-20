@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  balanceRedeemEta,
   POOL_PRESETS,
   fallbackPoolsFor,
   hashrateRequest,
@@ -184,5 +185,29 @@ describe("redemption time estimates", () => {
     expect(formatDuration(720)).toBe("12 min");
     expect(formatDuration(12_000)).toBe("3 h 20 min");
     expect(formatDuration(2 * 86400 + 5 * 3600)).toBe("2 d 5 h");
+  });
+});
+
+describe("balanceRedeemEta", () => {
+  const delivery = {
+    hashrate_hs: 1.1e12,
+    window_s: 120,
+    queue_tih: 0,
+    open_redemptions: 0,
+  } as any;
+  it("estimates the whole balance at the current hashrate", () => {
+    const r = balanceRedeemEta(4096, delivery, 1024);
+    expect(r.kind).toBe("eta");
+    expect((r as any).seconds).toBeCloseTo((4096 * 2 ** 40) / 1.1e12);
+  });
+  it("says when there is nothing to redeem, too little, or no hashrate", () => {
+    expect(balanceRedeemEta(0, delivery, 1024)).toEqual({ kind: "empty" });
+    expect(balanceRedeemEta(512, delivery, 1024)).toEqual({
+      kind: "below_min",
+      minTih: 1024,
+    });
+    expect(
+      balanceRedeemEta(4096, { ...delivery, hashrate_hs: 0 }, 1024)
+    ).toEqual({ kind: "no_hashrate" });
   });
 });

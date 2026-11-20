@@ -272,6 +272,42 @@
             </div>
           </div>
 
+          <!-- hashu.me: time to redeem the wallet's balance here -->
+          <div
+            class="detail-item q-mb-md"
+            v-if="mintDelivery && mintEta.kind !== 'empty'"
+            data-testid="mint-details-eta"
+          >
+            <div class="detail-label">
+              <timer-icon size="20" color="#9E9E9E" class="detail-icon" />
+              <div class="detail-name">
+                {{ $t("MintDetailsDialog.details.eta.label") }}
+              </div>
+            </div>
+            <div class="detail-value text-right">
+              <template v-if="mintEta.kind === 'eta'">
+                {{ formatDuration(mintEta.seconds) }}
+                <div class="text-caption text-grey-6">
+                  {{
+                    $t("MintDetailsDialog.details.eta.caption", {
+                      amount: formatCurrency(tihBalance, "tih"),
+                    })
+                  }}
+                </div>
+              </template>
+              <template v-else-if="mintEta.kind === 'below_min'">
+                {{
+                  $t("MintDetailsDialog.details.eta.below_min", {
+                    min: formatCurrency(mintEta.minTih, "tih"),
+                  })
+                }}
+              </template>
+              <template v-else>
+                {{ $t("MintDetailsDialog.details.eta.no_hashrate") }}
+              </template>
+            </div>
+          </div>
+
           <!-- Version -->
           <div class="detail-item" v-if="mintData.info?.version">
             <div class="detail-label">
@@ -377,9 +413,15 @@ import {
   Building as BuildingIcon,
   Banknote as BanknoteIcon,
   Pickaxe as PickaxeIcon,
+  Timer as TimerIcon,
 } from "lucide-vue-next";
 import { usePriceStore } from "src/stores/price";
-import { formatHashrate } from "src/js/hashu-redeem";
+import {
+  balanceRedeemEta,
+  formatDuration,
+  formatHashrate,
+} from "src/js/hashu-redeem";
+import { UNIT_TIH } from "src/js/hashu";
 
 export default defineComponent({
   name: "MintDetailsPage",
@@ -398,6 +440,7 @@ export default defineComponent({
     BuildingIcon,
     BanknoteIcon,
     PickaxeIcon,
+    TimerIcon,
     EditMintDialog,
     RemoveMintDialog,
     MintMotdMessage,
@@ -466,7 +509,20 @@ export default defineComponent({
       }
       return result;
     },
-    ...mapState(usePriceStore, ["hashuDelivery"]),
+    ...mapState(usePriceStore, ["hashuDelivery", "hashuPrices"]),
+    tihBalance() {
+      return this.mintData?.url
+        ? new MintClass(this.mintData).unitBalance(UNIT_TIH)
+        : 0;
+    },
+    mintEta() {
+      if (!this.mintDelivery) return { kind: "empty" };
+      return balanceRedeemEta(
+        this.tihBalance,
+        this.mintDelivery,
+        this.hashuPrices[this.mintData.url]?.minRedeemTih
+      );
+    },
     mintDelivery() {
       return this.mintData?.url ? this.hashuDelivery[this.mintData.url] : null;
     },
@@ -480,6 +536,7 @@ export default defineComponent({
   },
   methods: {
     formatHashrate,
+    formatDuration,
     ...mapActions(usePriceStore, ["fetchHashuInfo"]),
     ...mapActions(useMintsStore, [
       "removeMint",

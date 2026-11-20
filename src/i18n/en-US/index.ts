@@ -936,6 +936,8 @@ export default {
     },
   },
   MintSettings: {
+    eta_tooltip:
+      "About how long redeeming your whole balance here would take at this hashrate, after redemptions already queued.",
     hashrate_tooltip:
       "Hashrate this mint's rigs are delivering right now, measured over the last few minutes. Redemptions share it.",
     add: {
@@ -1460,6 +1462,12 @@ export default {
       },
       currencies: {
         label: "@:MintDetailsDialog.details.currency.label",
+      },
+      eta: {
+        label: "Time to redeem",
+        caption: "For your { amount }",
+        below_min: "Your balance is below the { min } minimum",
+        no_hashrate: "No hashrate right now",
       },
       hashrate: {
         label: "Hashrate",
