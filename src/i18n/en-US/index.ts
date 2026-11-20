@@ -803,7 +803,7 @@ export default {
   },
   WelcomeMintSetup: {
     title: "Add mints",
-    text: "Mints issue hashrate vouchers and route hashrate to your pool when you redeem them. Hashu's own mint is filled in below; add it, or enter another Hashu mint.",
+    text: "Mints issue hashrate vouchers and route hashrate to your pool when you redeem them. Hashu's own mint is added for you; you can add other Hashu mints below.",
     sections: {
       your_mints: "Your mints",
     },
