@@ -313,3 +313,23 @@ export function formatDuration(seconds: number): string {
 export function redemptionUrl(mintUrl: string, id: string): string {
   return `${mintUrl.replace(/\/+$/, "")}/checkout/api/redemption/${id}`;
 }
+
+export type BalanceEta =
+  | { kind: "eta"; seconds: number }
+  | { kind: "empty" }
+  | { kind: "below_min"; minTih: number }
+  | { kind: "no_hashrate" };
+
+/** How long redeeming a whole balance at a mint would take right now. */
+export function balanceRedeemEta(
+  balanceTih: number,
+  delivery: MintDelivery,
+  minRedeemTih?: number
+): BalanceEta {
+  if (!(balanceTih > 0)) return { kind: "empty" };
+  if (minRedeemTih && balanceTih < minRedeemTih) {
+    return { kind: "below_min", minTih: minRedeemTih };
+  }
+  const seconds = estimateRedeemSeconds(balanceTih, delivery);
+  return seconds === null ? { kind: "no_hashrate" } : { kind: "eta", seconds };
+}

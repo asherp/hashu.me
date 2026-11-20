@@ -111,6 +111,35 @@
                         }}
                       </span>
                     </div>
+                    <div
+                      v-if="mintHashrate(mint.url) !== null"
+                      class="currency-unit-badge"
+                      data-testid="mint-hashrate"
+                    >
+                      <span class="currency-unit-text">
+                        <PickaxeIcon
+                          :size="14"
+                          class="q-mr-xs hashrate-icon"
+                        />{{ formatHashrate(mintHashrate(mint.url)) }}
+                      </span>
+                      <q-tooltip>
+                        {{ $t("MintSettings.hashrate_tooltip") }}
+                      </q-tooltip>
+                    </div>
+                    <div
+                      v-if="mintEta(mint).kind === 'eta'"
+                      class="currency-unit-badge"
+                      data-testid="mint-redeem-eta"
+                    >
+                      <span class="currency-unit-text">
+                        <TimerIcon :size="14" class="q-mr-xs hashrate-icon" />{{
+                          formatDuration(mintEta(mint).seconds)
+                        }}
+                      </span>
+                      <q-tooltip>
+                        {{ $t("MintSettings.eta_tooltip") }}
+                      </q-tooltip>
+                    </div>
                   </div>
                 </div>
                 <div
@@ -363,6 +392,14 @@ import { EventBus } from "../js/eventBus";
 import AddMintDialog from "src/components/AddMintDialog.vue";
 import { useMintRecommendationsStore } from "src/stores/mintRecommendations";
 import MintInfoContainer from "./MintInfoContainer.vue";
+import { usePriceStore } from "src/stores/price";
+import {
+  balanceRedeemEta,
+  formatDuration,
+  formatHashrate,
+} from "src/js/hashu-redeem";
+import { UNIT_TIH } from "src/js/hashu";
+import { Pickaxe as PickaxeIcon, Timer as TimerIcon } from "lucide-vue-next";
 
 // Mints that should not show reviews
 const EXCLUDED_FROM_REVIEWS = [
@@ -376,6 +413,8 @@ export default defineComponent({
   components: {
     AddMintDialog,
     MintInfoContainer,
+    PickaxeIcon,
+    TimerIcon,
   },
   props: {},
   setup() {
@@ -393,12 +432,22 @@ export default defineComponent({
       }
     };
 
+    // hashu.me: keep each Hashu mint's hashrate fresh while the list shows.
+    const priceStore = usePriceStore();
+    const mintsStore = useMintsStore();
+    const refreshHashrates = () =>
+      mintsStore.mints.forEach((m) => priceStore.fetchHashuInfo(m.url));
+    let hashrateTimer: ReturnType<typeof setInterval> | undefined;
+
     onMounted(() => {
       EventBus.on("scrollToAddMintDiv", scrollToAddMintDiv);
+      refreshHashrates();
+      hashrateTimer = setInterval(refreshHashrates, 60_000);
     });
 
     onBeforeUnmount(() => {
       EventBus.off("scrollToAddMintDiv", scrollToAddMintDiv);
+      clearInterval(hashrateTimer);
     });
     return {
       addMintDiv,
@@ -440,6 +489,7 @@ export default defineComponent({
     ...mapWritableState(useMintsStore, ["addMintData", "showAddMintDialog"]),
     ...mapState(useUiStore, ["tickerShort"]),
     ...mapState(useSwapStore, ["swapAmountData"]),
+    ...mapState(usePriceStore, ["hashuDelivery", "hashuPrices"]),
     ...mapWritableState(useSwapStore, ["swapBlocking"]),
     discoverList() {
       return this.recommendations.filter((r) => !this.isExistingMint(r.url));
@@ -457,6 +507,23 @@ export default defineComponent({
     },
   },
   methods: {
+    formatHashrate,
+    formatDuration,
+    /** How long redeeming the wallet's whole TiH balance here would take now. */
+    mintEta(mint) {
+      const d = this.hashuDelivery[mint.url];
+      if (!d) return { kind: "empty" };
+      return balanceRedeemEta(
+        this.mintClass(mint).unitBalance(UNIT_TIH),
+        d,
+        this.hashuPrices[mint.url]?.minRedeemTih
+      );
+    },
+    /** What a Hashu mint's rigs deliver right now, in H/s; null if it doesn't say. */
+    mintHashrate(url: string): number | null {
+      const d = this.hashuDelivery[url];
+      return d ? d.hashrate_hs : null;
+    },
     ...mapActions(useNostrStore, [
       "init",
       "initNdkReadOnly",
@@ -667,6 +734,9 @@ export default defineComponent({
 
 <style>
 @import "src/css/mintlist.css";
+.hashrate-icon {
+  vertical-align: -2px;
+}
 
 /* Add Mint Section Styles */
 .add-mint-container {
