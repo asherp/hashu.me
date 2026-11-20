@@ -29,7 +29,7 @@ export type PoolPreset = {
 
 /**
  * Mirrors the checkout page's pool list (hashu-cli/src/checkout.html,
- * guides at /redeem/<id>/ on the mint).
+ * guides at /redeem/<id>.html on the mint).
  */
 export const POOL_PRESETS: PoolPreset[] = [
   {

@@ -106,7 +106,7 @@ export default defineComponent({
     guideUrl(): string {
       if (!this.preset) return "";
       const mint = (this.mintUrl || DEFAULT_MINT_URL).replace(/\/+$/, "");
-      return `${mint}/redeem/${this.preset.id}/`;
+      return `${mint}/redeem/${this.preset.id}.html`;
     },
   },
 });
