@@ -78,7 +78,7 @@
             flat
             rounded
             data-testid="onboarding-add-mint"
-            :disable="addMintData.url.length === 0"
+            :disable="addMintData.url.length === 0 || addMintBlocking"
             @click="
               addMintData.url.length > 0
                 ? sanitizeMintUrlAndShowAddDialog()
@@ -170,6 +170,17 @@ export default {
     const getMintIconUrlExisting = (mint: any) =>
       mint?.info?.icon_url || undefined;
 
+    const addDefaultMint = async () => {
+      try {
+        await mints.addMint({ url: DEFAULT_MINT_URL });
+      } catch (error) {
+        console.warn("Could not add the default mint", error);
+        if (mints.mints.length === 0 && !addMintData.url) {
+          addMintData.url = DEFAULT_MINT_URL;
+        }
+      }
+    };
+
     const markDone = () => {
       welcome.mintSetupCompleted = true;
     };
@@ -178,9 +189,10 @@ export default {
     // Users can proceed with or without adding mints
     onMounted(() => {
       welcome.mintSetupCompleted = true;
-      // hashu.me: suggest Hashu's own mint until the wallet has one.
-      if (mints.mints.length === 0 && !addMintData.url) {
-        addMintData.url = DEFAULT_MINT_URL;
+      // hashu.me: start every new wallet with Hashu's own mint. If it can't
+      // be reached, leave its address in the box so it's one tap to retry.
+      if (mints.mints.length === 0) {
+        addDefaultMint();
       }
     });
 
