@@ -63,17 +63,25 @@ export class MintClass {
   }
 
   get units() {
-    // hashu.me: a unit whose keysets are all retired (e.g. a mint's old
-    // "thh" keysets from before the TiH cutover) is only shown while the
-    // wallet still holds proofs in it, so it doesn't show up as a second,
-    // empty balance next to TiH.
+    // hashu.me: list a unit only if the wallet holds something in it or the
+    // mint still issues it. mint.hashu.io keeps its pre-cutover "thh"
+    // keyset marked active but no longer mints or melts THH, so "issues it"
+    // means an active keyset AND a NUT-04/05 method for the unit (when the
+    // mint publishes its methods at all).
+    const nuts = this.mint.info?.nuts;
+    const methodUnits = new Set(
+      [...(nuts?.[4]?.methods ?? []), ...(nuts?.[5]?.methods ?? [])]
+        .map((m) => m?.unit)
+        .filter(Boolean)
+    );
     return this.mint.keysets
       .map((k) => k.unit)
       .filter((value, index, self) => self.indexOf(value) === index)
       .filter(
         (unit) =>
-          this.mint.keysets.some((k) => k.unit === unit && k.active) ||
-          this.unitBalance(unit) > 0
+          this.unitBalance(unit) > 0 ||
+          (this.mint.keysets.some((k) => k.unit === unit && k.active) &&
+            (methodUnits.size === 0 || methodUnits.has(unit)))
       );
   }
 

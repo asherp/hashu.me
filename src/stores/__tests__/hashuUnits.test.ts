@@ -92,4 +92,21 @@ describe("retired units", () => {
     expect(new MintClass(mint).units).toEqual(["tih", "thh"]);
     useProofsStore().proofs = [];
   });
+
+  it("hides an active keyset's unit the mint no longer mints or melts", async () => {
+    const { MintClass } = await import("src/stores/mints");
+    const { useProofsStore } = await import("src/stores/proofs");
+    useProofsStore().proofs = [];
+    const live = {
+      ...mint,
+      keysets: mint.keysets.map((k: any) => ({ ...k, active: true })),
+      info: {
+        nuts: {
+          4: { methods: [{ method: "bolt11", unit: "tih" }] },
+          5: { methods: [{ method: "hashrate", unit: "tih" }] },
+        },
+      },
+    };
+    expect(new MintClass(live).units).toEqual(["tih"]);
+  });
 });
