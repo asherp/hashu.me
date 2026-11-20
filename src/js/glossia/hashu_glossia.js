@@ -115,6 +115,25 @@ export function cashuFromWords(text) {
     }
 }
 
+/**
+ * Every word a voucher paragraph can contain, for snapping OCR misreads to
+ * the nearest real word. JSON `{ payload, cover }` (lower-case) or
+ * `{ error }`. Mirrors glossia's own `get_payload_words`/`get_cover_words`.
+ * @returns {string}
+ */
+export function vocabulary() {
+    let deferred1_0;
+    let deferred1_1;
+    try {
+        const ret = wasm.vocabulary();
+        deferred1_0 = ret[0];
+        deferred1_1 = ret[1];
+        return getStringFromWasm0(ret[0], ret[1]);
+    } finally {
+        wasm.__wbindgen_free(deferred1_0, deferred1_1, 1);
+    }
+}
+
 async function __wbg_load(module, imports) {
     if (typeof Response === 'function' && module instanceof Response) {
         if (typeof WebAssembly.instantiateStreaming === 'function') {

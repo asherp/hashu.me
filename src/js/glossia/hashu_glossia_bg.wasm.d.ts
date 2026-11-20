@@ -3,6 +3,7 @@
 export const memory: WebAssembly.Memory;
 export const cashuFromWords: (a: number, b: number) => [number, number];
 export const cashuToWords: (a: number, b: number) => [number, number];
+export const vocabulary: () => [number, number];
 export const __wbindgen_export_0: WebAssembly.Table;
 export const __wbindgen_malloc: (a: number, b: number) => number;
 export const __wbindgen_realloc: (a: number, b: number, c: number, d: number) => number;

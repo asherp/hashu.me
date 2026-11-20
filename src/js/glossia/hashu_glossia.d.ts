@@ -10,6 +10,12 @@ export function cashuToWords(token: string): string;
  * `{ error }`.
  */
 export function cashuFromWords(text: string): string;
+/**
+ * Every word a voucher paragraph can contain, for snapping OCR misreads to
+ * the nearest real word. JSON `{ payload, cover }` (lower-case) or
+ * `{ error }`. Mirrors glossia's own `get_payload_words`/`get_cover_words`.
+ */
+export function vocabulary(): string;
 
 export type InitInput = RequestInfo | URL | Response | BufferSource | WebAssembly.Module;
 
@@ -17,6 +23,7 @@ export interface InitOutput {
   readonly memory: WebAssembly.Memory;
   readonly cashuFromWords: (a: number, b: number) => [number, number];
   readonly cashuToWords: (a: number, b: number) => [number, number];
+  readonly vocabulary: () => [number, number];
   readonly __wbindgen_export_0: WebAssembly.Table;
   readonly __wbindgen_malloc: (a: number, b: number) => number;
   readonly __wbindgen_realloc: (a: number, b: number, c: number, d: number) => number;

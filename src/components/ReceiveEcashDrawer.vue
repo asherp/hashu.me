@@ -63,6 +63,36 @@
           </div>
 
           <div
+            class="action-row"
+            role="button"
+            tabindex="0"
+            data-testid="receive-words-photo"
+            @click="pickWordsPhoto"
+            @keydown.enter.prevent="pickWordsPhoto"
+            @keydown.space.prevent="pickWordsPhoto"
+          >
+            <div class="row items-center no-wrap">
+              <div class="icon-circle">
+                <ScanTextIcon :size="24" />
+              </div>
+              <div class="col q-ml-md">
+                <div class="text-body1 text-weight-medium">
+                  {{ $t("ReceiveEcashDrawer.actions.photo.label") }}
+                </div>
+              </div>
+            </div>
+            <input
+              ref="wordsPhotoInput"
+              type="file"
+              accept="image/*"
+              capture="environment"
+              class="hidden"
+              data-testid="receive-words-photo-input"
+              @change="handleWordsPhoto"
+            />
+          </div>
+
+          <div
             v-if="enablePaymentRequest"
             class="action-row"
             @click="handlePaymentRequestBtn"
@@ -149,11 +179,18 @@ import {
   Lock as LockIcon,
   Nfc as NfcIcon,
   Scan as ScanIcon,
+  ScanText as ScanTextIcon,
 } from "lucide-vue-next";
 // import ChooseMint from "components/ChooseMint.vue";
 import TokenInformation from "components/TokenInformation.vue";
 import { map } from "underscore";
-import { notifyError, notifySuccess, notify } from "../js/notify";
+import {
+  notifyError,
+  notifySuccess,
+  notify,
+  notifyWarning,
+} from "../js/notify";
+import { scanWordsImage } from "src/js/glossia";
 
 export default defineComponent({
   name: "ReceiveTokenDialog",
@@ -166,6 +203,7 @@ export default defineComponent({
     FileTextIcon,
     LockIcon,
     ScanIcon,
+    ScanTextIcon,
     NfcIcon,
   },
   data: function () {
@@ -234,6 +272,53 @@ export default defineComponent({
       // if (!this.isiOsSafari()
       if (this.autoPasteEcashReceive) {
         this.watchClipboardPaste = true;
+      }
+    },
+    // hashu.me: a photo of a voucher written as Glossia words.
+    pickWordsPhoto: function () {
+      (this.$refs.wordsPhotoInput as HTMLInputElement)?.click();
+    },
+    handleWordsPhoto: async function (event: Event) {
+      const input = event.target as HTMLInputElement;
+      const file = input.files?.[0];
+      input.value = "";
+      if (!file) return;
+      const show = (status = "", fraction = 0) =>
+        this.$q.loading.show({
+          message: /^recogni/.test(status)
+            ? this.$t("QrcodeReader.words.reading", {
+                percentage: Math.round(fraction * 100),
+              })
+            : this.$t("QrcodeReader.words.loading"),
+        });
+      show();
+      try {
+        const r = await scanWordsImage(file, show);
+        if (r.token) {
+          if (r.repaired > 0) {
+            notify(
+              this.$t("ReceiveTokenDialog.words.repaired", {
+                count: r.repaired,
+              })
+            );
+          }
+          this.receiveData.tokensBase64 = r.token;
+          this.showReceiveEcashDrawer = false;
+          this.showReceiveTokens = true;
+        } else {
+          notifyWarning(
+            this.$t("QrcodeReader.words.not_found", { count: r.words })
+          );
+        }
+      } catch (e) {
+        console.error(e);
+        notifyError(
+          this.$t("QrcodeReader.words.failed", {
+            error: (e as Error)?.message || String(e),
+          })
+        );
+      } finally {
+        this.$q.loading.hide();
       }
     },
     handleLockBtn: function () {
