@@ -4,3 +4,4 @@ src-cordova
 android
 ios
 src/js/glossia
+/public/ocr

@@ -62,3 +62,69 @@ export async function tokenToWords(token: string): Promise<string | null> {
   const r = JSON.parse(m.cashuToWords(token));
   return r.words ?? null;
 }
+
+type Vocab = ReturnType<typeof import("./glossia-scan").buildVocab>;
+let vocabLoading: Promise<Vocab> | null = null;
+
+function loadVocab(): Promise<Vocab> {
+  if (!vocabLoading) {
+    vocabLoading = Promise.all([load(), import("./glossia-scan")])
+      .then(([m, scan]) => {
+        const v = JSON.parse(m.vocabulary());
+        if (v.error) throw new Error(v.error);
+        return scan.buildVocab([...v.payload, ...v.cover], v.payload);
+      })
+      .catch((e) => {
+        vocabLoading = null;
+        throw e;
+      });
+  }
+  return vocabLoading;
+}
+
+export type ScanProgress = (status: string, fraction: number) => void;
+
+// The OCR worker is created once and keeps the progress callback it was made
+// with, so it gets this stable one, which reports to the current scan.
+let currentProgress: ScanProgress | undefined;
+const reportProgress: ScanProgress = (status, fraction) =>
+  currentProgress?.(status, fraction);
+
+export type ScannedWords = {
+  /** The voucher, when the photo decoded to one. */
+  token: string | null;
+  repaired: number;
+  /** What was read, with misreads snapped to real words. */
+  text: string;
+  words: number;
+};
+
+/**
+ * A photo or video frame of a voucher paragraph → the voucher. OCR runs in
+ * the browser (Tesseract.js, served by the app from /ocr/, ~7 MB on first
+ * use and cached after), misread words are snapped to Glossia's vocabulary,
+ * and the paragraph's parity repairs what is left.
+ */
+export async function scanWordsImage(
+  image: Blob | HTMLCanvasElement | HTMLVideoElement | ImageBitmap,
+  onProgress?: ScanProgress
+): Promise<ScannedWords> {
+  const [scan, vocab] = await Promise.all([
+    import("./glossia-scan"),
+    loadVocab(),
+  ]);
+  currentProgress = onProgress;
+  let r;
+  try {
+    r = await scan.scanImage(image, { vocab, onProgress: reportProgress });
+  } finally {
+    currentProgress = undefined;
+  }
+  const decoded = await tokenFromWords(r.text);
+  return {
+    token: decoded?.token ?? null,
+    repaired: decoded?.repaired ?? 0,
+    text: r.text,
+    words: r.summary.words,
+  };
+}

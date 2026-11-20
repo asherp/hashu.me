@@ -1020,6 +1020,16 @@ export default {
       close: {
         label: "@:global.actions.close.label",
       },
+      words: {
+        label: "Read words",
+      },
+    },
+    words: {
+      loading: "Loading the word reader…",
+      reading: "Reading words { percentage }%",
+      not_found:
+        "Couldn't read a voucher from that ({ count } words seen). Fill the frame with the whole paragraph, hold it flat and try again.",
+      failed: "The word reader couldn't start: { error }",
     },
   },
   InvoiceDetailDialog: {
@@ -1237,6 +1247,9 @@ export default {
       },
       scan: {
         label: "@:global.actions.scan.label",
+      },
+      photo: {
+        label: "Read words from a photo",
       },
       request: {
         label: "Request",

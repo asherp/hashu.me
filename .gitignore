@@ -39,3 +39,6 @@ yarn-error.log*
 # AI Agent directories
 .claude
 Makefile
+
+# OCR files copied from node_modules on install (scripts/copy-ocr-assets.mjs)
+/public/ocr
