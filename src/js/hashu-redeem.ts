@@ -158,9 +158,18 @@ export function resolvePoolUrl(poolId: string, customUrl: string): string {
   return poolPreset(poolId)?.url ?? customUrl.trim();
 }
 
-/** A stratum URL the mint's proxy can dial. */
+/**
+ * A stratum URL the mint's proxy can dial: Stratum V1 over TCP or TLS
+ * with a port, or Stratum V2 with the pool's authority key as the path
+ * (`stratum2+tcp://host[:port]/<key>`, port optional as Braiins publishes
+ * it). The mint checks the key's checksum.
+ */
 export function isStratumUrl(url: string): boolean {
-  return /^stratum\+(tcp|ssl):\/\/[^\s/:]+:\d{1,5}\/?$/.test(url.trim());
+  const u = url.trim();
+  return (
+    /^stratum\+(tcp|ssl):\/\/[^\s/:]+:\d{1,5}\/?$/.test(u) ||
+    /^stratum2\+tcp:\/\/[^\s/:]+(:\d{1,5})?\/[1-9A-HJ-NP-Za-km-z]{40,60}\/?$/.test(u)
+  );
 }
 
 /**
