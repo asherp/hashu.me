@@ -654,6 +654,8 @@ export default {
     },
   },
   BalanceView: {
+    tih_value:
+      "≈ {amount} sat at the mint's price | ≈ {amount} sats at the mint's price",
     mintUrl: {
       label: "Mint",
     },
