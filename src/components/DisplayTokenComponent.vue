@@ -278,10 +278,46 @@
           >
             {{ copyButtonLabel }}
           </q-btn>
+          <q-btn
+            v-if="canShowWords"
+            class="full-width q-mt-sm"
+            flat
+            rounded
+            no-caps
+            color="grey-5"
+            data-testid="show-token-words"
+            :loading="wordsLoading"
+            :label="$t('DisplayTokenComponent.words.show')"
+            @click="showWords"
+          />
         </div>
       </div>
     </div>
   </div>
+  <!-- hashu.me: the token as Glossia words -->
+  <q-dialog v-model="showWordsDialog" :maximized="$q.screen.lt.sm">
+    <q-card class="q-pa-lg qcard words-card">
+      <div class="row items-center no-wrap q-mb-sm">
+        <span class="text-h6 col">{{
+          $t("DisplayTokenComponent.words.title")
+        }}</span>
+        <q-btn v-close-popup flat round dense icon="close" color="grey" />
+      </div>
+      <p class="text-grey-5 text-body2">
+        {{ $t("DisplayTokenComponent.words.text") }}
+      </p>
+      <div class="words-text" data-testid="token-words">{{ tokenWords }}</div>
+      <q-btn
+        class="full-width q-mt-md"
+        unelevated
+        rounded
+        color="primary"
+        data-testid="copy-token-words"
+        :label="$t('DisplayTokenComponent.words.copy')"
+        @click="copyUsingMixin(tokenWords)"
+      />
+    </q-card>
+  </q-dialog>
   <!-- popup dialog to confirm deletion -->
   <q-dialog v-model="showDeleteDialog">
     <q-card class="q-pa-lg q-pt-md qcard">
@@ -339,6 +375,7 @@ import { getDecodedToken, getEncodedTokenBinary } from "@cashu/cashu-ts";
 import { sumProofAmounts } from "src/js/proofs";
 import token from "src/js/token";
 import { notifyError, notifySuccess } from "src/js/notify";
+import { tokenToWords } from "src/js/glossia";
 import { copyToClipboard } from "quasar";
 import {
   Scan as ScanIcon,
@@ -364,6 +401,9 @@ export default defineComponent({
   },
   data: function () {
     return {
+      showWordsDialog: false,
+      wordsLoading: false,
+      tokenWords: "",
       baseURL: location.protocol + "//" + location.host + location.pathname,
       showAnimatedQR: false,
       qrCodeFragment: "",
@@ -412,6 +452,12 @@ export default defineComponent({
       return this.outgoingPayments.some(
         (entry) =>
           entry.type === "token" && entry.id === this.sendData.tokensBase64
+      );
+    },
+    canShowWords: function () {
+      return (
+        typeof this.sendData.tokensBase64 === "string" &&
+        this.sendData.tokensBase64.startsWith("cashuB")
       );
     },
     copyButtonLabel: function () {
@@ -653,6 +699,19 @@ export default defineComponent({
       this.showSendTokens = false;
       this.showDeleteDialog = false;
     },
+    showWords: async function () {
+      this.wordsLoading = true;
+      try {
+        const words = await tokenToWords(this.sendData.tokensBase64);
+        if (!words) throw new Error("this token can't be written as words");
+        this.tokenWords = words;
+        this.showWordsDialog = true;
+      } catch (e) {
+        notifyError(String((e as Error)?.message ?? e));
+      } finally {
+        this.wordsLoading = false;
+      }
+    },
     copyTokens: async function () {
       try {
         await copyToClipboard(this.sendData.tokensBase64);
@@ -682,6 +741,17 @@ export default defineComponent({
 });
 </script>
 <style scoped>
+.words-card {
+  max-width: 640px;
+}
+.words-text {
+  font-size: 1.05rem;
+  line-height: 1.6;
+  white-space: pre-wrap;
+  user-select: text;
+  max-height: 55vh;
+  overflow-y: auto;
+}
 .display-token-fullscreen {
   height: 100vh; /* fallback */
   height: 100dvh; /* account for mobile browser UI */

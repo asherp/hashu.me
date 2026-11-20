@@ -113,6 +113,7 @@ import {
 } from "src/js/legacy-qr";
 import { onchainNetwork } from "src/js/onchain";
 import { PaymentMethod } from "src/stores/walletTypes";
+import { looksLikeWords, tokenFromWords } from "src/js/glossia";
 
 type Invoice = {
   amount: number;
@@ -1628,6 +1629,15 @@ export const useWalletStore = defineStore("wallet", {
         const token = req.slice(req.indexOf("token=cashu") + 6);
         receiveStore.receiveData.tokensBase64 = token;
         this.handleCashuToken();
+      } else if (looksLikeWords(req)) {
+        // hashu.me: a voucher written as Glossia words.
+        const fromWords = await tokenFromWords(req);
+        if (fromWords) {
+          receiveStore.receiveData.tokensBase64 = fromWords.token;
+          this.handleCashuToken();
+        } else {
+          notifyWarning(this.t("ReceiveTokenDialog.words.invalid"));
+        }
       } else if (p2pkStore.isValidPubkey(req)) {
         this.handleP2PK(req);
       } else if (req.startsWith("http")) {

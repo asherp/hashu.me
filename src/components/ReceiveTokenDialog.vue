@@ -297,6 +297,8 @@ import { usePriceStore } from "src/stores/price";
 import { useSwapStore } from "src/stores/swap";
 import { useSettingsStore } from "src/stores/settings";
 import token from "src/js/token";
+import { looksLikeWords, tokenFromWords } from "src/js/glossia";
+import { notify, notifyWarning } from "src/js/notify";
 import { Mint, GetInfoResponse } from "@cashu/cashu-ts";
 import { Token } from "@cashu/cashu-ts";
 import type { StoredMint } from "src/stores/mints";
@@ -372,6 +374,24 @@ export default defineComponent({
       }
       if (!newVal) {
         this.fullToken = null;
+        return;
+      }
+      // hashu.me: a voucher written as Glossia words becomes its token.
+      if (looksLikeWords(newVal)) {
+        const fromWords = await tokenFromWords(newVal);
+        if (this.receiveData.tokensBase64 !== newVal) return;
+        if (fromWords) {
+          if (fromWords.repaired > 0) {
+            notify(
+              this.$t("ReceiveTokenDialog.words.repaired", {
+                count: fromWords.repaired,
+              })
+            );
+          }
+          this.receiveData.tokensBase64 = fromWords.token;
+        } else {
+          notifyWarning(this.$t("ReceiveTokenDialog.words.invalid"));
+        }
         return;
       }
       try {
