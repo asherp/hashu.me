@@ -1250,7 +1250,20 @@ export default {
       },
     },
   },
+  DisplayTokenComponent: {
+    words: {
+      show: "Show as words",
+      title: "Voucher as words",
+      text: "The same voucher as plain English. Anyone who can read these words can redeem it, so share them like the token itself. Paste or type them into a Hashu wallet or the mint's checkout to receive it; a few typos are fixed automatically.",
+      copy: "Copy words",
+    },
+  },
   ReceiveTokenDialog: {
+    words: {
+      invalid:
+        "These words don't read as a voucher. Check that the whole paragraph was copied.",
+      repaired: "Read the voucher from words ({ count } fixed).",
+    },
     title: "Receive Vouchers",
     title_ecash_text: "Vouchers",
     inputs: {

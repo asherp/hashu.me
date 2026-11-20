@@ -13,6 +13,7 @@ import {
 } from "../js/notify";
 import { getDecodedTokenBinary, getEncodedToken } from "@cashu/cashu-ts";
 import { useSwapStore } from "./swap";
+import { looksLikeWords, tokenFromWords } from "src/js/glossia";
 
 export const useReceiveTokensStore = defineStore("receiveTokensStore", {
   state: () => ({
@@ -104,7 +105,12 @@ export const useReceiveTokensStore = defineStore("receiveTokensStore", {
       uiStore.closeDialogs();
     },
     pasteToParseDialog: async function (verbose = false) {
-      const text = await useUiStore().pasteFromClipboard();
+      let text = await useUiStore().pasteFromClipboard();
+      // hashu.me: a voucher pasted as Glossia words.
+      if (!this.decodeToken(text) && looksLikeWords(text)) {
+        const fromWords = await tokenFromWords(text);
+        if (fromWords) text = fromWords.token;
+      }
       if (this.decodeToken(text)) {
         const tokensStore = useTokensStore();
         const historyToken = tokensStore.tokenAlreadyInHistory(text);
