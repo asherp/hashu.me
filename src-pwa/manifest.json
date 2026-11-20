@@ -1,6 +1,6 @@
 {
-  "name": "app.hashu.io",
-  "short_name": "app.hashu.io",
+  "name": "Hashu",
+  "short_name": "Hashu",
   "description": "A wallet for Chaumian hashrate vouchers.",
   "display": "standalone",
   "orientation": "portrait",
