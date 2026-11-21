@@ -295,31 +295,12 @@
     </div>
   </div>
   <!-- hashu.me: the token as Glossia words -->
-  <q-dialog v-model="showWordsDialog" :maximized="$q.screen.lt.sm">
-    <q-card class="q-pa-lg qcard words-card">
-      <div class="row items-center no-wrap q-mb-sm">
-        <span class="text-h6 col">{{
-          $t("DisplayTokenComponent.words.title")
-        }}</span>
-        <q-btn v-close-popup flat round dense icon="close" color="grey" />
-      </div>
-      <p class="text-grey-5 text-caption q-mb-sm">
-        {{ $t("DisplayTokenComponent.words.text") }}
-      </p>
-      <div class="words-text" data-testid="token-words">
-        <GlossiaWords :text="tokenWords" />
-      </div>
-      <q-btn
-        class="full-width q-mt-md"
-        unelevated
-        rounded
-        color="primary"
-        data-testid="copy-token-words"
-        :label="$t('DisplayTokenComponent.words.copy')"
-        @click="copyUsingMixin(tokenWords)"
-      />
-    </q-card>
-  </q-dialog>
+  <GlossiaWordsDialog
+    v-model="showWordsDialog"
+    :title="$t('DisplayTokenComponent.words.title')"
+    :description="$t('DisplayTokenComponent.words.text')"
+    :words="tokenWords"
+  />
   <!-- popup dialog to confirm deletion -->
   <q-dialog v-model="showDeleteDialog">
     <q-card class="q-pa-lg q-pt-md qcard">
@@ -378,7 +359,7 @@ import { sumProofAmounts } from "src/js/proofs";
 import token from "src/js/token";
 import { notifyError, notifySuccess } from "src/js/notify";
 import { tokenToWords } from "src/js/glossia";
-import GlossiaWords from "src/components/GlossiaWords.vue";
+import GlossiaWordsDialog from "src/components/GlossiaWordsDialog.vue";
 import { copyToClipboard } from "quasar";
 import {
   Scan as ScanIcon,
@@ -393,7 +374,7 @@ export default defineComponent({
   name: "DisplayTokenComponent",
   mixins: [windowMixin],
   components: {
-    GlossiaWords,
+    GlossiaWordsDialog,
     TokenInformation,
     MeltQuoteInformation,
     SendPaymentRequest,
@@ -745,28 +726,6 @@ export default defineComponent({
 });
 </script>
 <style scoped>
-.words-card {
-  max-width: 640px;
-  display: flex;
-  flex-direction: column;
-  max-height: 100vh;
-}
-
-.words-text {
-  font-size: 1.05rem;
-  line-height: 1.6;
-  white-space: pre-wrap;
-  user-select: text;
-  flex: 1 1 auto;
-  min-height: 0;
-  max-height: 70vh;
-  overflow-y: auto;
-}
-
-/* Phone (maximized dialog): the words take all the height left over. */
-.q-dialog__inner--maximized .words-text {
-  max-height: none;
-}
 .display-token-fullscreen {
   height: 100vh; /* fallback */
   height: 100dvh; /* account for mobile browser UI */

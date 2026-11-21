@@ -22,8 +22,7 @@ pub fn cashu_to_words(token: &str) -> String {
 #[wasm_bindgen(js_name = cashuFromWords)]
 pub fn cashu_from_words(text: &str) -> String {
     match glossia::cashu::cashu_from_words(text, LANGUAGE, WORDLIST) {
-        Ok(d) => serde_json::json!({ "token": d.token, "repaired": d.repaired.len() })
-            .to_string(),
+        Ok(d) => serde_json::json!({ "token": d.token, "repaired": d.repaired.len() }).to_string(),
         Err(e) => serde_json::json!({ "error": e.to_string() }).to_string(),
     }
 }
@@ -51,4 +50,73 @@ pub fn vocabulary() -> String {
     }
     let payload: Vec<String> = payload.iter().map(|w| w.to_lowercase()).collect();
     serde_json::json!({ "payload": payload, "cover": cover }).to_string()
+}
+
+/// Envelope tag for a NUT-18 payment request (`creqA…`): `0x10` then the
+/// request's CBOR. Kept clear of `glossia::cashu`'s tags (0x00..0x02), so
+/// request prose never reads back as a voucher and the other way round.
+const PAYMENT_REQUEST: u8 = 0x10;
+
+fn b64url_to_bytes(body: &str) -> Option<Vec<u8>> {
+    let mut b64: String = body
+        .chars()
+        .map(|c| match c {
+            '-' => '+',
+            '_' => '/',
+            c => c,
+        })
+        .filter(|&c| c != '=')
+        .collect();
+    while b64.len() % 4 != 0 {
+        b64.push('=');
+    }
+    glossia::base64_decode(&b64)
+}
+
+fn bytes_to_b64url(bytes: &[u8]) -> String {
+    glossia::base64_encode(bytes)
+        .chars()
+        .filter(|&c| c != '=')
+        .map(|c| match c {
+            '+' => '-',
+            '/' => '_',
+            c => c,
+        })
+        .collect()
+}
+
+/// `creqA…` → a paragraph of English. JSON `{ words }` or `{ error }`.
+#[wasm_bindgen(js_name = requestToWords)]
+pub fn request_to_words(request: &str) -> String {
+    let Some(cbor) = request
+        .trim()
+        .strip_prefix("creqA")
+        .and_then(b64url_to_bytes)
+    else {
+        return serde_json::json!({ "error": "not a creqA payment request" }).to_string();
+    };
+    let mut payload = vec![PAYMENT_REQUEST];
+    payload.extend_from_slice(&cbor);
+    match glossia::canonical_encode(&payload, LANGUAGE, WORDLIST) {
+        Ok(words) => serde_json::json!({ "words": words }).to_string(),
+        Err(e) => serde_json::json!({ "error": e.to_string() }).to_string(),
+    }
+}
+
+/// A paragraph of English → `creqA…`. JSON `{ request, repaired }` or
+/// `{ error }`.
+#[wasm_bindgen(js_name = requestFromWords)]
+pub fn request_from_words(text: &str) -> String {
+    match glossia::canonical_decode(text.trim(), LANGUAGE, WORDLIST) {
+        Ok(d) => match d.payload.split_first() {
+            Some((&PAYMENT_REQUEST, cbor)) => serde_json::json!({
+                "request": format!("creqA{}", bytes_to_b64url(cbor)),
+                "repaired": d.repaired.len(),
+            })
+            .to_string(),
+            _ => serde_json::json!({ "error": "the text decodes, but not to a payment request" })
+                .to_string(),
+        },
+        Err(e) => serde_json::json!({ "error": e.to_string() }).to_string(),
+    }
 }

@@ -185,11 +185,30 @@
               >
                 {{ $t("PaymentRequestDialog.actions.copy.label") }}
               </q-btn>
+              <q-btn
+                v-if="canShowWords"
+                class="full-width q-mt-sm"
+                flat
+                rounded
+                no-caps
+                color="grey-5"
+                data-testid="show-request-words"
+                :loading="wordsLoading"
+                :label="$t('DisplayTokenComponent.words.show')"
+                @click="showWords"
+              />
             </div>
           </div>
         </div>
       </div>
     </q-card>
+    <!-- hashu.me: the request as Glossia words -->
+    <GlossiaWordsDialog
+      v-model="showWordsDialog"
+      :title="$t('PaymentRequestDialog.words.title')"
+      :description="$t('PaymentRequestDialog.words.text')"
+      :words="requestWords"
+    />
   </q-dialog>
 </template>
 
@@ -205,6 +224,9 @@ import { useUiStore } from "../stores/ui";
 import ToggleUnit from "./ToggleUnit.vue";
 import { unitName } from "src/js/hashu";
 import PaymentRequestPayments from "./PaymentRequestPayments.vue";
+import GlossiaWordsDialog from "./GlossiaWordsDialog.vue";
+import { requestToWords } from "src/js/glossia";
+import { notifyError } from "src/js/notify";
 // type hint for global mixin
 declare const windowMixin: any;
 
@@ -215,6 +237,7 @@ export default defineComponent({
     VueQrcode,
     ToggleUnit,
     PaymentRequestPayments,
+    GlossiaWordsDialog,
   },
   data() {
     const amountLabelDefault = (this as any).$i18n.t(
@@ -231,6 +254,9 @@ export default defineComponent({
       ),
       chosenMintUrl: undefined as string | undefined,
       memo: "",
+      showWordsDialog: false,
+      wordsLoading: false,
+      requestWords: "",
     };
   },
   computed: {
@@ -245,6 +271,12 @@ export default defineComponent({
       return (useMintsStore() as any).activeUnitCurrencyMultiplyer;
     },
     ...mapWritableState(usePRStore, ["showPRDialog"]),
+    canShowWords(): boolean {
+      return (
+        typeof this.showPRKData === "string" &&
+        this.showPRKData.startsWith("creqA")
+      );
+    },
     currentIndexDisplay(): string {
       const total = this.ourPaymentRequests.length || 0;
       if (!total) return "0/0";
@@ -314,6 +346,19 @@ export default defineComponent({
           input.focus();
         }
       });
+    },
+    async showWords() {
+      this.wordsLoading = true;
+      try {
+        const words = await requestToWords(this.showPRKData);
+        if (!words) throw new Error("no words");
+        this.requestWords = words;
+        this.showWordsDialog = true;
+      } catch (e: any) {
+        notifyError(String(e?.message ?? e));
+      } finally {
+        this.wordsLoading = false;
+      }
     },
     onCopyPRKData() {
       if (this.showPRKData) {

@@ -16,6 +16,15 @@ export function cashuFromWords(text: string): string;
  * `{ error }`. Mirrors glossia's own `get_payload_words`/`get_cover_words`.
  */
 export function vocabulary(): string;
+/**
+ * `creqA…` → a paragraph of English. JSON `{ words }` or `{ error }`.
+ */
+export function requestToWords(request: string): string;
+/**
+ * A paragraph of English → `creqA…`. JSON `{ request, repaired }` or
+ * `{ error }`.
+ */
+export function requestFromWords(text: string): string;
 
 export type InitInput = RequestInfo | URL | Response | BufferSource | WebAssembly.Module;
 
@@ -23,6 +32,8 @@ export interface InitOutput {
   readonly memory: WebAssembly.Memory;
   readonly cashuFromWords: (a: number, b: number) => [number, number];
   readonly cashuToWords: (a: number, b: number) => [number, number];
+  readonly requestFromWords: (a: number, b: number) => [number, number];
+  readonly requestToWords: (a: number, b: number) => [number, number];
   readonly vocabulary: () => [number, number];
   readonly __wbindgen_export_0: WebAssembly.Table;
   readonly __wbindgen_malloc: (a: number, b: number) => number;
