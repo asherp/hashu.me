@@ -1280,7 +1280,7 @@ export default {
     words: {
       show: "Show as words",
       title: "Voucher as words",
-      text: "The same voucher as plain English. Anyone who can read these words can redeem it, so share them like the voucher itself. Paste or type them into a Hashu wallet or the mint's checkout to receive it; a few typos are fixed automatically.",
+      text: "Anyone with these words may redeem the voucher. Underlined words encode it; the rest is filler.",
       copy: "Copy words",
     },
   },

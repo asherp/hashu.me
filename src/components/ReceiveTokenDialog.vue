@@ -81,6 +81,11 @@
                     <div class="col-12">
                       <TokenStringRender
                         :token-string="receiveData.tokensBase64"
+                        :words="
+                          receiveWords.token === receiveData.tokensBase64
+                            ? receiveWords.words
+                            : ''
+                        "
                         :max-length="maxLengthForTokenString"
                       />
                     </div>
@@ -388,6 +393,7 @@ export default defineComponent({
               })
             );
           }
+          this.receiveWords = { token: fromWords.token, words: newVal.trim() };
           this.receiveData.tokensBase64 = fromWords.token;
         } else {
           notifyWarning(this.$t("ReceiveTokenDialog.words.invalid"));
@@ -420,6 +426,7 @@ export default defineComponent({
       "showReceiveTokens",
       "watchClipboardPaste",
       "receiveData",
+      "receiveWords",
       "scanningCard",
     ]),
     ...mapState(useUiStore, ["tickerShort", "ndefSupported"]),

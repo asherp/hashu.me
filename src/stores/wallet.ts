@@ -1633,6 +1633,10 @@ export const useWalletStore = defineStore("wallet", {
         // hashu.me: a voucher written as Glossia words.
         const fromWords = await tokenFromWords(req);
         if (fromWords) {
+          receiveStore.receiveWords = {
+            token: fromWords.token,
+            words: req.trim(),
+          };
           receiveStore.receiveData.tokensBase64 = fromWords.token;
           this.handleCashuToken();
         } else {

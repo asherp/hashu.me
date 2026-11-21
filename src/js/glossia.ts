@@ -82,6 +82,47 @@ function loadVocab(): Promise<Vocab> {
   return vocabLoading;
 }
 
+let payloadLoading: Promise<Set<string>> | null = null;
+
+/**
+ * The words that carry the voucher's data (the BIP-39 list), lower-case.
+ * Every other word in a paragraph is cover: grammar that makes it read as
+ * English and carries nothing.
+ */
+export function payloadWordSet(): Promise<Set<string>> {
+  if (!payloadLoading) {
+    payloadLoading = load()
+      .then((m) => {
+        const v = JSON.parse(m.vocabulary());
+        if (v.error) throw new Error(v.error);
+        return new Set<string>(v.payload);
+      })
+      .catch((e) => {
+        payloadLoading = null;
+        throw e;
+      });
+  }
+  return payloadLoading;
+}
+
+/** Split a paragraph into words and the text between them. */
+export function splitWords(
+  text: string
+): { text: string; word: string | null }[] {
+  const parts: { text: string; word: string | null }[] = [];
+  const re = /[A-Za-z][A-Za-z'’-]*/g;
+  let last = 0;
+  let m: RegExpExecArray | null;
+  while ((m = re.exec(text))) {
+    if (m.index > last)
+      parts.push({ text: text.slice(last, m.index), word: null });
+    parts.push({ text: m[0], word: m[0].toLowerCase() });
+    last = m.index + m[0].length;
+  }
+  if (last < text.length) parts.push({ text: text.slice(last), word: null });
+  return parts;
+}
+
 export type ScanProgress = (status: string, fraction: number) => void;
 
 // The OCR worker is created once and keeps the progress callback it was made

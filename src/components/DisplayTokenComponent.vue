@@ -303,10 +303,12 @@
         }}</span>
         <q-btn v-close-popup flat round dense icon="close" color="grey" />
       </div>
-      <p class="text-grey-5 text-body2">
+      <p class="text-grey-5 text-caption q-mb-sm">
         {{ $t("DisplayTokenComponent.words.text") }}
       </p>
-      <div class="words-text" data-testid="token-words">{{ tokenWords }}</div>
+      <div class="words-text" data-testid="token-words">
+        <GlossiaWords :text="tokenWords" />
+      </div>
       <q-btn
         class="full-width q-mt-md"
         unelevated
@@ -376,6 +378,7 @@ import { sumProofAmounts } from "src/js/proofs";
 import token from "src/js/token";
 import { notifyError, notifySuccess } from "src/js/notify";
 import { tokenToWords } from "src/js/glossia";
+import GlossiaWords from "src/components/GlossiaWords.vue";
 import { copyToClipboard } from "quasar";
 import {
   Scan as ScanIcon,
@@ -390,6 +393,7 @@ export default defineComponent({
   name: "DisplayTokenComponent",
   mixins: [windowMixin],
   components: {
+    GlossiaWords,
     TokenInformation,
     MeltQuoteInformation,
     SendPaymentRequest,
@@ -743,14 +747,25 @@ export default defineComponent({
 <style scoped>
 .words-card {
   max-width: 640px;
+  display: flex;
+  flex-direction: column;
+  max-height: 100vh;
 }
+
 .words-text {
   font-size: 1.05rem;
   line-height: 1.6;
   white-space: pre-wrap;
   user-select: text;
-  max-height: 55vh;
+  flex: 1 1 auto;
+  min-height: 0;
+  max-height: 70vh;
   overflow-y: auto;
+}
+
+/* Phone (maximized dialog): the words take all the height left over. */
+.q-dialog__inner--maximized .words-text {
+  max-height: none;
 }
 .display-token-fullscreen {
   height: 100vh; /* fallback */
