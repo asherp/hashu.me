@@ -1280,7 +1280,7 @@ export default {
     words: {
       show: "Show as words",
       title: "Voucher as words",
-      text: "Anyone with these words can redeem this voucher. Underlined words carry it; the rest is filler.",
+      text: "Anyone with these words may redeem the voucher. Underlined words encode it; the rest is filler.",
       copy: "Copy words",
     },
   },
