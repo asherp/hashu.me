@@ -8,6 +8,7 @@ import {
   satsPerThd,
   formatHashprice,
   unitName,
+  displayUnitLabel,
   TIH_PER_THH,
   formatTih,
   hashuInfoUrl,
@@ -42,10 +43,10 @@ describe("display units", () => {
   it("formats each display unit", () => {
     expect(formatTih(4096, "en-US", "PiH")).toBe("4 PiH");
     expect(formatTih(1536, "en-US", "PiH")).toBe("1.5 PiH");
-    expect(formatTih(4096, "en-US", "THH")).toBe("1.251 THH");
+    expect(formatTih(4096, "en-US", "THH")).toBe("1.251 THh");
     expect(formatTih(1024, "en-US", "EiH")).toBe("0.000977 EiH");
     expect(formatTih(0, "en-US", "PiH")).toBe("0 PiH");
-    expect(formatTih(3_274_200, "en-US", "PHH")).toBe("1 PHH");
+    expect(formatTih(3_274_200, "en-US", "PHH")).toBe("1 PHh");
     expect(formatTih(4096n, "en-US", "TiH")).toBe("4,096 TiH");
   });
 
@@ -74,9 +75,9 @@ describe("day units", () => {
     // 1 THD = 24 THH = 8.64e16 hashes ≈ 78,580.3 TiH
     expect(TIH_PER_THD).toBeCloseTo(78_580.34, 1);
     expect(TIH_PER_PHD).toBeCloseTo(78_580_342, -1);
-    expect(formatTih(TIH_PER_THD, "en-US", "THD")).toBe("1 THD");
-    expect(formatTih(4096, "en-US", "THD")).toBe("0.0521 THD");
-    expect(formatTih(TIH_PER_PHD * 2, "en-US", "PHD")).toBe("2 PHD");
+    expect(formatTih(TIH_PER_THD, "en-US", "THD")).toBe("1 THd");
+    expect(formatTih(4096, "en-US", "THD")).toBe("0.0521 THd");
+    expect(formatTih(TIH_PER_PHD * 2, "en-US", "PHD")).toBe("2 PHd");
   });
 
   it("quotes a mint's price in sats per THD", () => {
@@ -88,9 +89,9 @@ describe("day units", () => {
 
 describe("hashprice", () => {
   it("quotes in the display unit when one costs at least a sat", () => {
-    expect(formatHashprice(600, "THD", "en-US")).toBe("46 sats/THD");
-    expect(formatHashprice(600, "PHD", "en-US")).toBe("46,043 sats/PHD");
-    expect(formatHashprice(600, "THH", "en-US")).toBe("1.92 sats/THH");
+    expect(formatHashprice(600, "THD", "en-US")).toBe("46 sats/THd");
+    expect(formatHashprice(600, "PHD", "en-US")).toBe("46,043 sats/PHd");
+    expect(formatHashprice(600, "THH", "en-US")).toBe("1.92 sats/THh");
     expect(formatHashprice(600, "EiH", "en-US")).toBe("614 sats/EiH");
   });
 
@@ -106,5 +107,13 @@ describe("unitName", () => {
     expect(unitName("TIH")).toBe("TiH");
     expect(unitName("msat")).toBe("mSAT");
     expect(unitName("usd")).toBe("USD");
+  });
+});
+
+describe("displayUnitLabel", () => {
+  it("writes hour and day units SI-style", () => {
+    expect(displayUnitLabel("THH")).toBe("THh");
+    expect(displayUnitLabel("PHD")).toBe("PHd");
+    expect(displayUnitLabel("TiH")).toBe("TiH");
   });
 });

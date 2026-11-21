@@ -506,10 +506,10 @@ export default {
           TiH: "TiH: tebihash, 2^40 hashes",
           PiH: "PiH: pebihash, 1,024 TiH",
           EiH: "EiH: exbihash, 1,048,576 TiH",
-          THH: "THH: terahash-hour, 1 TH/s for an hour (≈ 3,274 TiH)",
-          PHH: "PHH: petahash-hour, 1 PH/s for an hour (1,000 THH)",
-          THD: "THD: terahash-day, 1 TH/s for a day (24 THH)",
-          PHD: "PHD: petahash-day, 1 PH/s for a day (1,000 THD)",
+          THH: "THh: terahash-hour, 1 TH/s for an hour (≈ 3,274 TiH)",
+          PHH: "PHh: petahash-hour, 1 PH/s for an hour (1,000 THh)",
+          THD: "THd: terahash-day, 1 TH/s for a day (24 THh)",
+          PHD: "PHd: petahash-day, 1 PH/s for a day (1,000 THd)",
         },
       },
     },
@@ -941,7 +941,7 @@ export default {
     eta_tooltip:
       "About how long redeeming your whole balance here would take at this hashrate, after redemptions already queued.",
     price_tooltip:
-      "The mint's hashprice: what vouchers cost here. THD is 1 TH/s for a day.",
+      "The mint's hashprice: what vouchers cost here. THd is 1 TH/s for a day.",
     hashrate_tooltip:
       "Hashrate this mint's rigs are delivering right now, measured over the last few minutes. Redemptions share it.",
     add: {

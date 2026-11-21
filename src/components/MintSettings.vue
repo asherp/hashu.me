@@ -539,7 +539,7 @@ export default defineComponent({
         this.hashuPrices[mint.url]?.minRedeemTih
       );
     },
-    /** A Hashu mint's hashprice in the display unit, e.g. "46 sats/THD"; "" if none. */
+    /** A Hashu mint's hashprice in the display unit, e.g. "46 sats/THd"; "" if none. */
     mintHashprice(url: string): string {
       const msat = this.hashuPrices[url]?.msatPerPih;
       return msat
