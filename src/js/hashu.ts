@@ -107,28 +107,27 @@ export function satsPerThd(msatPerPih: number): number {
 }
 
 /**
- * The unit to quote a mint's hashprice in: the wallet's display unit when
- * one of it costs at least a sat, else THD, the unit miners usually quote.
+ * A mint's hashprice per one of the wallet's display unit, so the price
+ * reads in the same unit as amounts: "46 sats/THD", "46,043 sats/PHD".
+ * Below a sat per unit (TiH, PiH) it is shown in msat: "600 msat/PiH".
  */
-export function hashpriceUnit(
-  msatPerPih: number,
-  unit: DisplayUnit = DEFAULT_DISPLAY_UNIT
-): DisplayUnit {
-  return tihToSats(DISPLAY_UNITS[unit], msatPerPih) >= 1 ? unit : "THD";
-}
-
-/** A mint's hashprice as e.g. "46 sats/THD" or "1.88 sats/THH". */
 export function formatHashprice(
   msatPerPih: number,
   unit: DisplayUnit = DEFAULT_DISPLAY_UNIT,
   locale?: string
 ): string {
-  const quoted = hashpriceUnit(msatPerPih, unit);
-  const sats = tihToSats(DISPLAY_UNITS[quoted], msatPerPih);
+  const sats = tihToSats(DISPLAY_UNITS[unit], msatPerPih);
+  if (sats > 0 && sats < 1) {
+    const msat = sats * 1000;
+    const shown = new Intl.NumberFormat(locale, {
+      maximumSignificantDigits: 3,
+    }).format(msat);
+    return `${shown} msat/${unit}`;
+  }
   const shown = new Intl.NumberFormat(locale, {
     maximumFractionDigits: sats >= 10 ? 0 : 2,
   }).format(sats);
-  return `${shown} ${sats === 1 ? "sat" : "sats"}/${quoted}`;
+  return `${shown} ${sats === 1 ? "sat" : "sats"}/${unit}`;
 }
 
 /**
