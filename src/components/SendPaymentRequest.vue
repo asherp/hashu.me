@@ -167,7 +167,7 @@ export default defineComponent({
           }
         }
         if (!tokenStr) {
-          throw new Error("No ecash available for payment request.");
+          throw new Error("No vouchers available for payment request.");
         }
         const success = await this.parseAndPayPaymentRequest(
           this.sendData.paymentRequest,
