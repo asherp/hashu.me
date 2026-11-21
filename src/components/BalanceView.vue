@@ -49,6 +49,7 @@
                   class="balance-amount q-my-none q-py-none cursor-pointer"
                   data-testid="wallet-balance"
                   :data-unit="unit"
+                  :style="balanceFontStyle(unit)"
                   @click="toggleHideBalance"
                 >
                   <strong>
@@ -69,10 +70,6 @@
                       {{
                         $t("BalanceView.tih_price", {
                           price: hashprice,
-                          luxor: formatHashpricePerPhDay(
-                            msatPerPih,
-                            navigator.language
-                          ),
                           msat: formatMsatPerPih(),
                         })
                       }}
@@ -168,13 +165,7 @@ import { useUiStore } from "src/stores/ui";
 import { useWalletStore } from "src/stores/wallet";
 import { usePriceStore } from "src/stores/price";
 import AnimatedNumber from "src/components/AnimatedNumber.vue";
-import {
-  UNIT_TIH,
-  tihToSats,
-  formatHashprice,
-  formatHashpricePerPhDay,
-  unitName,
-} from "src/js/hashu";
+import { UNIT_TIH, tihToSats, formatHashprice, unitName } from "src/js/hashu";
 import { sumProofAmounts } from "src/js/proofs";
 import { useProofsStore } from "src/stores/proofs";
 
@@ -306,7 +297,6 @@ export default defineComponent({
     },
   },
   methods: {
-    formatHashpricePerPhDay,
     ...mapActions(useWalletStore, ["checkPendingTokens"]),
     ...mapActions(usePriceStore, ["fetchBitcoinPrice", "fetchHashuPrice"]),
     setActiveUnit(unit: string) {
@@ -317,6 +307,15 @@ export default defineComponent({
       this.activeUnit =
         units[(units.indexOf(this.activeUnit) + 1) % units.length];
       return this.activeUnit;
+    },
+    // hashu.me: long unit labels (e.g. "0.000127 PH/s/Day") shrink the
+    // balance so it fits a phone screen instead of overflowing.
+    balanceFontStyle(unit: string) {
+      const text = String(
+        this.formatCurrency(this.totalBalanceForUnit(unit), unit) ?? ""
+      );
+      if (text.length <= 12) return {};
+      return { fontSize: `min(3rem, ${(150 / text.length).toFixed(1)}vw)` };
     },
     toggleHideBalance() {
       this.hideBalance = !this.hideBalance;

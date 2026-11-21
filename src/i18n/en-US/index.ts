@@ -510,6 +510,8 @@ export default {
           PHH: "PHh: petahash-hour, 1 PH/s for an hour (1,000 THh)",
           THD: "THd: terahash-day, 1 TH/s for a day (24 THh)",
           PHD: "PHd: petahash-day, 1 PH/s for a day (1,000 THd)",
+          THSD: "TH/s/Day: the same as THd, written as hashrate markets quote it",
+          PHSD: "PH/s/Day: the same as PHd, written as Luxor quotes hashprice",
         },
       },
     },
@@ -657,7 +659,7 @@ export default {
   },
   BalanceView: {
     tih_value: "≈ {amount} sat | ≈ {amount} sats",
-    tih_price: "Hashprice {price} ({luxor}) · 1 PiH = {msat} msat",
+    tih_price: "Hashprice {price} · 1 PiH = {msat} msat",
     mintUrl: {
       label: "Mint",
     },
@@ -1493,7 +1495,7 @@ export default {
       },
       price: {
         label: "Price",
-        caption: "1 PiH = { msat } msat",
+        caption: "Hashprice · 1 PiH = { msat } msat",
       },
       eta: {
         label: "Time to redeem",

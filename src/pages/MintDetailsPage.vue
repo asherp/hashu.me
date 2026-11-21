@@ -297,12 +297,6 @@
                   $i18n.locale
                 )
               }}
-              <div
-                class="text-caption text-grey-6"
-                data-testid="mint-price-luxor"
-              >
-                {{ formatHashpricePerPhDay(mintMsatPerPih, $i18n.locale) }}
-              </div>
               <div class="text-caption text-grey-6">
                 {{
                   $t("MintDetailsDialog.details.price.caption", {
@@ -592,12 +586,7 @@ import {
   formatDuration,
   formatHashrate,
 } from "src/js/hashu-redeem";
-import {
-  UNIT_TIH,
-  formatHashprice,
-  formatHashpricePerPhDay,
-  unitName,
-} from "src/js/hashu";
+import { UNIT_TIH, formatHashprice, unitName } from "src/js/hashu";
 
 export default defineComponent({
   name: "MintDetailsPage",
@@ -731,7 +720,6 @@ export default defineComponent({
     formatHashrate,
     formatDuration,
     formatHashprice,
-    formatHashpricePerPhDay,
     unitName,
     ...mapActions(usePriceStore, ["fetchHashuInfo"]),
     /**
