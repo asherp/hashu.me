@@ -1443,6 +1443,19 @@ export default {
     title: "Mint Message",
   },
   MintDetailsDialog: {
+    reliability: {
+      title: "Reliability",
+      owed: {
+        label: "Owed to redeemers",
+        caption: "{ count } redemption running | { count } redemptions running",
+      },
+      record: {
+        label: "Delivery record",
+        none: "Not published yet",
+        explain:
+          "Hashu mints will publish a signed record every hour: their hardest shares, which anyone can check against Bitcoin's proof of work, how much work they delivered, redemptions finished on time, and any blocks found. Each hour is timestamped on Bitcoin with OpenTimestamps, so the history can't be rewritten later. This mint hasn't started publishing it yet.",
+      },
+    },
     contact: {
       title: "Contact",
     },

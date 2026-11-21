@@ -355,8 +355,63 @@
           </div>
         </div>
 
+        <!-- hashu.me: a Hashu mint's record of delivered work, in place of
+             the Cashu auditor (which tests Lightning mint/melt swaps) -->
+        <template v-if="isHashuMint">
+          <div class="section-divider q-mb-md">
+            <div class="divider-line"></div>
+            <div class="divider-text">
+              {{ $t("MintDetailsDialog.reliability.title") }}
+            </div>
+            <div class="divider-line"></div>
+          </div>
+          <div class="detail-section" data-testid="mint-reliability">
+            <div class="detail-item q-mb-md" v-if="mintDelivery">
+              <div class="detail-label">
+                <hourglass-icon size="20" color="#9E9E9E" class="detail-icon" />
+                <div class="detail-name">
+                  {{ $t("MintDetailsDialog.reliability.owed.label") }}
+                </div>
+              </div>
+              <div class="detail-value text-right">
+                {{ formatCurrency(mintDelivery.queue_tih, "tih") }}
+                <div class="text-caption text-grey-6">
+                  {{
+                    $t(
+                      "MintDetailsDialog.reliability.owed.caption",
+                      { count: mintDelivery.open_redemptions },
+                      mintDelivery.open_redemptions
+                    )
+                  }}
+                </div>
+              </div>
+            </div>
+            <div class="detail-item q-mb-md" data-testid="mint-record">
+              <div class="detail-label">
+                <shield-check-icon
+                  size="20"
+                  color="#9E9E9E"
+                  class="detail-icon"
+                />
+                <div class="detail-name">
+                  {{ $t("MintDetailsDialog.reliability.record.label") }}
+                </div>
+              </div>
+              <div class="detail-value text-right">
+                {{ $t("MintDetailsDialog.reliability.record.none") }}
+              </div>
+            </div>
+            <div class="text-caption text-grey-6 q-px-sm q-mb-lg">
+              {{ $t("MintDetailsDialog.reliability.record.explain") }}
+            </div>
+          </div>
+        </template>
+
         <!-- Section Divider for Audit Info -->
-        <div v-if="settings.auditorEnabled" class="section-divider q-mb-md">
+        <div
+          v-if="settings.auditorEnabled && !isHashuMint"
+          class="section-divider q-mb-md"
+        >
           <div class="divider-line"></div>
           <div class="divider-text">AUDIT INFO</div>
           <div class="divider-line"></div>
@@ -364,7 +419,7 @@
 
         <!-- Mint Audit Info Section -->
         <MintAuditInfo
-          v-if="settings.auditorEnabled && mintData.url"
+          v-if="settings.auditorEnabled && mintData.url && !isHashuMint"
           :mintUrl="mintData.url"
           @close="() => {}"
         />
@@ -450,6 +505,8 @@ import {
   Pickaxe as PickaxeIcon,
   Timer as TimerIcon,
   Tag as TagIcon,
+  Hourglass as HourglassIcon,
+  ShieldCheck as ShieldCheckIcon,
 } from "lucide-vue-next";
 import { usePriceStore } from "src/stores/price";
 import {
@@ -478,6 +535,8 @@ export default defineComponent({
     PickaxeIcon,
     TimerIcon,
     TagIcon,
+    HourglassIcon,
+    ShieldCheckIcon,
     EditMintDialog,
     RemoveMintDialog,
     MintMotdMessage,
@@ -559,6 +618,10 @@ export default defineComponent({
         this.mintDelivery,
         this.hashuPrices[this.mintData.url]?.minRedeemTih
       );
+    },
+    /** A Hashu mint answers /checkout/api/info with a price or delivery. */
+    isHashuMint() {
+      return !!this.mintDelivery || this.mintMsatPerPih > 0;
     },
     mintMsatPerPih() {
       return this.mintData?.url
