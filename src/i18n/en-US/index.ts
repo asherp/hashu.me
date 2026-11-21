@@ -72,7 +72,7 @@ export default {
       paid_lightning: "Paid {amount} via Lightning",
       payment_pending_refresh: "Payment pending. Refresh invoice manually.",
       sent: "Sent {amount}",
-      token_still_pending: "Token still pending",
+      token_still_pending: "Voucher still pending",
       received_lightning: "Received {amount} via Lightning",
       lightning_payment_failed: "Lightning payment failed",
       failed_to_decode_invoice: "Failed to decode invoice",
@@ -361,15 +361,15 @@ export default {
         description: "Choose the encoding for writing to NFC cards",
         text: {
           title: "Text",
-          description: "Store token in plain text",
+          description: "Store voucher in plain text",
         },
         weburl: {
           title: "URL",
-          description: "Store URL to this wallet with token",
+          description: "Store URL to this wallet with voucher",
         },
         binary: {
           title: "Binary",
-          description: "Store tokens as binary data",
+          description: "Store vouchers as binary data",
         },
         quick_access: {
           toggle: "Quick access to NFC",
@@ -568,7 +568,7 @@ export default {
           counter: "counter: {count}",
         },
         unset_reserved: {
-          button: "Unset all reserved tokens",
+          button: "Unset all reserved vouchers",
           description:
             'This wallet marks pending outgoing vouchers as reserved (and subtracts it from your balance) to prevent double-spend attempts. This button will unset all reserved tokens so they can be used again. If you do this, your wallet might include spent proofs. Press the "Remove spent proofs" button to get rid of them.',
         },
@@ -671,7 +671,7 @@ export default {
     },
     pending: {
       label: "Pending",
-      tooltip: "Check all pending tokens",
+      tooltip: "Check all pending vouchers",
     },
   },
   WelcomePage: {
@@ -702,7 +702,7 @@ export default {
       text: "Vouchers are issued by Hashu mints, which sell hashrate from their miners. Connect to the mints you trust; mint.hashu.io is added by default.",
     },
     p3: {
-      text: "This wallet stores vouchers that only you have access to. If you delete your browser data without a seed phrase backup, you will lose your tokens.",
+      text: "This wallet stores vouchers that only you have access to. If you delete your browser data without a seed phrase backup, you will lose your vouchers.",
     },
     p4: {
       text: "This wallet is in beta. We hold no responsibility for people losing access to their vouchers. Use at your own risk! This code is open-source and licensed under the MIT license.",
@@ -1212,7 +1212,7 @@ export default {
     },
     errors: {
       amount_required: "Enter an amount first.",
-      serialization_failed: "Could not prepare vouchers token.",
+      serialization_failed: "Could not prepare the voucher.",
       mint_not_allowed_by_request:
         "The selected mint is not accepted by this payment request.",
     },
@@ -1294,12 +1294,12 @@ export default {
     title_ecash_text: "Vouchers",
     inputs: {
       tokens_base64: {
-        label: "Paste Cashu token",
+        label: "Paste voucher",
       },
     },
     errors: {
       invalid_token: {
-        label: "Invalid token",
+        label: "Invalid voucher",
       },
       p2pk_lock_mismatch: {
         label:
@@ -1558,7 +1558,7 @@ export default {
         label: "Show all",
       },
     },
-    old_token_not_found_error_text: "Old token not found",
+    old_token_not_found_error_text: "Old voucher not found",
   },
   InvoiceTable: {
     empty_text: "No invoices yet",
@@ -1605,8 +1605,8 @@ export default {
   },
   ParseInputComponent: {
     placeholder: {
-      default: "Cashu token or Lightning address",
-      receive: "Cashu token",
+      default: "Voucher or Lightning address",
+      receive: "Voucher",
       pay: "Lightning address or invoice",
     },
     qr_scanner: {
@@ -1764,6 +1764,6 @@ export default {
     memo: "Memo",
     payment_request: "Payment request",
     nostr: "Nostr",
-    token_copied: "Token copied to clipboard",
+    token_copied: "Voucher copied to clipboard",
   },
 };

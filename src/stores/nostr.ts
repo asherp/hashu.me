@@ -552,7 +552,7 @@ export const useNostrStore = defineStore("nostr", {
       const receiveStore = useReceiveTokensStore();
       const tokensStore = useTokensStore();
       if (tokensStore.tokenAlreadyInHistory(tokenStr)) {
-        notifySuccess("Ecash already in history");
+        notifySuccess("Voucher already in history");
         receiveStore.showReceiveTokens = false;
         return undefined;
       }
@@ -570,7 +570,7 @@ export const useNostrStore = defineStore("nostr", {
       receiveStore.showReceiveTokens = false;
       // show success notification
       if (verbose) {
-        notifySuccess("Ecash added to history.");
+        notifySuccess("Voucher added to history.");
       }
       return id;
     },
