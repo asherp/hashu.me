@@ -28,6 +28,12 @@ export const TIH_PER_THH = 3.6e15 / HASHES_PER_TIH;
 /** TiH in one petahash-hour (1,000 THH), ≈ 3.27 million. */
 export const TIH_PER_PHH = 1000 * TIH_PER_THH;
 
+/** TiH in one terahash-day (1 TH/s for 24 h = 24 THH), ≈ 78,580. */
+export const TIH_PER_THD = 24 * TIH_PER_THH;
+
+/** TiH in one petahash-day (1,000 THD), ≈ 78.6 million. */
+export const TIH_PER_PHD = 1000 * TIH_PER_THD;
+
 /** Units the wallet can show TiH amounts in, as TiH per display unit. */
 export const DISPLAY_UNITS = {
   TiH: 1,
@@ -35,6 +41,8 @@ export const DISPLAY_UNITS = {
   EiH: TIH_PER_PIH * TIH_PER_PIH,
   THH: TIH_PER_THH,
   PHH: TIH_PER_PHH,
+  THD: TIH_PER_THD,
+  PHD: TIH_PER_PHD,
 } as const;
 
 export type DisplayUnit = keyof typeof DISPLAY_UNITS;
@@ -77,6 +85,14 @@ export function formatTih(
 /** Value of a TiH amount in sats at a mint's msat-per-PiH price. */
 export function tihToSats(tih: number | bigint, msatPerPih: number): number {
   return (Number(tih) / TIH_PER_PIH) * (msatPerPih / 1000);
+}
+
+/**
+ * A mint's msat-per-PiH price as sats per terahash-day, the way miners
+ * and hashrate markets usually quote it.
+ */
+export function satsPerThd(msatPerPih: number): number {
+  return tihToSats(TIH_PER_THD, msatPerPih);
 }
 
 /**

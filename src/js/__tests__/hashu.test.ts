@@ -3,6 +3,9 @@ import { formatBigIntCurrency } from "src/js/format-currency";
 import {
   DEFAULT_MINT_URL,
   TIH_PER_PHH,
+  TIH_PER_THD,
+  TIH_PER_PHD,
+  satsPerThd,
   TIH_PER_THH,
   formatTih,
   hashuInfoUrl,
@@ -61,5 +64,22 @@ describe("price", () => {
     expect(hashuInfoUrl("https://mint.hashu.io/")).toBe(
       "https://mint.hashu.io/checkout/api/info"
     );
+  });
+});
+
+describe("day units", () => {
+  it("converts TiH to THD and PHD", () => {
+    // 1 THD = 24 THH = 8.64e16 hashes ≈ 78,580.3 TiH
+    expect(TIH_PER_THD).toBeCloseTo(78_580.34, 1);
+    expect(TIH_PER_PHD).toBeCloseTo(78_580_342, -1);
+    expect(formatTih(TIH_PER_THD, "en-US", "THD")).toBe("1 THD");
+    expect(formatTih(4096, "en-US", "THD")).toBe("0.0521 THD");
+    expect(formatTih(TIH_PER_PHD * 2, "en-US", "PHD")).toBe("2 PHD");
+  });
+
+  it("quotes a mint's price in sats per THD", () => {
+    // 600 msat per PiH: 78,580.3 / 1,024 PiH × 0.6 sat ≈ 46 sats
+    expect(satsPerThd(600)).toBeCloseTo(46.04, 2);
+    expect(satsPerThd(0)).toBe(0);
   });
 });

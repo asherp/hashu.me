@@ -272,6 +272,36 @@
             </div>
           </div>
 
+          <!-- hashu.me: the mint's price, in sats per THD like miners quote it -->
+          <div
+            class="detail-item q-mb-md"
+            v-if="mintMsatPerPih > 0"
+            data-testid="mint-details-price"
+          >
+            <div class="detail-label">
+              <tag-icon size="20" color="#9E9E9E" class="detail-icon" />
+              <div class="detail-name">
+                {{ $t("MintDetailsDialog.details.price.label") }}
+              </div>
+            </div>
+            <div class="detail-value text-right">
+              {{
+                $t(
+                  "MintDetailsDialog.details.price.per_thd",
+                  { amount: formatSats(satsPerThd(mintMsatPerPih)) },
+                  Math.round(satsPerThd(mintMsatPerPih))
+                )
+              }}
+              <div class="text-caption text-grey-6">
+                {{
+                  $t("MintDetailsDialog.details.price.caption", {
+                    msat: formatSats(mintMsatPerPih),
+                  })
+                }}
+              </div>
+            </div>
+          </div>
+
           <!-- hashu.me: time to redeem the wallet's balance here -->
           <div
             class="detail-item q-mb-md"
@@ -414,6 +444,7 @@ import {
   Banknote as BanknoteIcon,
   Pickaxe as PickaxeIcon,
   Timer as TimerIcon,
+  Tag as TagIcon,
 } from "lucide-vue-next";
 import { usePriceStore } from "src/stores/price";
 import {
@@ -421,7 +452,7 @@ import {
   formatDuration,
   formatHashrate,
 } from "src/js/hashu-redeem";
-import { UNIT_TIH } from "src/js/hashu";
+import { UNIT_TIH, satsPerThd } from "src/js/hashu";
 
 export default defineComponent({
   name: "MintDetailsPage",
@@ -441,6 +472,7 @@ export default defineComponent({
     BanknoteIcon,
     PickaxeIcon,
     TimerIcon,
+    TagIcon,
     EditMintDialog,
     RemoveMintDialog,
     MintMotdMessage,
@@ -523,6 +555,11 @@ export default defineComponent({
         this.hashuPrices[this.mintData.url]?.minRedeemTih
       );
     },
+    mintMsatPerPih() {
+      return this.mintData?.url
+        ? this.hashuPrices[this.mintData.url]?.msatPerPih || 0
+        : 0;
+    },
     mintDelivery() {
       return this.mintData?.url ? this.hashuDelivery[this.mintData.url] : null;
     },
@@ -537,6 +574,12 @@ export default defineComponent({
   methods: {
     formatHashrate,
     formatDuration,
+    satsPerThd,
+    formatSats(value) {
+      return new Intl.NumberFormat(navigator.language, {
+        maximumFractionDigits: value >= 10 ? 0 : 2,
+      }).format(value);
+    },
     ...mapActions(usePriceStore, ["fetchHashuInfo"]),
     ...mapActions(useMintsStore, [
       "removeMint",
