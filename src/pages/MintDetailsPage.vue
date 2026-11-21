@@ -286,16 +286,16 @@
             </div>
             <div class="detail-value text-right">
               {{
-                $t(
-                  "MintDetailsDialog.details.price.per_thd",
-                  { amount: formatSats(satsPerThd(mintMsatPerPih)) },
-                  Math.round(satsPerThd(mintMsatPerPih))
+                formatHashprice(
+                  mintMsatPerPih,
+                  settings.hashuDisplayUnit,
+                  $i18n.locale
                 )
               }}
               <div class="text-caption text-grey-6">
                 {{
                   $t("MintDetailsDialog.details.price.caption", {
-                    msat: formatSats(mintMsatPerPih),
+                    msat: mintMsatPerPih.toLocaleString($i18n.locale),
                   })
                 }}
               </div>
@@ -452,7 +452,7 @@ import {
   formatDuration,
   formatHashrate,
 } from "src/js/hashu-redeem";
-import { UNIT_TIH, satsPerThd } from "src/js/hashu";
+import { UNIT_TIH, formatHashprice } from "src/js/hashu";
 
 export default defineComponent({
   name: "MintDetailsPage",
@@ -574,12 +574,7 @@ export default defineComponent({
   methods: {
     formatHashrate,
     formatDuration,
-    satsPerThd,
-    formatSats(value) {
-      return new Intl.NumberFormat(navigator.language, {
-        maximumFractionDigits: value >= 10 ? 0 : 2,
-      }).format(value);
-    },
+    formatHashprice,
     ...mapActions(usePriceStore, ["fetchHashuInfo"]),
     ...mapActions(useMintsStore, [
       "removeMint",

@@ -96,6 +96,31 @@ export function satsPerThd(msatPerPih: number): number {
 }
 
 /**
+ * The unit to quote a mint's hashprice in: the wallet's display unit when
+ * one of it costs at least a sat, else THD, the unit miners usually quote.
+ */
+export function hashpriceUnit(
+  msatPerPih: number,
+  unit: DisplayUnit = DEFAULT_DISPLAY_UNIT
+): DisplayUnit {
+  return tihToSats(DISPLAY_UNITS[unit], msatPerPih) >= 1 ? unit : "THD";
+}
+
+/** A mint's hashprice as e.g. "46 sats/THD" or "1.88 sats/THH". */
+export function formatHashprice(
+  msatPerPih: number,
+  unit: DisplayUnit = DEFAULT_DISPLAY_UNIT,
+  locale?: string
+): string {
+  const quoted = hashpriceUnit(msatPerPih, unit);
+  const sats = tihToSats(DISPLAY_UNITS[quoted], msatPerPih);
+  const shown = new Intl.NumberFormat(locale, {
+    maximumFractionDigits: sats >= 10 ? 0 : 2,
+  }).format(sats);
+  return `${shown} ${sats === 1 ? "sat" : "sats"}/${quoted}`;
+}
+
+/**
  * Price info a Hashu mint publishes at `/checkout/api/info`. Only the
  * fields the wallet reads; all optional because older mints and non-Hashu
  * mints lack them.
