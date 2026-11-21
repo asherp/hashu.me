@@ -1463,10 +1463,10 @@ export default {
         },
       },
       currency: {
-        label: "Currency",
+        label: "Unit",
       },
       currencies: {
-        label: "@:MintDetailsDialog.details.currency.label",
+        label: "Unit | Units",
       },
       price: {
         label: "Price",

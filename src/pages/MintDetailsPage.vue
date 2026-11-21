@@ -236,7 +236,12 @@
             <div class="detail-label">
               <banknote-icon size="20" color="#9E9E9E" class="detail-icon" />
               <div class="detail-name">
-                {{ $t("MintDetailsDialog.details.currencies.label") }}
+                {{
+                  $t(
+                    "MintDetailsDialog.details.currencies.label",
+                    mintUnits.length
+                  )
+                }}
               </div>
             </div>
             <div class="detail-value">
