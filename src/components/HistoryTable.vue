@@ -130,7 +130,7 @@
         dense
         @click="filterPendingEcash = !filterPendingEcash"
         :color="filterPendingEcash ? 'primary' : 'grey'"
-        label="Ecash Only"
+        label="Vouchers only"
         class="q-ml-sm q-px-md"
         size="sm"
       />
@@ -373,7 +373,7 @@ export default defineComponent({
       }
       return transaction.type === UnifiedTransactionType.Lightning
         ? "Lightning"
-        : "Ecash";
+        : "Voucher";
     },
 
     getTransactionLabel(transaction) {

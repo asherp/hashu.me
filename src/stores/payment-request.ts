@@ -279,7 +279,7 @@ export const usePRStore = defineStore("payment-request", {
       const decodedToken = await token.decodeFull(tokenStr);
       if (!decodedToken) {
         console.error("could not decode token");
-        throw new Error("Could not decode ecash token.");
+        throw new Error("Could not read the voucher.");
       }
       const proofs = token.getProofs(decodedToken);
       const mint = token.getMint(decodedToken);
@@ -312,7 +312,7 @@ export const usePRStore = defineStore("payment-request", {
       const decodedToken = await token.decodeFull(tokenStr);
       if (!decodedToken) {
         console.error("could not decode token");
-        throw new Error("Could not decode ecash token.");
+        throw new Error("Could not read the voucher.");
       }
       const proofs = token.getProofs(decodedToken);
       const unit = token.getUnit(decodedToken);

@@ -125,7 +125,7 @@ export const useReceiveTokensStore = defineStore("receiveTokensStore", {
           historyToken &&
           (historyToken.amount > 0 || historyToken.status === "paid")
         ) {
-          if (verbose) notify("Token already in history.");
+          if (verbose) notify("Voucher already in history.");
           return false;
         }
         this.receiveData.tokensBase64 = text;
@@ -208,7 +208,7 @@ export const useReceiveTokensStore = defineStore("receiveTokensStore", {
                       receiveStore.showReceiveTokens = true;
                       uiStore.closeDialogs();
                     } else {
-                      notify("Token already in history.");
+                      notify("Voucher already in history.");
                     }
                   } catch (err) {
                     console.error(`Something went wrong! ${err}`);

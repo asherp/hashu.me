@@ -28,7 +28,7 @@
                   : "Pending"
                 : "Received"
             }}
-            Ecash</q-item-label
+            Voucher</q-item-label
           >
         </div>
       </div>
@@ -326,7 +326,7 @@
       <q-card-section class="q-pa-none">
         <div class="row items-center no-wrap q-mb-sm">
           <div class="col-12">
-            <span class="text-h6">Delete Ecash</span>
+            <span class="text-h6">Delete voucher</span>
           </div>
         </div>
         <div class="row items-center no-wrap q-my-sm q-py-none">
@@ -337,7 +337,7 @@
             </q-item-label>
             <q-item-label class="q-pt-md text-weight-bold">
               Warning: This action cannot be undone and there is no way to
-              recover the token.
+              recover the voucher.
             </q-item-label>
           </div>
         </div>
@@ -661,7 +661,7 @@ export default defineComponent({
                   this.ndef
                     .write({ records: records }, { overwrite: true })
                     .then(() => {
-                      notifySuccess("Successfully flashed token to card!");
+                      notifySuccess("Voucher written to card.");
                     })
                     .catch((err: any) => {
                       console.error(
