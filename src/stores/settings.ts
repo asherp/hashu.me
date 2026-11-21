@@ -84,7 +84,7 @@ export const useSettingsStore = defineStore("settings", {
         "cashu.settings.bip177",
         true
       ),
-      // hashu.me: unit for showing TiH amounts (TiH, PiH, EiH, THH, PHH, THD, PHD).
+      // hashu.me: unit for showing TiH amounts (TiH, PiH, EiH, THh, PHh, THd, PHd).
       hashuDisplayUnit: useLocalStorage<DisplayUnit>(
         "hashu.settings.displayUnit",
         DEFAULT_DISPLAY_UNIT

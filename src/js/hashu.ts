@@ -36,13 +36,13 @@ export const TIH_PER_PIH = 1024;
 /** TiH in one terahash-hour (1 TH/s for 3,600 s = 3.6e15 hashes), ≈ 3,274. */
 export const TIH_PER_THH = 3.6e15 / HASHES_PER_TIH;
 
-/** TiH in one petahash-hour (1,000 THH), ≈ 3.27 million. */
+/** TiH in one petahash-hour (1,000 THh), ≈ 3.27 million. */
 export const TIH_PER_PHH = 1000 * TIH_PER_THH;
 
-/** TiH in one terahash-day (1 TH/s for 24 h = 24 THH), ≈ 78,580. */
+/** TiH in one terahash-day (1 TH/s for 24 h = 24 THh), ≈ 78,580. */
 export const TIH_PER_THD = 24 * TIH_PER_THH;
 
-/** TiH in one petahash-day (1,000 THD), ≈ 78.6 million. */
+/** TiH in one petahash-day (1,000 THd), ≈ 78.6 million. */
 export const TIH_PER_PHD = 1000 * TIH_PER_THD;
 
 /** Units the wallet can show TiH amounts in, as TiH per display unit. */
@@ -57,6 +57,25 @@ export const DISPLAY_UNITS = {
 } as const;
 
 export type DisplayUnit = keyof typeof DISPLAY_UNITS;
+
+/**
+ * How each display unit is written. Ids stay as stored in settings; time
+ * units read SI-style, with H for hash and lower-case h/d for hour/day.
+ */
+export const DISPLAY_UNIT_LABELS: Record<DisplayUnit, string> = {
+  TiH: "TiH",
+  PiH: "PiH",
+  EiH: "EiH",
+  THH: "THh",
+  PHH: "PHh",
+  THD: "THd",
+  PHD: "PHd",
+};
+
+/** The written form of a display unit, e.g. "THd" for THD. */
+export function displayUnitLabel(unit: DisplayUnit): string {
+  return DISPLAY_UNIT_LABELS[unit] ?? unit;
+}
 
 export const DEFAULT_DISPLAY_UNIT: DisplayUnit = "TiH";
 
@@ -74,7 +93,7 @@ export function tihToDisplay(
 
 /**
  * Format a TiH amount in the chosen display unit, e.g. "4,096 TiH",
- * "4 PiH" or "1.251 THH". TiH stays exact; larger units show up to three
+ * "4 PiH" or "1.251 THh". TiH stays exact; larger units show up to three
  * decimals, or three significant digits below 1.
  */
 export function formatTih(
@@ -90,7 +109,9 @@ export function formatTih(
     Math.abs(shown) >= 1 || shown === 0
       ? { maximumFractionDigits: 3 }
       : { maximumSignificantDigits: 3 };
-  return `${new Intl.NumberFormat(locale, options).format(shown)} ${unit}`;
+  return `${new Intl.NumberFormat(locale, options).format(
+    shown
+  )} ${displayUnitLabel(unit)}`;
 }
 
 /** Value of a TiH amount in sats at a mint's msat-per-PiH price. */
@@ -108,7 +129,7 @@ export function satsPerThd(msatPerPih: number): number {
 
 /**
  * A mint's hashprice per one of the wallet's display unit, so the price
- * reads in the same unit as amounts: "46 sats/THD", "46,043 sats/PHD".
+ * reads in the same unit as amounts: "46 sats/THd", "46,043 sats/PHd".
  * Below a sat per unit (TiH, PiH) it is shown in msat: "600 msat/PiH".
  */
 export function formatHashprice(
@@ -122,12 +143,12 @@ export function formatHashprice(
     const shown = new Intl.NumberFormat(locale, {
       maximumSignificantDigits: 3,
     }).format(msat);
-    return `${shown} msat/${unit}`;
+    return `${shown} msat/${displayUnitLabel(unit)}`;
   }
   const shown = new Intl.NumberFormat(locale, {
     maximumFractionDigits: sats >= 10 ? 0 : 2,
   }).format(sats);
-  return `${shown} ${sats === 1 ? "sat" : "sats"}/${unit}`;
+  return `${shown} ${sats === 1 ? "sat" : "sats"}/${displayUnitLabel(unit)}`;
 }
 
 /**

@@ -277,7 +277,7 @@
             </div>
           </div>
 
-          <!-- hashu.me: the mint's price, in sats per THD like miners quote it -->
+          <!-- hashu.me: the mint's price, in sats per THd like miners quote it -->
           <div
             class="detail-item q-mb-md"
             v-if="mintMsatPerPih > 0"
