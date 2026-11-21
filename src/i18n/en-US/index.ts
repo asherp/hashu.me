@@ -508,6 +508,8 @@ export default {
           EiH: "EiH: exbihash, 1,048,576 TiH",
           THH: "THH: terahash-hour, 1 TH/s for an hour (≈ 3,274 TiH)",
           PHH: "PHH: petahash-hour, 1 PH/s for an hour (1,000 THH)",
+          THD: "THD: terahash-day, 1 TH/s for a day (24 THH)",
+          PHD: "PHD: petahash-day, 1 PH/s for a day (1,000 THD)",
         },
       },
     },
@@ -656,6 +658,7 @@ export default {
   BalanceView: {
     tih_value:
       "≈ {amount} sat at the mint's price | ≈ {amount} sats at the mint's price",
+    tih_price: "1 THD (1 TH/s for a day) ≈ {sats} sats · 1 PiH = {msat} msat",
     mintUrl: {
       label: "Mint",
     },
@@ -1462,6 +1465,11 @@ export default {
       },
       currencies: {
         label: "@:MintDetailsDialog.details.currency.label",
+      },
+      price: {
+        label: "Price",
+        per_thd: "{ amount } sat per THD | { amount } sats per THD",
+        caption: "1 TH/s for a day · 1 PiH = { msat } msat",
       },
       eta: {
         label: "Time to redeem",

@@ -66,7 +66,12 @@
                       :format="(val) => formatSecondary(val, unit)"
                     />
                     <q-tooltip v-if="isTihUnit(unit)">
-                      1 PiH = {{ formatMsatPerPih() }} msat
+                      {{
+                        $t("BalanceView.tih_price", {
+                          sats: formatSatsPerThd(),
+                          msat: formatMsatPerPih(),
+                        })
+                      }}
                     </q-tooltip>
                     <q-tooltip v-else>
                       1 BTC =
@@ -151,7 +156,7 @@ import { useUiStore } from "src/stores/ui";
 import { useWalletStore } from "src/stores/wallet";
 import { usePriceStore } from "src/stores/price";
 import AnimatedNumber from "src/components/AnimatedNumber.vue";
-import { UNIT_TIH, tihToSats } from "src/js/hashu";
+import { UNIT_TIH, tihToSats, satsPerThd } from "src/js/hashu";
 import { sumProofAmounts } from "src/js/proofs";
 import { useProofsStore } from "src/stores/proofs";
 
@@ -315,6 +320,12 @@ export default defineComponent({
     },
     isTihUnit(unit: string) {
       return unit.toLowerCase() === UNIT_TIH;
+    },
+    formatSatsPerThd() {
+      const sats = satsPerThd(this.msatPerPih);
+      return new Intl.NumberFormat(navigator.language, {
+        maximumFractionDigits: sats >= 10 ? 0 : 2,
+      }).format(sats);
     },
     formatMsatPerPih() {
       return new Intl.NumberFormat(navigator.language).format(this.msatPerPih);
