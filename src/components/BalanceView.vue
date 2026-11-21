@@ -49,6 +49,7 @@
                   class="balance-amount q-my-none q-py-none cursor-pointer"
                   data-testid="wallet-balance"
                   :data-unit="unit"
+                  :style="balanceFontStyle(unit)"
                   @click="toggleHideBalance"
                 >
                   <strong>
@@ -306,6 +307,15 @@ export default defineComponent({
       this.activeUnit =
         units[(units.indexOf(this.activeUnit) + 1) % units.length];
       return this.activeUnit;
+    },
+    // hashu.me: long unit labels (e.g. "0.000127 PH/s/Day") shrink the
+    // balance so it fits a phone screen instead of overflowing.
+    balanceFontStyle(unit: string) {
+      const text = String(
+        this.formatCurrency(this.totalBalanceForUnit(unit), unit) ?? ""
+      );
+      if (text.length <= 12) return {};
+      return { fontSize: `min(3rem, ${(150 / text.length).toFixed(1)}vw)` };
     },
     toggleHideBalance() {
       this.hideBalance = !this.hideBalance;

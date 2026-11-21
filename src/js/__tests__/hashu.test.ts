@@ -117,3 +117,11 @@ describe("displayUnitLabel", () => {
     expect(displayUnitLabel("TiH")).toBe("TiH");
   });
 });
+
+describe("market-style day units", () => {
+  it("formats amounts and hashprice in PH/s/Day", () => {
+    expect(formatTih(TIH_PER_PHD, "en-US", "PHSD")).toBe("1 PH/s/Day");
+    expect(formatHashprice(600, "PHSD", "en-US")).toBe("46,043 sats/PH/s/Day");
+    expect(formatHashprice(600, "THSD", "en-US")).toBe("46 sats/TH/s/Day");
+  });
+});

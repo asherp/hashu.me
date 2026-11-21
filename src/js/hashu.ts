@@ -54,6 +54,10 @@ export const DISPLAY_UNITS = {
   PHH: TIH_PER_PHH,
   THD: TIH_PER_THD,
   PHD: TIH_PER_PHD,
+  // The same day units, written the way hashrate markets quote hashprice
+  // (Luxor's Hashrate Index: $/PH/s/Day).
+  THSD: TIH_PER_THD,
+  PHSD: TIH_PER_PHD,
 } as const;
 
 export type DisplayUnit = keyof typeof DISPLAY_UNITS;
@@ -70,6 +74,8 @@ export const DISPLAY_UNIT_LABELS: Record<DisplayUnit, string> = {
   PHH: "PHh",
   THD: "THd",
   PHD: "PHd",
+  THSD: "TH/s/Day",
+  PHSD: "PH/s/Day",
 };
 
 /** The written form of a display unit, e.g. "THd" for THD. */
