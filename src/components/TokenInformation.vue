@@ -26,7 +26,7 @@
           <banknote-icon size="20" color="#9E9E9E" class="detail-icon" />
           <div class="detail-name">{{ $t("TokenInformation.unit") }}</div>
         </div>
-        <div class="detail-value">{{ tokenUnit.toUpperCase() }}</div>
+        <div class="detail-value">{{ unitName(tokenUnit) }}</div>
       </div>
 
       <!-- Fiat -->
@@ -115,6 +115,7 @@ import { useP2PKStore } from "src/stores/p2pk";
 import { usePriceStore } from "src/stores/price";
 import { useSettingsStore } from "src/stores/settings";
 import token from "src/js/token";
+import { unitName } from "src/js/hashu";
 import {
   ArrowDownUp as ArrowDownUpIcon,
   Building as BuildingIcon,
@@ -263,6 +264,7 @@ export default defineComponent({
     },
   },
   methods: {
+    unitName,
     ...mapActions(useP2PKStore, ["isLocked", "isLockedToUs"]),
     getProofsMint: function (proofs) {
       // unique keyset IDs of proofs

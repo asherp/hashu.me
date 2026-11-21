@@ -7,7 +7,7 @@ import {
   TIH_PER_PHD,
   satsPerThd,
   formatHashprice,
-  hashpriceUnit,
+  unitName,
   TIH_PER_THH,
   formatTih,
   hashuInfoUrl,
@@ -94,9 +94,17 @@ describe("hashprice", () => {
     expect(formatHashprice(600, "EiH", "en-US")).toBe("614 sats/EiH");
   });
 
-  it("falls back to THD for units worth under a sat", () => {
-    expect(hashpriceUnit(600, "TiH")).toBe("THD");
-    expect(hashpriceUnit(600, "PiH")).toBe("THD");
-    expect(formatHashprice(600, "TiH", "en-US")).toBe("46 sats/THD");
+  it("uses msat for units worth under a sat, in the same unit", () => {
+    expect(formatHashprice(600, "PiH", "en-US")).toBe("600 msat/PiH");
+    expect(formatHashprice(600, "TiH", "en-US")).toBe("0.586 msat/TiH");
+  });
+});
+
+describe("unitName", () => {
+  it("writes TiH with a lower-case i", () => {
+    expect(unitName("tih")).toBe("TiH");
+    expect(unitName("TIH")).toBe("TiH");
+    expect(unitName("msat")).toBe("mSAT");
+    expect(unitName("usd")).toBe("USD");
   });
 });

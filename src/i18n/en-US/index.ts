@@ -656,8 +656,7 @@ export default {
     },
   },
   BalanceView: {
-    tih_value:
-      "≈ {amount} sat at the mint's price | ≈ {amount} sats at the mint's price",
+    tih_value: "≈ {amount} sat | ≈ {amount} sats",
     tih_price: "Hashprice {price} · 1 PiH = {msat} msat",
     mintUrl: {
       label: "Mint",
@@ -1464,10 +1463,10 @@ export default {
         },
       },
       currency: {
-        label: "Currency",
+        label: "Unit",
       },
       currencies: {
-        label: "@:MintDetailsDialog.details.currency.label",
+        label: "Unit | Units",
       },
       price: {
         label: "Price",

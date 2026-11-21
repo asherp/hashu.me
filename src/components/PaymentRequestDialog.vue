@@ -147,7 +147,7 @@
                       <span class="q-ml-xs text-weight-medium">{{
                         total
                       }}</span>
-                      <span class="q-ml-xs">{{ unit }}</span>
+                      <span class="q-ml-xs">{{ unitName(unit) }}</span>
                     </q-chip>
                   </div>
                   <PaymentRequestPayments
@@ -203,6 +203,7 @@ import { useMintsStore } from "../stores/mints";
 import { getShortUrl } from "src/js/wallet-helpers";
 import { useUiStore } from "../stores/ui";
 import ToggleUnit from "./ToggleUnit.vue";
+import { unitName } from "src/js/hashu";
 import PaymentRequestPayments from "./PaymentRequestPayments.vue";
 // type hint for global mixin
 declare const windowMixin: any;
@@ -265,6 +266,7 @@ export default defineComponent({
     },
   },
   methods: {
+    unitName,
     ...mapActions(usePRStore, [
       "newPaymentRequest",
       "selectPrevRequest",
