@@ -13,7 +13,11 @@ import {
 } from "../js/notify";
 import { getDecodedTokenBinary, getEncodedToken } from "@cashu/cashu-ts";
 import { useSwapStore } from "./swap";
-import { looksLikeWords, tokenFromWords } from "src/js/glossia";
+import {
+  looksLikeWords,
+  requestFromWords,
+  tokenFromWords,
+} from "src/js/glossia";
 
 export const useReceiveTokensStore = defineStore("receiveTokensStore", {
   state: () => ({
@@ -115,6 +119,18 @@ export const useReceiveTokensStore = defineStore("receiveTokensStore", {
         if (fromWords) {
           this.receiveWords = { token: fromWords.token, words: text.trim() };
           text = fromWords.token;
+        }
+      }
+      // hashu.me: a payment request (or one written as words) pasted here
+      // is paid, not received.
+      if (text && !this.decodeToken(text)) {
+        const fromReq = /^creq[ab]/i.test(text.trim())
+          ? { request: text.trim() }
+          : await requestFromWords(text);
+        if (fromReq) {
+          this.showReceiveTokens = false;
+          await useWalletStore().decodeRequest(fromReq.request);
+          return false;
         }
       }
       if (this.decodeToken(text)) {

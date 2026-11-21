@@ -55,6 +55,34 @@ export async function tokenFromWords(text: string): Promise<FromWords | null> {
   }
 }
 
+/** A paragraph of words → `creqA…` (a NUT-18 payment request), or null. */
+export async function requestFromWords(
+  text: string
+): Promise<{ request: string; repaired: number } | null> {
+  const t = (text || "").trim();
+  if (!t || /^(cashu|creq|ln|bitcoin:|http)/i.test(t)) return null;
+  const words = t.split(/\s+/);
+  if (words.length < 12) return null;
+  const plain = words.filter((w) => /^[A-Za-z][A-Za-z'’-]*[.,;:!?]?$/.test(w));
+  if (plain.length / words.length <= 0.8) return null;
+  try {
+    const m = await load();
+    const r = JSON.parse(m.requestFromWords(t));
+    return r.request ? { request: r.request, repaired: r.repaired ?? 0 } : null;
+  } catch (e) {
+    console.debug("glossia: not a payment request in words", e);
+    return null;
+  }
+}
+
+/** `creqA…` → a paragraph of words, or null. */
+export async function requestToWords(request: string): Promise<string | null> {
+  if (!request || !request.trim().startsWith("creqA")) return null;
+  const m = await load();
+  const r = JSON.parse(m.requestToWords(request));
+  return r.words ?? null;
+}
+
 /** `cashuB…` → a paragraph of words, or null (e.g. a V3 `cashuA` token). */
 export async function tokenToWords(token: string): Promise<string | null> {
   if (!token || !token.trim().startsWith("cashuB")) return null;

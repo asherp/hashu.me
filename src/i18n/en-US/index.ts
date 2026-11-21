@@ -1383,6 +1383,10 @@ export default {
     },
   },
   PaymentRequestDialog: {
+    words: {
+      title: "Request as words",
+      text: "Paste them in a Hashu wallet to pay the request. Underlined words encode it; the rest is filler.",
+    },
     payment_request: {
       caption: "Payment Request",
       description: "Receive payments via Nostr",

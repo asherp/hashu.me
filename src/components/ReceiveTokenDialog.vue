@@ -302,7 +302,11 @@ import { usePriceStore } from "src/stores/price";
 import { useSwapStore } from "src/stores/swap";
 import { useSettingsStore } from "src/stores/settings";
 import token from "src/js/token";
-import { looksLikeWords, tokenFromWords } from "src/js/glossia";
+import {
+  looksLikeWords,
+  requestFromWords,
+  tokenFromWords,
+} from "src/js/glossia";
 import { notify, notifyWarning } from "src/js/notify";
 import { Mint, GetInfoResponse } from "@cashu/cashu-ts";
 import { Token } from "@cashu/cashu-ts";
@@ -380,6 +384,23 @@ export default defineComponent({
       if (!newVal) {
         this.fullToken = null;
         return;
+      }
+      // hashu.me: a payment request (or one written as words) is paid, not
+      // received.
+      if (/^creq[ab]/i.test(newVal.trim())) {
+        this.payRequest(newVal.trim());
+        return;
+      }
+      if (
+        /^[A-Za-z]/.test(newVal.trim()) &&
+        !newVal.trim().startsWith("cashu")
+      ) {
+        const fromReq = await requestFromWords(newVal);
+        if (this.receiveData.tokensBase64 !== newVal) return;
+        if (fromReq) {
+          this.payRequest(fromReq.request);
+          return;
+        }
       }
       // hashu.me: a voucher written as Glossia words becomes its token.
       if (looksLikeWords(newVal)) {
@@ -549,7 +570,16 @@ export default defineComponent({
     },
   },
   methods: {
-    ...mapActions(useWalletStore, ["redeem", "getFeesForProofs"]),
+    ...mapActions(useWalletStore, [
+      "redeem",
+      "getFeesForProofs",
+      "decodeRequest",
+    ]),
+    payRequest(request: string) {
+      this.receiveData.tokensBase64 = "";
+      this.showReceiveTokens = false;
+      this.decodeRequest(request);
+    },
     ...mapActions(useCameraStore, ["closeCamera", "showCamera"]),
     ...mapActions(useTokensStore, ["addPendingToken"]),
     ...mapActions(useP2PKStore, [

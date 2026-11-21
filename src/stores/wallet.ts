@@ -113,7 +113,11 @@ import {
 } from "src/js/legacy-qr";
 import { onchainNetwork } from "src/js/onchain";
 import { PaymentMethod } from "src/stores/walletTypes";
-import { looksLikeWords, tokenFromWords } from "src/js/glossia";
+import {
+  looksLikeWords,
+  requestFromWords,
+  tokenFromWords,
+} from "src/js/glossia";
 
 type Invoice = {
   amount: number;
@@ -1530,6 +1534,7 @@ export const useWalletStore = defineStore("wallet", {
       this.payInvoiceData.invoice = Object.freeze(cleanAddress);
     },
     decodeRequest: async function (req: string) {
+      let fromWordsReq: { request: string; repaired: number } | null = null;
       const p2pkStore = useP2PKStore();
       req = req.trim();
       this.payInvoiceData.input.request = req;
@@ -1640,8 +1645,21 @@ export const useWalletStore = defineStore("wallet", {
           receiveStore.receiveData.tokensBase64 = fromWords.token;
           this.handleCashuToken();
         } else {
-          notifyWarning(this.t("ReceiveTokenDialog.words.invalid"));
+          const fromReq = await requestFromWords(req);
+          if (fromReq) {
+            this.payInvoiceData.input.request = fromReq.request;
+            await this.handlePaymentRequest(fromReq.request);
+          } else {
+            notifyWarning(this.t("ReceiveTokenDialog.words.invalid"));
+          }
         }
+      } else if (
+        /^[A-Za-z]/.test(req) &&
+        (fromWordsReq = await requestFromWords(req))
+      ) {
+        // hashu.me: a short payment request written as Glossia words.
+        this.payInvoiceData.input.request = fromWordsReq.request;
+        await this.handlePaymentRequest(fromWordsReq.request);
       } else if (p2pkStore.isValidPubkey(req)) {
         this.handleP2PK(req);
       } else if (req.startsWith("http")) {
