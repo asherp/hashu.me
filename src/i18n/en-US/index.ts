@@ -1385,7 +1385,7 @@ export default {
   PaymentRequestDialog: {
     words: {
       title: "Request as words",
-      text: "Paste or type these into a Hashu wallet to pay this request. Underlined words carry it; the rest is filler.",
+      text: "Paste them in a Hashu wallet to pay the request. Underlined words encode it; the rest is filler.",
     },
     payment_request: {
       caption: "Payment Request",
