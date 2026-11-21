@@ -23,7 +23,7 @@
           <q-item-label class="row items-center justify-between">
             <div class="col text-left">
               <span class="transaction-label text-weight-medium">
-                {{ payment.label || "Ecash" }}
+                {{ payment.label || "Voucher" }}
               </span>
             </div>
             <div class="text-right">
