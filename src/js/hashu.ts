@@ -16,6 +16,17 @@ export const UNIT_TIH = "tih";
 /** Label shown next to TiH amounts. */
 export const UNIT_TIH_LABEL = "TiH";
 
+/**
+ * How to write a mint unit for people: "TiH" for tih (Cashu.me upper-cases
+ * units, which would give "TIH"), "mSAT" for msat, else upper case.
+ */
+export function unitName(unit: string): string {
+  const u = (unit || "").toLowerCase();
+  if (u === UNIT_TIH) return UNIT_TIH_LABEL;
+  if (u === "msat") return "mSAT";
+  return unit.toUpperCase();
+}
+
 /** Hashes in one TiH (2^40). */
 export const HASHES_PER_TIH = 2 ** 40;
 

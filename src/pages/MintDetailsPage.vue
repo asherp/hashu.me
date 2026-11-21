@@ -240,7 +240,7 @@
               </div>
             </div>
             <div class="detail-value">
-              {{ mintUnits.map((unit) => unit.toUpperCase()).join(", ") }}
+              {{ mintUnits.map(unitName).join(", ") }}
             </div>
           </div>
 
@@ -452,7 +452,7 @@ import {
   formatDuration,
   formatHashrate,
 } from "src/js/hashu-redeem";
-import { UNIT_TIH, formatHashprice } from "src/js/hashu";
+import { UNIT_TIH, formatHashprice, unitName } from "src/js/hashu";
 
 export default defineComponent({
   name: "MintDetailsPage",
@@ -575,6 +575,7 @@ export default defineComponent({
     formatHashrate,
     formatDuration,
     formatHashprice,
+    unitName,
     ...mapActions(usePriceStore, ["fetchHashuInfo"]),
     ...mapActions(useMintsStore, [
       "removeMint",

@@ -2,6 +2,7 @@
   <q-btn
     rounded
     outline
+    no-caps
     :color="color"
     @click="toggleUnit()"
     :label="activeUnitLabelAdopted"

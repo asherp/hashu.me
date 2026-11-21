@@ -50,6 +50,7 @@
               }}</q-tooltip>
             </q-btn>
             <q-btn
+              no-caps
               flat
               dense
               size="lg"

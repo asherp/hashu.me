@@ -52,6 +52,7 @@
               :label="isBolt12 ? 'B12' : 'B11'"
             />
             <q-btn
+              no-caps
               flat
               dense
               size="lg"

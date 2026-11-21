@@ -45,6 +45,7 @@
             style="position: absolute; right: 16px"
           >
             <q-btn
+              no-caps
               flat
               dense
               size="lg"
