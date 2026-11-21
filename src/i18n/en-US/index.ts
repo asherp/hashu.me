@@ -1449,9 +1449,19 @@ export default {
         label: "Owed to redeemers",
         caption: "{ count } redemption running | { count } redemptions running",
       },
+      work: {
+        label: "Work delivered",
+        redemptions:
+          "{ count } redemption finished | { count } redemptions finished",
+        blocks: "{ count } block found | { count } blocks found",
+      },
       record: {
         label: "Delivery record",
         none: "Not published yet",
+        first_hour: "First hour in progress",
+        hours: "{ published } of { expected } hours published",
+        since: "Since { date }",
+        check: "Check the record",
         explain:
           "Hashu mints will publish a signed record every hour: their hardest shares, which anyone can check against Bitcoin's proof of work, how much work they delivered, redemptions finished on time, and any blocks found. Each hour is timestamped on Bitcoin with OpenTimestamps, so the history can't be rewritten later. This mint hasn't started publishing it yet.",
       },

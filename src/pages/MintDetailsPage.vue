@@ -398,10 +398,82 @@
                 </div>
               </div>
               <div class="detail-value text-right">
-                {{ $t("MintDetailsDialog.reliability.record.none") }}
+                <template v-if="!reliability">
+                  {{ $t("MintDetailsDialog.reliability.record.none") }}
+                </template>
+                <template v-else-if="reliability.totals.hours_published === 0">
+                  {{ $t("MintDetailsDialog.reliability.record.first_hour") }}
+                </template>
+                <template v-else>
+                  {{
+                    $t("MintDetailsDialog.reliability.record.hours", {
+                      published: reliability.totals.hours_published,
+                      expected: Math.max(
+                        reliability.totals.hours_since_first,
+                        reliability.totals.hours_published
+                      ),
+                    })
+                  }}
+                  <div
+                    class="text-caption text-grey-6"
+                    v-if="reliability.totals.since"
+                  >
+                    {{
+                      $t("MintDetailsDialog.reliability.record.since", {
+                        date: formatDate(reliability.totals.since),
+                      })
+                    }}
+                  </div>
+                </template>
+                <div class="text-caption" v-if="reliability">
+                  <a
+                    :href="reliabilityPageUrl"
+                    target="_blank"
+                    rel="noopener"
+                    class="text-primary"
+                    data-testid="mint-record-check"
+                    >{{ $t("MintDetailsDialog.reliability.record.check") }}</a
+                  >
+                </div>
               </div>
             </div>
-            <div class="text-caption text-grey-6 q-px-sm q-mb-lg">
+            <div
+              class="detail-item q-mb-md"
+              v-if="reliability && reliability.totals.hours_published > 0"
+              data-testid="mint-record-work"
+            >
+              <div class="detail-label">
+                <pickaxe-icon size="20" color="#9E9E9E" class="detail-icon" />
+                <div class="detail-name">
+                  {{ $t("MintDetailsDialog.reliability.work.label") }}
+                </div>
+              </div>
+              <div class="detail-value text-right">
+                {{ formatCurrency(reliability.totals.work_tih, "tih") }}
+                <div class="text-caption text-grey-6">
+                  {{
+                    $t(
+                      "MintDetailsDialog.reliability.work.redemptions",
+                      { count: reliability.totals.redemptions_completed },
+                      reliability.totals.redemptions_completed
+                    )
+                  }}
+                </div>
+                <div class="text-caption text-grey-6">
+                  {{
+                    $t(
+                      "MintDetailsDialog.reliability.work.blocks",
+                      { count: reliability.totals.blocks },
+                      reliability.totals.blocks
+                    )
+                  }}
+                </div>
+              </div>
+            </div>
+            <div
+              class="text-caption text-grey-6 q-px-sm q-mb-lg"
+              v-if="!reliability"
+            >
               {{ $t("MintDetailsDialog.reliability.record.explain") }}
             </div>
           </div>
@@ -572,6 +644,8 @@ export default defineComponent({
         22: "Blind authentication",
       },
       motdDismissed: false,
+      // hashu.me: the mint's published reliability record, or null
+      reliability: null,
       settings: useSettingsStore(),
       mintData: {},
       mintToEdit: {},
@@ -620,6 +694,9 @@ export default defineComponent({
       );
     },
     /** A Hashu mint answers /checkout/api/info with a price or delivery. */
+    reliabilityPageUrl() {
+      return `${(this.mintData?.url || "").replace(/\/+$/, "")}/reliability/`;
+    },
     isHashuMint() {
       return !!this.mintDelivery || this.mintMsatPerPih > 0;
     },
@@ -645,6 +722,27 @@ export default defineComponent({
     formatHashprice,
     unitName,
     ...mapActions(usePriceStore, ["fetchHashuInfo"]),
+    /**
+     * Load the mint's hourly reliability record (asherp/hashu#109). A 404
+     * means the mint predates it; keep "Not published yet".
+     */
+    async fetchReliability(url) {
+      try {
+        const base = url.replace(/\/+$/, "");
+        const res = await fetch(`${base}/v1/hashu/reliability?limit=24`);
+        if (!res.ok) return;
+        const data = await res.json();
+        if (data?.totals) this.reliability = data;
+      } catch (e) {
+        // Offline or not a Hashu mint: leave the record unpublished.
+      }
+    },
+    formatDate(unixSeconds) {
+      return new Date(unixSeconds * 1000).toLocaleDateString(
+        this.$i18n.locale,
+        { year: "numeric", month: "short", day: "numeric" }
+      );
+    },
     ...mapActions(useMintsStore, [
       "removeMint",
       "fetchMintInfo",
@@ -717,6 +815,7 @@ export default defineComponent({
         this.mintData = mint;
         this.refreshMintInfo();
         this.fetchHashuInfo(mint.url);
+        this.fetchReliability(mint.url);
       } else {
         // Mint not found, redirect back
         this.$router.push("/");
