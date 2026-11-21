@@ -1,7 +1,14 @@
 <template>
   <q-card class="token-card">
     <!-- Token string as background filling entire card -->
-    <div class="token-background">
+    <div
+      v-if="words"
+      class="token-background token-words"
+      data-testid="receive-token-words"
+    >
+      <GlossiaWords :text="words" />
+    </div>
+    <div v-else class="token-background">
       {{ displayedToken }}
     </div>
 
@@ -19,13 +26,21 @@
 import { computed, defineComponent, onBeforeUnmount, ref, watch } from "vue";
 
 import token from "src/js/token";
+import GlossiaWords from "src/components/GlossiaWords.vue";
 import { getShortUrl } from "src/js/wallet-helpers";
 import { useMintsStore } from "src/stores/mints";
 import { useUiStore } from "src/stores/ui";
 
 export default defineComponent({
   name: "TokenStringRender",
+  components: { GlossiaWords },
   props: {
+    // Glossia words the voucher was pasted as; shown instead of the token.
+    words: {
+      type: String,
+      required: false,
+      default: "",
+    },
     tokenString: {
       type: String,
       required: true,
@@ -260,6 +275,13 @@ export default defineComponent({
     rgba(0, 0, 0, 0.2) 65%,
     rgba(0, 0, 0, 0) 75%
   );
+}
+
+.token-words {
+  font-family: inherit;
+  font-size: 0.85rem;
+  word-break: normal;
+  color: rgba(200, 200, 200, 0.9);
 }
 
 .token-content {

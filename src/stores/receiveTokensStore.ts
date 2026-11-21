@@ -23,6 +23,9 @@ export const useReceiveTokensStore = defineStore("receiveTokensStore", {
       tokensBase64: "",
       p2pkPrivateKey: "",
     },
+    // hashu.me: the Glossia words a voucher was pasted or scanned as, kept
+    // so the receive dialog shows the words instead of the cashuB string.
+    receiveWords: { token: "", words: "" },
     scanningCard: false,
   }),
   actions: {
@@ -109,7 +112,10 @@ export const useReceiveTokensStore = defineStore("receiveTokensStore", {
       // hashu.me: a voucher pasted as Glossia words.
       if (!this.decodeToken(text) && looksLikeWords(text)) {
         const fromWords = await tokenFromWords(text);
-        if (fromWords) text = fromWords.token;
+        if (fromWords) {
+          this.receiveWords = { token: fromWords.token, words: text.trim() };
+          text = fromWords.token;
+        }
       }
       if (this.decodeToken(text)) {
         const tokensStore = useTokensStore();
