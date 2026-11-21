@@ -6,6 +6,8 @@ import {
   TIH_PER_THD,
   TIH_PER_PHD,
   satsPerThd,
+  formatHashprice,
+  hashpriceUnit,
   TIH_PER_THH,
   formatTih,
   hashuInfoUrl,
@@ -81,5 +83,20 @@ describe("day units", () => {
     // 600 msat per PiH: 78,580.3 / 1,024 PiH × 0.6 sat ≈ 46 sats
     expect(satsPerThd(600)).toBeCloseTo(46.04, 2);
     expect(satsPerThd(0)).toBe(0);
+  });
+});
+
+describe("hashprice", () => {
+  it("quotes in the display unit when one costs at least a sat", () => {
+    expect(formatHashprice(600, "THD", "en-US")).toBe("46 sats/THD");
+    expect(formatHashprice(600, "PHD", "en-US")).toBe("46,043 sats/PHD");
+    expect(formatHashprice(600, "THH", "en-US")).toBe("1.92 sats/THH");
+    expect(formatHashprice(600, "EiH", "en-US")).toBe("614 sats/EiH");
+  });
+
+  it("falls back to THD for units worth under a sat", () => {
+    expect(hashpriceUnit(600, "TiH")).toBe("THD");
+    expect(hashpriceUnit(600, "PiH")).toBe("THD");
+    expect(formatHashprice(600, "TiH", "en-US")).toBe("46 sats/THD");
   });
 });

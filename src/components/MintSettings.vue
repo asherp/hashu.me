@@ -127,6 +127,20 @@
                       </q-tooltip>
                     </div>
                     <div
+                      v-if="mintHashprice(mint.url)"
+                      class="currency-unit-badge"
+                      data-testid="mint-hashprice"
+                    >
+                      <span class="currency-unit-text">
+                        <TagIcon :size="14" class="q-mr-xs hashrate-icon" />{{
+                          mintHashprice(mint.url)
+                        }}
+                      </span>
+                      <q-tooltip>
+                        {{ $t("MintSettings.price_tooltip") }}
+                      </q-tooltip>
+                    </div>
+                    <div
                       v-if="mintEta(mint).kind === 'eta'"
                       class="currency-unit-badge"
                       data-testid="mint-redeem-eta"
@@ -398,8 +412,12 @@ import {
   formatDuration,
   formatHashrate,
 } from "src/js/hashu-redeem";
-import { UNIT_TIH } from "src/js/hashu";
-import { Pickaxe as PickaxeIcon, Timer as TimerIcon } from "lucide-vue-next";
+import { UNIT_TIH, formatHashprice } from "src/js/hashu";
+import {
+  Pickaxe as PickaxeIcon,
+  Tag as TagIcon,
+  Timer as TimerIcon,
+} from "lucide-vue-next";
 
 // Mints that should not show reviews
 const EXCLUDED_FROM_REVIEWS = [
@@ -414,6 +432,7 @@ export default defineComponent({
     AddMintDialog,
     MintInfoContainer,
     PickaxeIcon,
+    TagIcon,
     TimerIcon,
   },
   props: {},
@@ -475,6 +494,7 @@ export default defineComponent({
   },
   computed: {
     ...mapWritableState(useSettingsStore, ["getBitcoinPrice"]),
+    ...mapState(useSettingsStore, ["hashuDisplayUnit"]),
     ...mapState(useP2PKStore, ["p2pkKeys"]),
     ...mapState(useMintsStore, [
       "activeMintUrl",
@@ -518,6 +538,13 @@ export default defineComponent({
         d,
         this.hashuPrices[mint.url]?.minRedeemTih
       );
+    },
+    /** A Hashu mint's hashprice, e.g. "46 sats/THD"; "" if it has none. */
+    mintHashprice(url: string): string {
+      const msat = this.hashuPrices[url]?.msatPerPih;
+      return msat
+        ? formatHashprice(msat, this.hashuDisplayUnit, navigator.language)
+        : "";
     },
     /** What a Hashu mint's rigs deliver right now, in H/s; null if it doesn't say. */
     mintHashrate(url: string): number | null {

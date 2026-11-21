@@ -658,7 +658,7 @@ export default {
   BalanceView: {
     tih_value:
       "≈ {amount} sat at the mint's price | ≈ {amount} sats at the mint's price",
-    tih_price: "1 THD (1 TH/s for a day) ≈ {sats} sats · 1 PiH = {msat} msat",
+    tih_price: "Hashprice {price} · 1 PiH = {msat} msat",
     mintUrl: {
       label: "Mint",
     },
@@ -941,6 +941,8 @@ export default {
   MintSettings: {
     eta_tooltip:
       "About how long redeeming your whole balance here would take at this hashrate, after redemptions already queued.",
+    price_tooltip:
+      "The mint's hashprice: what vouchers cost here. THD is 1 TH/s for a day.",
     hashrate_tooltip:
       "Hashrate this mint's rigs are delivering right now, measured over the last few minutes. Redemptions share it.",
     add: {
@@ -1112,7 +1114,8 @@ export default {
       pool_url: {
         label: "Pool URL",
         hint: "stratum+tcp://host:port",
-        invalid: "Use stratum+tcp://host:port, stratum+ssl://host:port, or stratum2+tcp://host/key for Stratum V2",
+        invalid:
+          "Use stratum+tcp://host:port, stratum+ssl://host:port, or stratum2+tcp://host/key for Stratum V2",
       },
       worker: { label: "Worker name" },
       password: { label: "Worker password (optional)" },
@@ -1468,8 +1471,7 @@ export default {
       },
       price: {
         label: "Price",
-        per_thd: "{ amount } sat per THD | { amount } sats per THD",
-        caption: "1 TH/s for a day · 1 PiH = { msat } msat",
+        caption: "Hashprice · 1 PiH = { msat } msat",
       },
       eta: {
         label: "Time to redeem",

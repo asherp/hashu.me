@@ -68,7 +68,7 @@
                     <q-tooltip v-if="isTihUnit(unit)">
                       {{
                         $t("BalanceView.tih_price", {
-                          sats: formatSatsPerThd(),
+                          price: hashprice,
                           msat: formatMsatPerPih(),
                         })
                       }}
@@ -124,6 +124,14 @@
         <span class="text-weight-light" @click="setTab('mints')">
           {{ $t("BalanceView.mintUrl.label") }}: <b>{{ activeMintLabel }}</b>
         </span>
+        <span
+          v-if="msatPerPih > 0"
+          class="text-weight-light"
+          data-testid="balance-hashprice"
+        >
+          · <b>{{ hashprice }}</b>
+          <q-tooltip>{{ $t("MintSettings.price_tooltip") }}</q-tooltip>
+        </span>
       </div>
     </div>
     <!-- mint balance -->
@@ -156,7 +164,7 @@ import { useUiStore } from "src/stores/ui";
 import { useWalletStore } from "src/stores/wallet";
 import { usePriceStore } from "src/stores/price";
 import AnimatedNumber from "src/components/AnimatedNumber.vue";
-import { UNIT_TIH, tihToSats, satsPerThd } from "src/js/hashu";
+import { UNIT_TIH, tihToSats, formatHashprice } from "src/js/hashu";
 import { sumProofAmounts } from "src/js/proofs";
 import { useProofsStore } from "src/stores/proofs";
 
@@ -191,7 +199,14 @@ export default defineComponent({
     msatPerPih: function (): number {
       return this.hashuPrices[this.activeMintUrl]?.msatPerPih || 0;
     },
-    ...mapState(useSettingsStore, ["bitcoinPriceCurrency"]),
+    ...mapState(useSettingsStore, ["bitcoinPriceCurrency", "hashuDisplayUnit"]),
+    hashprice: function (): string {
+      return formatHashprice(
+        this.msatPerPih,
+        this.hashuDisplayUnit,
+        navigator.language
+      );
+    },
     ...mapWritableState(useMintsStore, ["activeUnit"]),
     ...mapWritableState(useUiStore, ["hideBalance", "lastBalanceCached"]),
     pendingBalance: function () {
@@ -320,12 +335,6 @@ export default defineComponent({
     },
     isTihUnit(unit: string) {
       return unit.toLowerCase() === UNIT_TIH;
-    },
-    formatSatsPerThd() {
-      const sats = satsPerThd(this.msatPerPih);
-      return new Intl.NumberFormat(navigator.language, {
-        maximumFractionDigits: sats >= 10 ? 0 : 2,
-      }).format(sats);
     },
     formatMsatPerPih() {
       return new Intl.NumberFormat(navigator.language).format(this.msatPerPih);
