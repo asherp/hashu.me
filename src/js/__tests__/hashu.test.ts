@@ -9,6 +9,7 @@ import {
   formatHashprice,
   unitName,
   displayUnitLabel,
+  formatHashpricePerPhDay,
   TIH_PER_THH,
   formatTih,
   hashuInfoUrl,
@@ -115,5 +116,11 @@ describe("displayUnitLabel", () => {
     expect(displayUnitLabel("THH")).toBe("THh");
     expect(displayUnitLabel("PHD")).toBe("PHd");
     expect(displayUnitLabel("TiH")).toBe("TiH");
+  });
+});
+
+describe("formatHashpricePerPhDay", () => {
+  it("writes the hashprice the way Luxor does", () => {
+    expect(formatHashpricePerPhDay(600, "en-US")).toBe("46,043 sats/PH/s/Day");
   });
 });

@@ -152,6 +152,21 @@ export function formatHashprice(
 }
 
 /**
+ * The hashprice as hashrate markets write it (Luxor's Hashrate Index:
+ * "$/PH/s/Day"), in sats: e.g. "46,043 sats/PH/s/Day".
+ */
+export function formatHashpricePerPhDay(
+  msatPerPih: number,
+  locale?: string
+): string {
+  const sats = tihToSats(TIH_PER_PHD, msatPerPih);
+  const shown = new Intl.NumberFormat(locale, {
+    maximumFractionDigits: sats >= 10 ? 0 : 2,
+  }).format(sats);
+  return `${shown} sats/PH/s/Day`;
+}
+
+/**
  * Price info a Hashu mint publishes at `/checkout/api/info`. Only the
  * fields the wallet reads; all optional because older mints and non-Hashu
  * mints lack them.

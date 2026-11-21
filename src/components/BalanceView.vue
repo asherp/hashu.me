@@ -69,6 +69,10 @@
                       {{
                         $t("BalanceView.tih_price", {
                           price: hashprice,
+                          luxor: formatHashpricePerPhDay(
+                            msatPerPih,
+                            navigator.language
+                          ),
                           msat: formatMsatPerPih(),
                         })
                       }}
@@ -164,7 +168,13 @@ import { useUiStore } from "src/stores/ui";
 import { useWalletStore } from "src/stores/wallet";
 import { usePriceStore } from "src/stores/price";
 import AnimatedNumber from "src/components/AnimatedNumber.vue";
-import { UNIT_TIH, tihToSats, formatHashprice, unitName } from "src/js/hashu";
+import {
+  UNIT_TIH,
+  tihToSats,
+  formatHashprice,
+  formatHashpricePerPhDay,
+  unitName,
+} from "src/js/hashu";
 import { sumProofAmounts } from "src/js/proofs";
 import { useProofsStore } from "src/stores/proofs";
 
@@ -296,6 +306,7 @@ export default defineComponent({
     },
   },
   methods: {
+    formatHashpricePerPhDay,
     ...mapActions(useWalletStore, ["checkPendingTokens"]),
     ...mapActions(usePriceStore, ["fetchBitcoinPrice", "fetchHashuPrice"]),
     setActiveUnit(unit: string) {

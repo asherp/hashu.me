@@ -657,7 +657,7 @@ export default {
   },
   BalanceView: {
     tih_value: "≈ {amount} sat | ≈ {amount} sats",
-    tih_price: "Hashprice {price} · 1 PiH = {msat} msat",
+    tih_price: "Hashprice {price} ({luxor}) · 1 PiH = {msat} msat",
     mintUrl: {
       label: "Mint",
     },
@@ -1493,7 +1493,7 @@ export default {
       },
       price: {
         label: "Price",
-        caption: "Hashprice · 1 PiH = { msat } msat",
+        caption: "1 PiH = { msat } msat",
       },
       eta: {
         label: "Time to redeem",
