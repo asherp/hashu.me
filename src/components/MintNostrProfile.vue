@@ -88,6 +88,7 @@
           {{ websiteLabel }}
         </a>
         <a
+          v-if="canMessage"
           href="#"
           class="profile-link"
           data-testid="mint-nostr-message"
@@ -136,6 +137,8 @@ export default defineComponent({
     npub: { type: String, required: true },
     // Extra relays to ask: nprofile hints and the mint's announced relays.
     relays: { type: Array as PropType<string[]>, default: () => [] },
+    // hashu.me: show "Message" (the mint takes NIP-17 messages)
+    canMessage: { type: Boolean, default: false },
   },
   data() {
     return {

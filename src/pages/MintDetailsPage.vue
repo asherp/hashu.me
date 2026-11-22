@@ -156,7 +156,7 @@
               </div>
               <div class="contact-text">{{ contactInfo.info }}</div>
               <div
-                v-if="isNostrProfileRow(contactInfo)"
+                v-if="isNostrProfileRow(contactInfo) && messageTarget"
                 class="message-icon-wrap q-mr-sm cursor-pointer"
                 data-testid="mint-message-open"
                 @click.stop="showMessages = true"
@@ -199,16 +199,17 @@
                 :npub="mintNostr.npub"
                 :relays="mintNostrRelays"
                 class="q-mb-md"
+                :can-message="!!messageTarget"
                 @message="showMessages = true"
               />
             </transition>
           </template>
           <mint-messages-dialog
-            v-if="mintNostr"
+            v-if="messageTarget"
             v-model="showMessages"
-            :pubkey="mintNostr.pubkey"
-            :npub="mintNostr.npub"
-            :relays="mintNostrRelays"
+            :pubkey="messageTarget.pubkey"
+            :npub="messageTarget.npub"
+            :relays="messageTarget.relays"
             :mint-url="mintData.url"
             :title="mintData.nickname || mintData.info?.name || ''"
           />
@@ -773,10 +774,32 @@ export default defineComponent({
       );
       return c ? parseMintNostrContact(c.info) : null;
     },
+    // hashu.me: whom "Message" writes to (NIP-17). A Hashu mint names it
+    // in its reliability index: the operator mint's own key, or a supplier's
+    // own npub (null = it takes no messages, e.g. a supplier without one).
+    // Any other mint: its Nostr contact.
+    messageTarget() {
+      const r = this.reliability;
+      if (r) {
+        const m = r.messages;
+        if (!m?.pubkey || !m?.npub) return null;
+        return {
+          pubkey: m.pubkey,
+          npub: m.npub,
+          relays: [
+            ...(Array.isArray(m.relays) ? m.relays : []),
+            ...this.mintNostrRelays,
+          ],
+        };
+      }
+      return this.mintNostr
+        ? { ...this.mintNostr, relays: this.mintNostrRelays }
+        : null;
+    },
     // hashu.me: unread replies from this mint (NIP-17)
     messageUnread() {
-      return this.mintNostr
-        ? useMintMessagesStore().unread(this.mintNostr.pubkey)
+      return this.messageTarget
+        ? useMintMessagesStore().unread(this.messageTarget.pubkey)
         : 0;
     },
     mintNostrRelays() {

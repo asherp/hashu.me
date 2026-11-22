@@ -155,6 +155,10 @@ export const useMintMessagesStore = defineStore("mintMessages", {
       const toSelf = wrapRumor(rumor, priv, me);
       const relays = this.relaysFor(pubkey);
       if (!relays.length) throw new Error("No Nostr relays to send on");
+      // NIP-17: also the relays the recipient reads DMs on (kind 10050),
+      // e.g. a supplier reading in their own Nostr client.
+      for (const r of await inboxRelays(relays, pubkey))
+        if (!relays.includes(r)) relays.push(r);
       const accepted = await publish(relays, toMint);
       if (!accepted) throw new Error("No relay took the message");
       // Our own copy: best effort.
@@ -213,5 +217,26 @@ async function publish(relays: string[], ev: NostrEvent): Promise<boolean> {
     return true;
   } catch (e) {
     return false;
+  }
+}
+
+/** The recipient's NIP-17 inbox relays (kind 10050), looked up on `relays`. */
+async function inboxRelays(
+  relays: string[],
+  pubkey: string
+): Promise<string[]> {
+  try {
+    const events = await getPool().querySync(
+      relays,
+      { kinds: [10050], authors: [pubkey], limit: 1 },
+      { maxWait: 3000 }
+    );
+    const newest = events.sort((a, b) => b.created_at - a.created_at)[0];
+    return (newest?.tags || [])
+      .filter((t) => t[0] === "relay" && isRelay(t[1]))
+      .map((t) => t[1])
+      .slice(0, 6);
+  } catch (e) {
+    return [];
   }
 }
