@@ -108,48 +108,81 @@
 
         <!-- Contact Info Section -->
         <div class="contact-section q-mb-lg">
-          <div
+          <template
             v-for="contactInfo in mintData.info?.contact"
-            :key="contactInfo.method"
-            class="contact-item q-mb-md"
+            :key="contactInfo.method + contactInfo.info"
           >
-            <div class="contact-icon-container">
-              <mail-icon
-                v-if="contactInfo.method === 'email'"
+            <div
+              class="contact-item q-mb-md"
+              :class="{
+                'cursor-pointer': isNostrProfileRow(contactInfo),
+              }"
+              :data-testid="
+                isNostrProfileRow(contactInfo) ? 'mint-nostr-row' : undefined
+              "
+              @click="
+                isNostrProfileRow(contactInfo) &&
+                  (showNostrProfile = !showNostrProfile)
+              "
+            >
+              <div class="contact-icon-container">
+                <mail-icon
+                  v-if="contactInfo.method === 'email'"
+                  size="20"
+                  color="#9E9E9E"
+                  class="contact-icon"
+                />
+                <img
+                  v-else-if="contactInfo.method === 'nostr'"
+                  src="nostr-icon.svg"
+                  class="contact-icon"
+                  alt=""
+                />
+                <img
+                  v-else-if="contactInfo.method === 'twitter'"
+                  src="/x-logo.svg"
+                  class="contact-icon"
+                  alt=""
+                />
+                <img
+                  v-else-if="contactInfo.method === 'telegram'"
+                  src="/telegram-icon.svg"
+                  class="contact-icon"
+                  alt=""
+                />
+                <div v-else class="contact-text q-ml-xs">
+                  {{ contactInfo.method }}
+                </div>
+              </div>
+              <div class="contact-text">{{ contactInfo.info }}</div>
+              <copy-icon
+                @click.stop="copyText(contactInfo.info)"
                 size="20"
                 color="#9E9E9E"
-                class="contact-icon"
+                class="copy-icon cursor-pointer"
               />
-              <img
-                v-else-if="contactInfo.method === 'nostr'"
-                src="nostr-icon.svg"
-                class="contact-icon"
-                alt=""
+              <chevron-down-icon
+                v-if="isNostrProfileRow(contactInfo)"
+                size="20"
+                color="#9E9E9E"
+                class="expand-icon q-ml-sm"
+                :class="{ 'expand-icon--open': showNostrProfile }"
               />
-              <img
-                v-else-if="contactInfo.method === 'twitter'"
-                src="/x-logo.svg"
-                class="contact-icon"
-                alt=""
-              />
-              <img
-                v-else-if="contactInfo.method === 'telegram'"
-                src="/telegram-icon.svg"
-                class="contact-icon"
-                alt=""
-              />
-              <div v-else class="contact-text q-ml-xs">
-                {{ contactInfo.method }}
-              </div>
             </div>
-            <div class="contact-text">{{ contactInfo.info }}</div>
-            <copy-icon
-              @click="copyText(contactInfo.info)"
-              size="20"
-              color="#9E9E9E"
-              class="copy-icon cursor-pointer"
-            />
-          </div>
+            <transition
+              v-if="isNostrProfileRow(contactInfo)"
+              appear
+              name="smooth-slide"
+            >
+              <mint-nostr-profile
+                v-if="showNostrProfile"
+                :pubkey="mintNostr.pubkey"
+                :npub="mintNostr.npub"
+                :relays="mintNostrRelays"
+                class="q-mb-md"
+              />
+            </transition>
+          </template>
         </div>
 
         <!-- Section Divider -->
@@ -613,7 +646,10 @@ import {
   Tag as TagIcon,
   Hourglass as HourglassIcon,
   ShieldCheck as ShieldCheckIcon,
+  ChevronDown as ChevronDownIcon,
 } from "lucide-vue-next";
+import MintNostrProfile from "src/components/MintNostrProfile.vue";
+import { parseMintNostrContact } from "src/js/mint-nostr";
 import { usePriceStore } from "src/stores/price";
 import { useMintRecommendationsStore } from "src/stores/mintRecommendations";
 
@@ -631,6 +667,8 @@ export default defineComponent({
   mixins: [windowMixin],
   components: {
     VueQrcode,
+    MintNostrProfile,
+    ChevronDownIcon,
     QrCodeIcon,
     LinkIcon,
     NutIcon,
@@ -662,6 +700,7 @@ export default defineComponent({
         nostr: "Nostr",
       },
       showQrCode: false,
+      showNostrProfile: false,
       showAllNuts: false,
       nutNames: {
         7: "Token state check",
@@ -691,6 +730,20 @@ export default defineComponent({
     };
   },
   computed: {
+    // hashu.me: the mint's Nostr key from its NUT-06 contact, if any
+    mintNostr() {
+      const c = (this.mintData?.info?.contact || []).find(
+        (c) => c.method === "nostr"
+      );
+      return c ? parseMintNostrContact(c.info) : null;
+    },
+    mintNostrRelays() {
+      const announced = this.reliability?.announcement?.relays;
+      return [
+        ...(this.mintNostr?.relays || []),
+        ...(Array.isArray(announced) ? announced : []),
+      ];
+    },
     ...mapWritableState(useMintsStore, [
       "showEditMintDialog",
       "showRemoveMintDialog",
@@ -768,6 +821,14 @@ export default defineComponent({
     },
   },
   methods: {
+    isNostrProfileRow(contactInfo) {
+      return (
+        contactInfo.method === "nostr" &&
+        !!this.mintNostr &&
+        parseMintNostrContact(contactInfo.info)?.pubkey ===
+          this.mintNostr.pubkey
+      );
+    },
     formatHashrate,
     formatDuration,
     formatHashprice,
@@ -1022,6 +1083,15 @@ export default defineComponent({
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.expand-icon {
+  flex-shrink: 0;
+  transition: transform 0.2s ease;
+}
+
+.expand-icon--open {
+  transform: rotate(180deg);
 }
 
 .copy-icon {

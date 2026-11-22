@@ -1518,6 +1518,14 @@ export default {
     },
     contact: {
       title: "Contact",
+      nostr: {
+        loading: "Looking up the mint's Nostr profile…",
+        none: "This mint hasn't published a Nostr profile yet.",
+        open: "Open in Nostr",
+        nip05_verified: "Verified: this address points to the mint's key",
+        nip05_unverified:
+          "Not verified: this address doesn't point to the mint's key",
+      },
     },
     details: {
       title: "Mint details",
