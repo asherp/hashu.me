@@ -132,7 +132,6 @@
 <script lang="ts">
 import {
   DEFAULT_DISPLAY_UNIT,
-  DEFAULT_THEME,
   DISPLAY_UNITS,
   formatHashprice,
   isDisplayUnit,
@@ -155,7 +154,7 @@ export default defineComponent({
   },
   data: function () {
     return {
-      activeTheme: DEFAULT_THEME,
+      activeTheme: "monochrome",
       themes: [
         "hashu",
         "monochrome",
@@ -227,13 +226,12 @@ export default defineComponent({
     },
     selectTheme: function (themeName) {
       this.changeColor(themeName);
-      this.$q.localStorage.set("hashu.themeChosen", true);
       this.activeTheme = themeName;
     },
   },
   created: function () {
     this.activeTheme =
-      this.$q.localStorage.getItem("cashu.theme") || DEFAULT_THEME;
+      this.$q.localStorage.getItem("cashu.theme") || "monochrome";
   },
 });
 </script>
