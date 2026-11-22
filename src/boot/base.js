@@ -10,6 +10,7 @@ import { Clipboard } from "@capacitor/clipboard";
 import { SafeArea } from "capacitor-plugin-safe-area";
 import { useSettingsStore } from "stores/settings";
 import { formatBigIntCurrency } from "src/js/format-currency";
+import { DEFAULT_THEME } from "src/js/hashu";
 window.LOCALE = "en";
 // window.EventHub = new Vue();
 
@@ -341,13 +342,16 @@ window.windowMixin = {
     //   return dialogText;
     // });
 
-    if (this.$q.localStorage.getItem("cashu.theme")) {
-      document.body.setAttribute(
-        "data-theme",
-        this.$q.localStorage.getItem("cashu.theme")
-      );
+    // Hashu orange is the default theme. Cashu.me wrote "monochrome" for
+    // everyone on first load, so a stored "monochrome" without the
+    // hashu.themeChosen flag means the user never picked a theme: move
+    // them to Hashu once. Picking any theme in Settings sets the flag.
+    const storedTheme = this.$q.localStorage.getItem("cashu.theme");
+    const themeChosen = this.$q.localStorage.getItem("hashu.themeChosen");
+    if (!storedTheme || (storedTheme === "monochrome" && !themeChosen)) {
+      this.changeColor(DEFAULT_THEME);
     } else {
-      this.changeColor("monochrome");
+      document.body.setAttribute("data-theme", storedTheme);
     }
 
     // Initial status bar sync and observers for changes

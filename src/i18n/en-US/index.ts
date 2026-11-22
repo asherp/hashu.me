@@ -482,6 +482,7 @@ export default {
         title: "Appearance",
         description: "Change how your wallet looks.",
         tooltips: {
+          hashu: "hashu",
           mono: "mono",
           cyber: "cyber",
           freedom: "freedom",

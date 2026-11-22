@@ -110,7 +110,7 @@
 </template>
 
 <script lang="ts">
-import { DISPLAY_UNITS } from "src/js/hashu";
+import { DEFAULT_THEME, DISPLAY_UNITS } from "src/js/hashu";
 import { defineComponent } from "vue";
 import { mapWritableState } from "pinia";
 import { useSettingsStore } from "src/stores/settings";
@@ -126,8 +126,9 @@ export default defineComponent({
   },
   data: function () {
     return {
-      activeTheme: "monochrome",
+      activeTheme: DEFAULT_THEME,
       themes: [
+        "hashu",
         "monochrome",
         "classic",
         "bitcoin",
@@ -139,6 +140,7 @@ export default defineComponent({
         "flamingo",
       ],
       themeOptions: [
+        { name: "hashu", color: "hashu-orange", tooltip: "hashu" },
         { name: "monochrome", color: "grey", tooltip: "mono" },
         { name: "cyber", color: "green", tooltip: "cyber" },
         { name: "freedom", color: "pink-13", tooltip: "freedom" },
@@ -169,12 +171,13 @@ export default defineComponent({
   methods: {
     selectTheme: function (themeName) {
       this.changeColor(themeName);
+      this.$q.localStorage.set("hashu.themeChosen", true);
       this.activeTheme = themeName;
     },
   },
   created: function () {
     this.activeTheme =
-      this.$q.localStorage.getItem("cashu.theme") || "monochrome";
+      this.$q.localStorage.getItem("cashu.theme") || DEFAULT_THEME;
   },
 });
 </script>

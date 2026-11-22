@@ -7,6 +7,9 @@
  * unit, the way Cashu wallets show sats as BTC.
  */
 
+/** Default color theme (Settings > Appearance): hashu.io orange #f7931a. */
+export const DEFAULT_THEME = "hashu";
+
 /** Hashu's own mint, suggested on first start. */
 export const DEFAULT_MINT_URL = "https://mint.hashu.io";
 
