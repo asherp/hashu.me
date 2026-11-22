@@ -156,6 +156,7 @@ export default defineComponent({
     return {
       activeTheme: "monochrome",
       themes: [
+        "hashu",
         "monochrome",
         "classic",
         "bitcoin",
@@ -167,6 +168,7 @@ export default defineComponent({
         "flamingo",
       ],
       themeOptions: [
+        { name: "hashu", color: "hashu-orange", tooltip: "hashu" },
         { name: "monochrome", color: "grey", tooltip: "mono" },
         { name: "cyber", color: "green", tooltip: "cyber" },
         { name: "freedom", color: "pink-13", tooltip: "freedom" },

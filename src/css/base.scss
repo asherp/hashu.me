@@ -1,4 +1,13 @@
 $themes: (
+  // Hashu brand: hashu.io orange (#f7931a) on the site's near-black.
+  "hashu": (
+    primary: #f7931a,
+    secondary: #e0820c,
+    dark: #111110,
+    info: #1a1a19,
+    marginal-bg: #111110,
+    marginal-text: #fff,
+  ),
   "classic": (
     primary: #935af5,
     secondary: #b45af5,
@@ -126,13 +135,15 @@ $themes: (
 }
 
 [data-theme="monochrome"] .q-badge.bg-primary,
-[data-theme="cyber"] .q-badge.bg-primary {
+[data-theme="cyber"] .q-badge.bg-primary,
+[data-theme="hashu"] .q-badge.bg-primary {
   background: primary !important;
   color: #0a0a0a !important;
 }
 
 [data-theme="monochrome"] .q-btn.bg-primary,
-[data-theme="cyber"] .q-btn.bg-primary {
+[data-theme="cyber"] .q-btn.bg-primary,
+[data-theme="hashu"] .q-btn.bg-primary {
   background: primary !important;
   color: #0a0a0a !important;
 }
@@ -143,6 +154,11 @@ $themes: (
 
 [data-theme="freedom"] .q-header {
   background: #0a0a0a !important;
+}
+
+// Swatch for the Hashu theme in Settings > Appearance.
+.text-hashu-orange {
+  color: #f7931a !important;
 }
 
 [v-cloak] {
