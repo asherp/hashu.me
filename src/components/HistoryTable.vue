@@ -20,6 +20,10 @@
               v-else-if="isOnchainTransaction(transaction)"
               class="transaction-icon"
             />
+            <PickaxeIcon
+              v-else-if="transaction.method === PaymentMethod.Hashrate"
+              class="transaction-icon"
+            />
             <ZapIcon v-else class="transaction-icon" />
           </q-avatar>
         </q-item-section>
@@ -175,6 +179,7 @@ import { notify } from "src/js/notify";
 import {
   Bitcoin as BitcoinIcon,
   Coins as CoinsIcon,
+  Pickaxe as PickaxeIcon,
   Zap as ZapIcon,
 } from "lucide-vue-next";
 import { PaymentMethod, UnifiedTransactionType } from "src/stores/walletTypes";
@@ -185,12 +190,14 @@ export default defineComponent({
   components: {
     CoinsIcon,
     BitcoinIcon,
+    PickaxeIcon,
     ZapIcon,
   },
   mixins: [windowMixin],
   props: {},
   data: function () {
     return {
+      PaymentMethod,
       currentPage: 1,
       pageSize: 5,
       filterPending: false,
@@ -238,7 +245,11 @@ export default defineComponent({
       "sendData",
       "showLockInput",
     ]),
-    ...mapWritableState(useUiStore, ["showInvoiceDetails"]),
+    ...mapWritableState(useUiStore, [
+      "showInvoiceDetails",
+      "showRedeemPoolDialog",
+      "redeemPoolQuote",
+    ]),
     ...mapWritableState(useWalletStore, ["invoiceData", "payInvoiceData"]),
 
     // Use cached unified transactions for better performance
@@ -419,6 +430,13 @@ export default defineComponent({
     },
 
     showTransactionDialog(transaction) {
+      if (transaction.method === PaymentMethod.Hashrate) {
+        // hashu.me: a redemption opens its own sheet (pool, mint, delivered,
+        // change), not the Lightning invoice view.
+        this.redeemPoolQuote = transaction.quote;
+        this.showRedeemPoolDialog = true;
+        return;
+      }
       if (transaction.type === UnifiedTransactionType.Ecash) {
         // For pending incoming tokens, open receive dialog instead
         if (transaction.status === "pending" && transaction.amount > 0) {

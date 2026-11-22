@@ -72,6 +72,12 @@
           ></q-tab>
           <!-- <q-tab name="tokens" label="Tokens"></q-tab> -->
           <q-tab
+            name="redemptions"
+            class="text-secondary"
+            data-testid="tab-redemptions"
+            :label="$t('WalletPage.tabs.redemptions.label')"
+          ></q-tab>
+          <q-tab
             name="mints"
             class="text-secondary"
             :label="$t('WalletPage.tabs.mints.label')"
@@ -94,6 +100,11 @@
               class="q-mx-auto"
               style="max-width: 500px"
             />
+          </q-tab-panel>
+
+          <!-- hashu.me: redemptions to pools, open and past -->
+          <q-tab-panel name="redemptions">
+            <RedemptionsTable v-if="historyHydrated" />
           </q-tab-panel>
 
           <!-- ////////////////////// SETTINGS ////////////////// -->
@@ -219,6 +230,7 @@ import token from "src/js/token";
 import BalanceView from "components/BalanceView.vue";
 import MintSettings from "components/MintSettings.vue";
 import HistoryTable from "components/HistoryTable.vue";
+import RedemptionsTable from "components/RedemptionsTable.vue";
 import NoMintWarnBanner from "components/NoMintWarnBanner.vue";
 import WelcomeDialog from "components/WelcomeDialog.vue";
 import SendTokenDialog from "components/SendTokenDialog.vue";
@@ -274,6 +286,7 @@ export default {
     BalanceView,
     MintSettings,
     HistoryTable,
+    RedemptionsTable,
     NoMintWarnBanner,
     WelcomeDialog,
     SendTokenDialog,

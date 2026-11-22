@@ -630,6 +630,9 @@ export default {
       invoices: {
         label: "Invoices",
       },
+      redemptions: {
+        label: "Redemptions",
+      },
       mints: {
         label: "Mints",
       },
@@ -940,6 +943,10 @@ export default {
     },
   },
   MintSettings: {
+    redeem: {
+      label: "Redeem",
+      tooltip: "Redeem this mint's vouchers as hashrate to your pool",
+    },
     eta_tooltip:
       "About how long redeeming your whole balance here would take at this hashrate, after redemptions already queued.",
     price_tooltip:
@@ -1108,6 +1115,17 @@ export default {
   },
   RedeemPoolDialog: {
     title: "Redeem to pool",
+    from: "From",
+    details: {
+      pool: "Pool",
+      worker: "Worker",
+      amount: "Locked",
+      charged: "Charged",
+      change: "Change back",
+      started: "Started",
+      finished: "Finished",
+    },
+    balance: "{ balance } available",
     text: "Point hashrate at your pool. Only the hashes delivered are deducted from your balance. The rest comes back as change for future redemption.",
     inputs: {
       pool: { label: "Pool" },
@@ -1480,6 +1498,10 @@ export default {
       url: {
         label: "URL",
       },
+      reviews: {
+        label: "Reviews",
+        count: "{ count } review | { count } reviews",
+      },
       nuts: {
         label: "Nuts",
         actions: {
@@ -1537,6 +1559,21 @@ export default {
     sheet_title: "Select Mint",
     badge_mint_error_text: "Error",
     badge_option_mint_error_text: "@:ChooseMint.badge_mint_error_text",
+  },
+  RedemptionsTable: {
+    empty_text: "No redemptions yet",
+    empty_hint:
+      "Redeem vouchers as hashrate to your pool. Open redemptions and past ones show up here.",
+    active: "Active",
+    past: "Past",
+    show_more: "Show more",
+    waiting: "Waiting for the first shares",
+    no_progress: "Progress isn't available from this mint",
+    progress: "{ filled } of { amount } delivered",
+    left: "about { time } left",
+    started: "Started { date }",
+    finished: "{ start } to { end }",
+    charged: "Charged { spent } · { change } back",
   },
   HistoryTable: {
     empty_text: "No history yet",
