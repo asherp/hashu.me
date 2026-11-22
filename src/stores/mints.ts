@@ -19,6 +19,7 @@ import {
 import { useUiStore } from "./ui";
 import { ref, watch } from "vue";
 import { useProofsStore } from "./proofs";
+import { useEpochsStore } from "./epochs";
 import { i18n } from "src/boot/i18n";
 import { useSettingsStore } from "./settings";
 import { useNostrMintBackupStore } from "./nostrMintBackup";
@@ -97,8 +98,10 @@ export class MintClass {
   unitProofs(unit: string): WalletProof[] {
     const proofsStore = useProofsStore();
     const unitKeysets = this.unitKeysets(unit);
-    return proofsStore.proofs.filter(
-      (p) => unitKeysets.map((k) => k.id).includes(p.id) && !p.reserved
+    return useEpochsStore().spendable(
+      proofsStore.proofs.filter(
+        (p) => unitKeysets.map((k) => k.id).includes(p.id) && !p.reserved
+      )
     );
   }
 
@@ -204,9 +207,11 @@ export const useMintsStore = defineStore("mints", {
         .map((m) => m.keysets)
         .flat()
         .filter((k) => k.unit === activeUnit);
-      const proofs = proofsStore.proofs
-        .filter((p) => allUnitKeysets.map((k) => k.id).includes(p.id))
-        .filter((p) => !p.reserved);
+      const proofs = useEpochsStore().spendable(
+        proofsStore.proofs
+          .filter((p) => allUnitKeysets.map((k) => k.id).includes(p.id))
+          .filter((p) => !p.reserved)
+      );
       const balance = sumProofAmounts(proofs);
       this.uiStoreGlobal.lastBalanceCached = balance;
       return balance;
@@ -290,8 +295,10 @@ export const useMintsStore = defineStore("mints", {
     mintUnitProofs(mint: StoredMint, unit: string): WalletProof[] {
       const proofsStore = useProofsStore();
       const unitKeysets = mint.keysets.filter((k) => k.unit === unit);
-      return proofsStore.proofs.filter(
-        (p) => unitKeysets.map((k) => k.id).includes(p.id) && !p.reserved
+      return useEpochsStore().spendable(
+        proofsStore.proofs.filter(
+          (p) => unitKeysets.map((k) => k.id).includes(p.id) && !p.reserved
+        )
       );
     },
     mintUnitKeysets(mint: StoredMint, unit: string): MintKeyset[] {
