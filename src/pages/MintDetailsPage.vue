@@ -155,6 +155,25 @@
                 </div>
               </div>
               <div class="contact-text">{{ contactInfo.info }}</div>
+              <div
+                v-if="isNostrProfileRow(contactInfo)"
+                class="message-icon-wrap q-mr-sm cursor-pointer"
+                data-testid="mint-message-open"
+                @click.stop="showMessages = true"
+              >
+                <message-circle-icon size="20" color="#9E9E9E" />
+                <q-badge
+                  v-if="messageUnread"
+                  floating
+                  rounded
+                  color="primary"
+                  text-color="black"
+                  :label="messageUnread"
+                />
+                <q-tooltip>{{
+                  $t("MintDetailsDialog.contact.nostr.message")
+                }}</q-tooltip>
+              </div>
               <copy-icon
                 @click.stop="copyText(contactInfo.info)"
                 size="20"
@@ -180,9 +199,19 @@
                 :npub="mintNostr.npub"
                 :relays="mintNostrRelays"
                 class="q-mb-md"
+                @message="showMessages = true"
               />
             </transition>
           </template>
+          <mint-messages-dialog
+            v-if="mintNostr"
+            v-model="showMessages"
+            :pubkey="mintNostr.pubkey"
+            :npub="mintNostr.npub"
+            :relays="mintNostrRelays"
+            :mint-url="mintData.url"
+            :title="mintData.nickname || mintData.info?.name || ''"
+          />
         </div>
 
         <!-- Section Divider -->
@@ -648,8 +677,11 @@ import {
   Hourglass as HourglassIcon,
   ShieldCheck as ShieldCheckIcon,
   ChevronDown as ChevronDownIcon,
+  MessageCircle as MessageCircleIcon,
 } from "lucide-vue-next";
 import MintNostrProfile from "src/components/MintNostrProfile.vue";
+import MintMessagesDialog from "src/components/MintMessagesDialog.vue";
+import { useMintMessagesStore } from "src/stores/mintMessages";
 import { parseMintNostrContact } from "src/js/mint-nostr";
 import { usePriceStore } from "src/stores/price";
 import { useMintRecommendationsStore } from "src/stores/mintRecommendations";
@@ -669,6 +701,8 @@ export default defineComponent({
   components: {
     VueQrcode,
     MintNostrProfile,
+    MintMessagesDialog,
+    MessageCircleIcon,
     ChevronDownIcon,
     QrCodeIcon,
     LinkIcon,
@@ -702,6 +736,7 @@ export default defineComponent({
       },
       showQrCode: false,
       showNostrProfile: false,
+      showMessages: false,
       showAllNuts: false,
       nutNames: {
         7: "Token state check",
@@ -737,6 +772,12 @@ export default defineComponent({
         (c) => c.method === "nostr"
       );
       return c ? parseMintNostrContact(c.info) : null;
+    },
+    // hashu.me: unread replies from this mint (NIP-17)
+    messageUnread() {
+      return this.mintNostr
+        ? useMintMessagesStore().unread(this.mintNostr.pubkey)
+        : 0;
     },
     mintNostrRelays() {
       const announced = this.reliability?.announcement?.relays;
@@ -1099,6 +1140,11 @@ export default defineComponent({
   transform: rotate(180deg);
 }
 
+.message-icon-wrap {
+  position: relative;
+  display: inline-flex;
+  flex-shrink: 0;
+}
 .copy-icon {
   color: #636366;
   margin-left: 10px;

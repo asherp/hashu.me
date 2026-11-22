@@ -1539,6 +1539,18 @@ export default {
         nip05_verified: "Verified: this address points to the mint's key",
         nip05_unverified:
           "Not verified: this address doesn't point to the mint's key",
+        message: "Message",
+      },
+      messages: {
+        title: "Message the mint",
+        empty:
+          "Ask the mint anything. Messages are private (NIP-17): only the mint can read them, and it answers here.",
+        who: "Sent from your wallet's Nostr key. A Hashu supplier mint's messages go to its miner.",
+        placeholder: "Write a message",
+        send: "Send",
+        sending: "Sending…",
+        failed: "Couldn't send: { error }",
+        refreshing: "Checking for replies…",
       },
     },
     details: {

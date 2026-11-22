@@ -88,6 +88,15 @@
           {{ websiteLabel }}
         </a>
         <a
+          href="#"
+          class="profile-link"
+          data-testid="mint-nostr-message"
+          @click.prevent="$emit('message')"
+        >
+          <q-icon name="chat_bubble_outline" size="16px" class="q-mr-xs" />
+          {{ $t("MintDetailsDialog.contact.nostr.message") }}
+        </a>
+        <a
           :href="njump"
           target="_blank"
           rel="noopener noreferrer"
@@ -121,6 +130,7 @@ const FETCH_TIMEOUT_MS = 8000;
 
 export default defineComponent({
   name: "MintNostrProfile",
+  emits: ["message"],
   props: {
     pubkey: { type: String, required: true },
     npub: { type: String, required: true },

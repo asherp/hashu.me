@@ -16,7 +16,9 @@ import NDK, {
 import { nip04, nip19, nip44 } from "nostr-tools";
 import { bytesToHex, hexToBytes } from "@noble/hashes/utils"; // already an installed dependency
 import { useWalletStore } from "./wallet";
-import { generateSecretKey, getPublicKey } from "nostr-tools";
+import { generateSecretKey, getPublicKey, verifyEvent } from "nostr-tools";
+import { openSeal } from "src/js/nip17";
+import { useMintMessagesStore } from "./mintMessages";
 import { useLocalStorage } from "@vueuse/core";
 import { useSettingsStore } from "./settings";
 import { useReceiveTokensStore } from "./receiveTokensStore";
@@ -454,6 +456,12 @@ export const useNostrStore = defineStore("nostr", {
             );
             dmEvent = JSON.parse(dmEventString) as NDKEvent;
             content = dmEvent.content;
+            // hashu.me: a message from (or our copy of one to) a mint we
+            // talk to goes to that conversation.
+            if (verifyEvent(sealEvent as any)) {
+              const rumor = openSeal(sealEvent, this.seedSignerPrivateKey);
+              if (rumor) useMintMessagesStore().receiveFromSubscription(rumor);
+            }
             console.log("### NIP-17 DM from", dmEvent.pubkey);
             console.log("Content:", content);
           } catch (e) {
