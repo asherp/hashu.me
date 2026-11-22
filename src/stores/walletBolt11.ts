@@ -1,6 +1,7 @@
 import { currentDateStr } from "src/js/utils";
 import { useMintsStore, WalletProof } from "./mints";
 import { useProofsStore } from "./proofs";
+import { useEpochsStore } from "./epochs";
 import { type MutexPriority, useUiStore } from "src/stores/ui";
 import {
   Amount,
@@ -49,9 +50,36 @@ function normalizeMintQuote(quote: MintQuoteBolt11Response): AppMintQuote {
 export async function requestMintBolt11(
   this: any,
   amount: number,
-  mintWallet: Wallet
+  mintWallet: Wallet,
+  epoch?: number
 ): Promise<MintQuoteBolt11Response> {
   try {
+    if (epoch !== undefined) {
+      // A future difficulty epoch, sold through the Hashu mint's own quote
+      // API. No NUT-20 lock: the mint refuses one for these quotes.
+      const data = await useEpochsStore().requestFutureQuote(
+        mintWallet.mint.mintUrl,
+        epoch,
+        amount
+      );
+      const invoice: InvoiceHistory = {
+        amount,
+        request: data.request,
+        quote: data.quote,
+        memo: `Epoch ${epoch}`,
+        date: currentDateStr(),
+        status: "pending",
+        mint: mintWallet.mint.mintUrl,
+        unit: mintWallet.unit,
+        type: PaymentMethod.Bolt11,
+        method: PaymentMethod.Bolt11,
+        direction: "mint",
+        mintQuote: normalizeMintQuote(data),
+      };
+      this.invoiceData = invoice;
+      await this.addPaymentHistory(invoice);
+      return data;
+    }
     await mintWallet.loadMint();
     const { supported: nut20supported } = mintWallet
       .getMintInfo()
@@ -151,6 +179,15 @@ export async function mintBolt11(
         throw new Error("unknown state.");
     }
     // MintQuoteState must be PAID
+    const epochs = useEpochsStore();
+    if (epochs.futureQuote(invoice.quote)) {
+      // Bought for a future epoch: issued with that epoch's keyset at
+      // Hashu's own endpoint (the standard one would refuse it).
+      const proofs = await epochs.mintFutureQuote(invoice.quote);
+      await this.setInvoicePaid(invoice.quote);
+      useTransactionWorkerStore().removeInvoiceFromChecker(invoice.quote);
+      return proofs;
+    }
     const proofs = await this.retryOnceOnRecoverableError(
       mintWallet.keysetId,
       async () =>

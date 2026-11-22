@@ -150,6 +150,11 @@
         </span>
       </div>
     </div>
+    <!-- hashu.me: vouchers by difficulty epoch (Hashu mints with epochs) -->
+    <EpochBalances
+      v-if="activeMintUrl && activeUnit === 'tih'"
+      :mint-url="activeMintUrl"
+    />
   </div>
   <!-- </q-card-section>
   </q-card> -->
@@ -165,6 +170,8 @@ import { useUiStore } from "src/stores/ui";
 import { useWalletStore } from "src/stores/wallet";
 import { usePriceStore } from "src/stores/price";
 import AnimatedNumber from "src/components/AnimatedNumber.vue";
+import EpochBalances from "src/components/EpochBalances.vue";
+import { useEpochsStore } from "src/stores/epochs";
 import { UNIT_TIH, tihToSats, formatHashprice, unitName } from "src/js/hashu";
 import { sumProofAmounts } from "src/js/proofs";
 import { useProofsStore } from "src/stores/proofs";
@@ -174,6 +181,7 @@ export default defineComponent({
   mixins: [windowMixin],
   components: {
     AnimatedNumber,
+    EpochBalances,
   },
   props: {
     setTab: Function,
@@ -333,9 +341,13 @@ export default defineComponent({
           .filter((keyset) => keyset.unit.toLowerCase() === normalizedUnit)
           .map((keyset) => keyset.id)
       );
+      // Vouchers dated to a future epoch aren't spendable yet; they are
+      // listed by epoch below the balance instead.
       return sumProofAmounts(
-        this.proofs.filter(
-          (proof) => keysetIds.has(proof.id) && !proof.reserved
+        useEpochsStore().spendable(
+          this.proofs.filter(
+            (proof) => keysetIds.has(proof.id) && !proof.reserved
+          )
         )
       );
     },

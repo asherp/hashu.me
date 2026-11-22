@@ -73,6 +73,12 @@
               :filter-payment-method="mintFilterMethod"
               filter-mint-operation="mint"
             />
+            <EpochPicker
+              v-if="!isOnchain && !isBolt12 && activeUnit === 'tih'"
+              v-model="buyEpoch"
+              :mint-url="activeMintUrl"
+              class="q-mt-sm"
+            />
           </div>
         </div>
 
@@ -278,6 +284,7 @@ import ChooseMint from "src/components/ChooseMint.vue";
 import NumericKeyboard from "src/components/NumericKeyboard.vue";
 import AmountInputComponent from "src/components/AmountInputComponent.vue";
 import OnchainDepositLimits from "src/components/OnchainDepositLimits.vue";
+import EpochPicker from "src/components/EpochPicker.vue";
 import { useWalletStore } from "src/stores/wallet";
 import { useUiStore } from "src/stores/ui";
 import { useMintsStore } from "src/stores/mints";
@@ -308,6 +315,7 @@ export default defineComponent({
     NumericKeyboard,
     AmountInputComponent,
     OnchainDepositLimits,
+    EpochPicker,
     VueQrcode,
   },
   props: {},
@@ -325,6 +333,8 @@ export default defineComponent({
       refreshingMint: false,
       checkingReusableOnchainQuote: false,
       checkedReusableOnchainQuote: null as InvoiceHistory | null,
+      /** Future epoch to buy (Hashu mints with epochs); null = now. */
+      buyEpoch: null as number | null,
     };
   },
   computed: {
@@ -587,6 +597,7 @@ export default defineComponent({
   watch: {
     showCreateInvoiceDialog: function (val) {
       if (val) {
+        this.buyEpoch = null;
         this.onchainAddAmount = false;
         this.npubCashAddAmount = false;
         this.npubCashAddressCopied = false;
@@ -760,7 +771,11 @@ export default defineComponent({
           await this.mintOnPaidBolt12(mintQuote.quote);
         } else {
           // BOLT11 Flow
-          const mintQuote = await this.requestMintBolt11(amount, wallet);
+          const mintQuote = await this.requestMintBolt11(
+            amount,
+            wallet,
+            this.buyEpoch ?? undefined
+          );
 
           this.showCreateInvoiceDialog = false;
           this.showInvoiceDetails = true;

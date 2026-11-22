@@ -660,6 +660,32 @@ export default {
       },
     },
   },
+  Epochs: {
+    epoch: "Epoch {epoch}",
+    perpetual: "Perpetual",
+    status: {
+      current: "Current epoch, until about {date}",
+      future: "Spendable from about {date}",
+      expired: "Expired. Convert to the current epoch",
+      perpetual: "Not dated to an epoch",
+    },
+    convert: {
+      action: "Convert",
+      done: "Converted {amount} to epoch {epoch}",
+      failed: "Could not convert",
+    },
+    buy: {
+      action: "Buy a future epoch",
+    },
+    picker: {
+      label: "Difficulty epoch",
+      now: "Now",
+      now_sub: "Epoch {epoch}, until {date}",
+      future_sub: "From {date}, {free} left",
+      future_note:
+        "These vouchers can be spent or redeemed from about {date}, when the epoch starts.",
+    },
+  },
   BalanceView: {
     tih_value: "≈ {amount} sat | ≈ {amount} sats",
     tih_price: "Hashprice {price} · 1 PiH = {msat} msat",

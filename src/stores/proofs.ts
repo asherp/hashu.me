@@ -1,6 +1,7 @@
 import { ref } from "vue";
 import { defineStore } from "pinia";
 import { useMintsStore, WalletProof } from "./mints";
+import { useEpochsStore } from "./epochs";
 import { cashuDb, CashuDexie, useDexieStore } from "./dexie";
 import {
   Amount,
@@ -65,8 +66,9 @@ export const useProofsStore = defineStore("proofs", {
       }
 
       const keysetIds = new Set(unitKeysets.map((k) => k.id));
-      mintStore.activeProofs = proofs.value.filter(
-        (p) => keysetIds.has(p.id) && !p.reserved
+      // Vouchers dated to a future epoch can't be spent until it starts.
+      mintStore.activeProofs = useEpochsStore().spendable(
+        proofs.value.filter((p) => keysetIds.has(p.id) && !p.reserved)
       );
     };
 
