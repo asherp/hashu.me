@@ -1,3 +1,10 @@
+import {
+  DEFAULT_MONEY_UNIT,
+  formatPricePer,
+  toMoney,
+  type Money,
+  type MoneyUnit,
+} from "src/js/money";
 /**
  * Hashu defaults for the hashu.me fork of Cashu.me.
  *
@@ -138,26 +145,23 @@ export function satsPerThd(msatPerPih: number): number {
 
 /**
  * A mint's hashprice per one of the wallet's display unit, so the price
- * reads in the same unit as amounts: "46 sats/THd", "46,043 sats/PHd".
- * Below a sat per unit (TiH, PiH) it is shown in msat: "600 msat/PiH".
+ * reads as money unit / hash unit, in the same hash unit as amounts:
+ * "46 sats/THd", "46,043 sats/PHd", "₿46/THd", "0.00000046 BTC/THd".
+ * Below a sat per unit (TiH, PiH) sat and ₿ prices show msat: "600 msat/PiH".
  */
 export function formatHashprice(
   msatPerPih: number,
   unit: DisplayUnit = DEFAULT_DISPLAY_UNIT,
-  locale?: string
+  locale?: string,
+  money: MoneyUnit | Money = DEFAULT_MONEY_UNIT
 ): string {
-  const sats = tihToSats(DISPLAY_UNITS[unit], msatPerPih);
-  if (sats > 0 && sats < 1) {
-    const msat = sats * 1000;
-    const shown = new Intl.NumberFormat(locale, {
-      maximumSignificantDigits: 3,
-    }).format(msat);
-    return `${shown} msat/${displayUnitLabel(unit)}`;
-  }
-  const shown = new Intl.NumberFormat(locale, {
-    maximumFractionDigits: sats >= 10 ? 0 : 2,
-  }).format(sats);
-  return `${shown} ${sats === 1 ? "sat" : "sats"}/${displayUnitLabel(unit)}`;
+  const msat = tihToSats(DISPLAY_UNITS[unit], msatPerPih) * 1000;
+  const { usdtPerPih } = toMoney(money);
+  const usd =
+    usdtPerPih && usdtPerPih > 0
+      ? (DISPLAY_UNITS[unit] / TIH_PER_PIH) * usdtPerPih
+      : undefined;
+  return formatPricePer(msat, displayUnitLabel(unit), money, locale, usd);
 }
 
 /**
@@ -167,6 +171,8 @@ export function formatHashprice(
  */
 export type HashuMintPrice = {
   msat_per_pih?: number | null;
+  /** USDT per PiH when the mint sells vouchers for USDT, else null. */
+  usdt_per_pih?: number | null;
   min_buy_tih?: number | null;
   min_redeem_tih?: number | null;
   /** Backup pools a redemption may list; missing on mints without them. */

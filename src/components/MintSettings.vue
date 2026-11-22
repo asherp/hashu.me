@@ -471,7 +471,7 @@ export default defineComponent({
   },
   computed: {
     ...mapWritableState(useSettingsStore, ["getBitcoinPrice"]),
-    ...mapState(useSettingsStore, ["hashuDisplayUnit"]),
+    ...mapState(useSettingsStore, ["hashuDisplayUnit", "moneyUnit"]),
     ...mapState(useP2PKStore, ["p2pkKeys"]),
     ...mapState(useMintsStore, [
       "activeMintUrl",
@@ -537,7 +537,12 @@ export default defineComponent({
     mintHashprice(url: string): string {
       const msat = this.hashuPrices[url]?.msatPerPih;
       return msat
-        ? formatHashprice(msat, this.hashuDisplayUnit, navigator.language)
+        ? formatHashprice(
+            msat,
+            this.hashuDisplayUnit,
+            navigator.language,
+            usePriceStore().money(url)
+          )
         : "";
     },
     /** What a Hashu mint's rigs deliver right now, in H/s; null if it doesn't say. */

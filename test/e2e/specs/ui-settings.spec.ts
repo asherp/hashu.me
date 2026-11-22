@@ -42,20 +42,20 @@ test("persists privacy controls and suppresses automatic quote and price request
   await expect(page.getByText("Use WebSockets", { exact: true })).toBeVisible();
 });
 
-test("changes theme, bitcoin symbol, keyboard preference and language persistently", async ({
+test("changes theme, monetary unit, keyboard preference and language persistently", async ({
   page,
 }) => {
   const wallet = new WalletUi(page);
   await wallet.onboard(MINT_A_URL);
   await wallet.mintBolt11(20);
   await wallet.settings("appearance");
-  await wallet.toggleSetting("Use ₿ symbol", false);
+  await page.locator('[data-testid="money-unit"][data-unit="bip177"]').click();
   await wallet.toggleSetting("Use numeric keyboard", true);
   await page.getByText("bitcoin", { exact: true }).click();
   await page.reload();
   await expect(page.locator(".q-item--active")).toContainText("bitcoin");
   await wallet.home();
-  await expect(wallet.balance).toContainText("sat");
+  await expect(wallet.balance).toContainText("₿20");
   await wallet.openSend("ecash");
   await expect(page.locator(".numeric-keyboard:visible")).toBeVisible();
   await wallet.enterAmount(5);

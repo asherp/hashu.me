@@ -1,3 +1,4 @@
+import { formatSats } from "src/js/money";
 import {
   UNIT_TIH,
   formatTih,
@@ -9,6 +10,7 @@ import { useUiStore } from "stores/ui";
 import { Clipboard } from "@capacitor/clipboard";
 import { SafeArea } from "capacitor-plugin-safe-area";
 import { useSettingsStore } from "stores/settings";
+import { usePriceStore } from "stores/price";
 import { formatBigIntCurrency } from "src/js/format-currency";
 import { DEFAULT_THEME } from "src/js/hashu";
 window.LOCALE = "en";
@@ -167,7 +169,7 @@ window.windowMixin = {
           value,
           currency,
           window.LOCALE,
-          useSettingsStore().bip177BitcoinSymbol
+          usePriceStore().money()
         );
       }
       if (currency == "sat") return this.formatSat(value);
@@ -191,17 +193,12 @@ window.windowMixin = {
     },
     formatSat: function (value) {
       // convert value to integer
-      value = parseInt(value);
-      if (useSettingsStore().bip177BitcoinSymbol) {
-        if (value >= 0) {
-          return "₿" + new Intl.NumberFormat(window.LOCALE).format(value);
-        } else {
-          return (
-            "-₿" + new Intl.NumberFormat(window.LOCALE).format(Math.abs(value))
-          );
-        }
-      }
-      return new Intl.NumberFormat(window.LOCALE).format(value) + " sat";
+      // hashu.me: follows the Monetary unit setting (sat, ₿, BTC, msat).
+      return formatSats(
+        parseInt(value),
+        usePriceStore().money(),
+        window.LOCALE
+      );
     },
     fromMsat: function (value) {
       value = parseInt(value);
