@@ -63,7 +63,7 @@
           >
             <div class="row items-center no-wrap">
               <div class="icon-circle">
-                <ZapIcon :size="24" />
+                <PickaxeIcon :size="24" />
               </div>
               <div class="col q-ml-md">
                 <div class="text-body1 text-weight-medium">
@@ -113,7 +113,7 @@ import { notifyWarning } from "src/js/notify.ts";
 import {
   X as XIcon,
   Coins as CoinsIcon,
-  Zap as ZapIcon,
+  Pickaxe as PickaxeIcon,
   Scan as ScanIcon,
   Bitcoin as BitcoinIcon,
 } from "lucide-vue-next";
@@ -129,7 +129,7 @@ export default defineComponent({
   components: {
     XIcon,
     CoinsIcon,
-    ZapIcon,
+    PickaxeIcon,
     ScanIcon,
     BitcoinIcon,
     ReceiveEcashDrawer,
