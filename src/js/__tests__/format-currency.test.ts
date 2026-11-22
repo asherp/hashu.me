@@ -24,7 +24,34 @@ describe("exact integer currency formatting", () => {
     );
   });
 
-  it("preserves the Bitcoin symbol preference", () => {
+  it("follows the monetary unit", () => {
+    expect(formatBigIntCurrency(-21n, "sat", "en", "bip177")).toBe("-₿21");
+    expect(formatBigIntCurrency(123456789n, "sat", "en", "btc")).toBe(
+      "1.23456789 BTC"
+    );
+    expect(formatBigIntCurrency(100000000n, "sat", "en", "btc")).toBe("1 BTC");
+    expect(formatBigIntCurrency(1234n, "sat", "en", "btc")).toBe(
+      "0.00001234 BTC"
+    );
+    expect(formatBigIntCurrency(1234n, "sat", "en", "msat")).toBe(
+      "1,234,000 msat"
+    );
+  });
+
+  it("shows sats in USD at the price feed's rate", () => {
+    expect(
+      formatBigIntCurrency(1234n, "sat", "en", {
+        unit: "usd",
+        usdPerBtc: 90000,
+      })
+    ).toBe("$1.11");
+    expect(
+      formatBigIntCurrency(5n, "sat", "en", { unit: "usd", usdPerBtc: 90000 })
+    ).toBe("$0.0045");
+    expect(formatBigIntCurrency(1234n, "sat", "en", "usd")).toBe("1,234 sat");
+  });
+
+  it("still accepts the old Bitcoin symbol boolean", () => {
     expect(formatBigIntCurrency(18446744073709551615n, "sat", "en", true)).toBe(
       "₿18,446,744,073,709,551,615"
     );

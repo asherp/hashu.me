@@ -1,5 +1,6 @@
 import type { PaymentMethodLimits } from "src/js/mint-payment-methods";
 import { formatBigIntCurrency } from "src/js/format-currency";
+import type { Money, MoneyUnit } from "src/js/money";
 
 export function onchainDepositAmountInBaseUnits(
   amount: number,
@@ -20,7 +21,7 @@ export function onchainDepositAmountError(
   amount: number,
   unit: string,
   limits: PaymentMethodLimits | null,
-  bitcoinSymbol = false
+  money: Money | MoneyUnit | boolean = "sat"
 ): string {
   if (!Number.isSafeInteger(amount) || amount <= 0) {
     return unit === "usd" || unit === "eur"
@@ -32,7 +33,7 @@ export function onchainDepositAmountError(
       limits.minAmount,
       unit,
       undefined,
-      bitcoinSymbol
+      money
     )}.`;
   }
   if (limits?.maxAmount != null && amount > limits.maxAmount) {
@@ -40,7 +41,7 @@ export function onchainDepositAmountError(
       limits.maxAmount,
       unit,
       undefined,
-      bitcoinSymbol
+      money
     )}.`;
   }
   return "";

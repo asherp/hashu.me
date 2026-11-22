@@ -2,6 +2,7 @@ import { defineStore } from "pinia";
 import { useSettingsStore } from "./settings";
 import { useLocalStorage } from "@vueuse/core";
 import axios from "axios";
+import { toMoneyUnit, type Money } from "src/js/money";
 import {
   hashuInfoUrl,
   type HashuMintPrice,
@@ -26,7 +27,12 @@ export const usePriceStore = defineStore("price", {
       "hashu.price.msatPerPih",
       {} as Record<
         string,
-        { msatPerPih: number; minRedeemTih?: number; updated: number }
+        {
+          msatPerPih: number;
+          minRedeemTih?: number;
+          usdtPerPih?: number;
+          updated: number;
+        }
       >
     ),
     // Delivery figures by mint URL, for redemption time estimates. Not
@@ -123,12 +129,28 @@ export const usePriceStore = defineStore("price", {
           [mintUrl]: {
             msatPerPih,
             minRedeemTih: Number(data?.min_redeem_tih) || undefined,
+            usdtPerPih: Number(data?.usdt_per_pih) || undefined,
             updated: Date.now(),
           },
         };
       } catch (error) {
         console.debug(`No Hashu info from ${mintUrl}:`, error);
       }
+    },
+    /**
+     * hashu.me: the Monetary unit setting with the rates it needs: USD per
+     * BTC from the price feed (Coinbase), and for prices the mint's own
+     * USDT price when it publishes one.
+     */
+    money: function (mintUrl?: string): Money {
+      const unit = toMoneyUnit(useSettingsStore().moneyUnit);
+      return {
+        unit,
+        usdPerBtc: Number(this.bitcoinPrices?.USD) || undefined,
+        usdtPerPih: mintUrl
+          ? this.hashuPrices[mintUrl]?.usdtPerPih || undefined
+          : undefined,
+      };
     },
     msatPerPihForMint: function (mintUrl: string): number {
       return this.hashuPrices[mintUrl]?.msatPerPih || 0;

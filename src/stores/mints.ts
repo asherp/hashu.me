@@ -245,11 +245,7 @@ export const useMintsStore = defineStore("mints", {
     },
     activeUnitLabel({ activeUnit }): string {
       if (activeUnit == "sat") {
-        if (this.settingsStoreGlobal.bip177BitcoinSymbol) {
-          return "₿";
-        } else {
-          return "SAT";
-        }
+        return this.settingsStoreGlobal.moneyUnit === "bip177" ? "₿" : "SAT";
       } else if (activeUnit == "usd") {
         return "USD";
       } else if (activeUnit == "eur") {

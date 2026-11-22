@@ -1,4 +1,5 @@
 import { DEFAULT_DISPLAY_UNIT, type DisplayUnit } from "src/js/hashu";
+import { DEFAULT_MONEY_UNIT, type MoneyUnit } from "src/js/money";
 import { POOL_PRESETS, type SavedPool } from "src/js/hashu-redeem";
 import { defineStore } from "pinia";
 import { useLocalStorage } from "@vueuse/core";
@@ -80,9 +81,11 @@ export const useSettingsStore = defineStore("settings", {
         "cashu.settings.auditorApiUrl",
         "https://api.audit.8333.space"
       ),
-      bip177BitcoinSymbol: useLocalStorage<boolean>(
-        "cashu.settings.bip177",
-        true
+      // hashu.me: unit for showing bitcoin amounts and prices (sat, ₿, BTC,
+      // msat). Replaces Cashu.me's "Use ₿ symbol" toggle (cashu.settings.bip177).
+      moneyUnit: useLocalStorage<MoneyUnit>(
+        "hashu.settings.moneyUnit",
+        DEFAULT_MONEY_UNIT
       ),
       // hashu.me: unit for showing TiH amounts (TiH, PiH, EiH, THh, PHh, THd, PHd).
       hashuDisplayUnit: useLocalStorage<DisplayUnit>(
