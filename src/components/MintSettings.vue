@@ -503,13 +503,17 @@ export default defineComponent({
   methods: {
     formatHashrate,
     formatDuration,
-    /** A Hashu mint: redeems TiH as hashrate (NUT-05 method "hashrate"). */
+    /** A Hashu mint (redeems TiH as hashrate, NUT-05 method "hashrate")
+     * where the wallet holds TiH it can spend now. unitBalance leaves out
+     * reserved and future-epoch vouchers. */
     canRedeemAt(mint): boolean {
-      return mintSupportsPaymentMethod(
-        mint,
-        PaymentMethod.Hashrate,
-        "melt",
-        UNIT_TIH
+      return (
+        mintSupportsPaymentMethod(
+          mint,
+          PaymentMethod.Hashrate,
+          "melt",
+          UNIT_TIH
+        ) && this.mintClass(mint).unitBalance(UNIT_TIH) > 0
       );
     },
     /** Open "Redeem to pool" on this mint, switching to it (and TiH) first. */
