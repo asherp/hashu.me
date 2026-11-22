@@ -168,7 +168,9 @@ export function isStratumUrl(url: string): boolean {
   const u = url.trim();
   return (
     /^stratum\+(tcp|ssl):\/\/[^\s/:]+:\d{1,5}\/?$/.test(u) ||
-    /^stratum2\+tcp:\/\/[^\s/:]+(:\d{1,5})?\/[1-9A-HJ-NP-Za-km-z]{40,60}\/?$/.test(u)
+    /^stratum2\+tcp:\/\/[^\s/:]+(:\d{1,5})?\/[1-9A-HJ-NP-Za-km-z]{40,60}\/?$/.test(
+      u
+    )
   );
 }
 
@@ -341,4 +343,101 @@ export function balanceRedeemEta(
   }
   const seconds = estimateRedeemSeconds(balanceTih, delivery);
   return seconds === null ? { kind: "no_hashrate" } : { kind: "eta", seconds };
+}
+
+/** A redemption as the wallet's history records it. */
+export type RedemptionEntry = {
+  quote: string;
+  mint: string;
+  request: string;
+  poolUrl: string;
+  workerName: string;
+  /** TiH locked for the redemption (floor plus refundable part). */
+  amountTih: number;
+  /** What delivery cost, once finished (the locked amount less change). */
+  chargedTih: number | null;
+  changeTih: number | null;
+  active: boolean;
+  date: string;
+  paidDate?: string;
+};
+
+type HistoryLike = {
+  quote?: string;
+  mint?: string;
+  unit?: string;
+  request?: string;
+  amount?: number;
+  status?: string;
+  date?: string;
+  paidDate?: string;
+  type?: string;
+  method?: string;
+  meltQuote?: { amount?: number; fee_reserve?: number; request?: string };
+};
+
+/** "Nov 21, 14:02" this year, "Nov 21 2025" before; the input as is if
+ * it isn't a "YYYY-MM-DD HH:mm:ss" date. */
+export function shortDate(d: string): string {
+  const m = /^(\d{4})-(\d{2})-(\d{2})[ T](\d{2}):(\d{2})/.exec(d ?? "");
+  if (!m) return d ?? "";
+  const months = [
+    "Jan",
+    "Feb",
+    "Mar",
+    "Apr",
+    "May",
+    "Jun",
+    "Jul",
+    "Aug",
+    "Sep",
+    "Oct",
+    "Nov",
+    "Dec",
+  ];
+  const mon = months[Number(m[2]) - 1];
+  const day = Number(m[3]);
+  return Number(m[1]) === new Date().getFullYear()
+    ? `${mon} ${day}, ${m[4]}:${m[5]}`
+    : `${mon} ${day} ${m[1]}`;
+}
+
+/** Pool host and port, without the stratum scheme or a V2 key. */
+export function poolLabel(poolUrl: string): string {
+  const m = /^[a-z0-9+]+:\/\/([^/]+)/i.exec(poolUrl.trim());
+  return m ? m[1] : poolUrl;
+}
+
+/**
+ * The wallet's redemptions (hashrate melts) out of its payment history,
+ * newest first. Active ones are melts still PENDING at the mint.
+ */
+export function redemptionEntries(history: HistoryLike[]): RedemptionEntry[] {
+  const out: RedemptionEntry[] = [];
+  for (const h of history ?? []) {
+    if ((h.method ?? h.type) !== HASHRATE_METHOD || !h.quote) continue;
+    const request = h.request || h.meltQuote?.request || "";
+    const req = parseHashrateRequest(request);
+    const mq = h.meltQuote;
+    const locked =
+      mq && mq.amount != null
+        ? Number(mq.amount) + Number(mq.fee_reserve ?? 0)
+        : req?.amount_tih ?? Math.abs(Number(h.amount) || 0);
+    const active = h.status !== "paid";
+    const charged = active ? null : Math.abs(Number(h.amount) || 0);
+    out.push({
+      quote: h.quote,
+      mint: h.mint ?? "",
+      request,
+      poolUrl: req?.pool_url ?? "",
+      workerName: req?.worker_name ?? "",
+      amountTih: locked,
+      chargedTih: charged,
+      changeTih: charged == null ? null : Math.max(0, locked - charged),
+      active,
+      date: h.date ?? "",
+      paidDate: h.paidDate,
+    });
+  }
+  return out.sort((a, b) => (a.date < b.date ? 1 : a.date > b.date ? -1 : 0));
 }

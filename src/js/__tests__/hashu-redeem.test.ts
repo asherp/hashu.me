@@ -8,6 +8,8 @@ import {
   parseHashrateRequest,
   redemptionId,
   redemptionUrl,
+  redemptionEntries,
+  poolLabel,
 } from "src/js/hashu-redeem";
 
 describe("hashrate melt request", () => {
@@ -116,7 +118,9 @@ describe("pool URLs", () => {
 
   it("accepts Stratum V2 URLs with an authority key", () => {
     const key = "9auqWEzQDVyd2oe1JVGFLMLHZtCo2FFqZwtKA5gd9xbuEu7PH72";
-    expect(isStratumUrl(`stratum2+tcp://v2.stratum.braiins.com/${key}`)).toBe(true);
+    expect(isStratumUrl(`stratum2+tcp://v2.stratum.braiins.com/${key}`)).toBe(
+      true
+    );
     expect(isStratumUrl(`stratum2+tcp://pool.example:3336/${key}`)).toBe(true);
     expect(isStratumUrl("stratum2+tcp://pool.example:3336")).toBe(false);
     expect(isStratumUrl("stratum2+tcp://pool.example:3336/0OIl")).toBe(false);
@@ -217,5 +221,71 @@ describe("balanceRedeemEta", () => {
     expect(
       balanceRedeemEta(4096, { ...delivery, hashrate_hs: 0 }, 1024)
     ).toEqual({ kind: "no_hashrate" });
+  });
+});
+
+describe("redemptions list", () => {
+  const req = (n: string) =>
+    hashrateRequest(
+      "stratum+tcp://mine.ocean.xyz:3334",
+      "bc1q.rig",
+      4096,
+      "",
+      n
+    );
+  const history = [
+    {
+      quote: "ln",
+      type: "bolt11",
+      amount: -10,
+      status: "paid",
+      date: "2026-11-20 10:00:00",
+      mint: "https://m",
+    },
+    {
+      quote: "old",
+      type: "hashrate",
+      request: req("01"),
+      amount: -3000,
+      status: "paid",
+      date: "2026-11-20 10:00:00",
+      paidDate: "2026-11-20 12:00:00",
+      mint: "https://mint.hashu.io",
+      meltQuote: { amount: 1024, fee_reserve: 3072 },
+    },
+    {
+      quote: "open",
+      type: "hashrate",
+      request: req("02"),
+      amount: -4096,
+      status: "pending",
+      date: "2026-11-21 09:00:00",
+      mint: "https://mint.hashu.io",
+      meltQuote: { amount: 1024, fee_reserve: 3072 },
+    },
+  ];
+
+  it("keeps only hashrate melts, newest first, with charge and change", () => {
+    const e = redemptionEntries(history);
+    expect(e.map((x) => x.quote)).toEqual(["open", "old"]);
+    expect(e[0]).toMatchObject({
+      active: true,
+      amountTih: 4096,
+      chargedTih: null,
+      workerName: "bc1q.rig",
+      poolUrl: "stratum+tcp://mine.ocean.xyz:3334",
+    });
+    expect(e[1]).toMatchObject({
+      active: false,
+      chargedTih: 3000,
+      changeTih: 1096,
+    });
+  });
+
+  it("labels pools by host and port", () => {
+    expect(poolLabel("stratum+tcp://mine.ocean.xyz:3334")).toBe(
+      "mine.ocean.xyz:3334"
+    );
+    expect(poolLabel("stratum2+tcp://pool.example/9abc")).toBe("pool.example");
   });
 });

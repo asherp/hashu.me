@@ -20,6 +20,29 @@
 
       <!-- form -->
       <q-card-section v-if="!started" class="q-pa-md q-gutter-y-md">
+        <div
+          class="redeem-from row items-center no-wrap"
+          data-testid="redeem-from"
+        >
+          <div class="text-grey-5 text-caption q-mr-sm">
+            {{ $t("RedeemPoolDialog.from") }}
+          </div>
+          <div class="col ellipsis">
+            <span class="text-weight-medium">{{ sheetMintName }}</span>
+            <span
+              v-if="sheetMintHost !== sheetMintName"
+              class="text-grey-5 q-ml-xs"
+              >{{ sheetMintHost }}</span
+            >
+          </div>
+          <div v-if="true" class="text-grey-5 text-caption q-ml-sm">
+            {{
+              $t("RedeemPoolDialog.balance", {
+                balance: formatCurrency(balance, "tih"),
+              })
+            }}
+          </div>
+        </div>
         <div class="text-grey-5 text-body2">
           {{ $t("RedeemPoolDialog.text") }}
         </div>
@@ -77,11 +100,29 @@
 
       <!-- status -->
       <q-card-section v-else class="q-pa-md q-gutter-y-md">
+        <div
+          class="redeem-from row items-center no-wrap"
+          data-testid="redeem-from"
+        >
+          <div class="text-grey-5 text-caption q-mr-sm">
+            {{ $t("RedeemPoolDialog.from") }}
+          </div>
+          <div class="col ellipsis">
+            <span class="text-weight-medium">{{ sheetMintName }}</span>
+            <span
+              v-if="sheetMintHost !== sheetMintName"
+              class="text-grey-5 q-ml-xs"
+              >{{ sheetMintHost }}</span
+            >
+          </div>
+        </div>
         <div class="text-body1" data-testid="redeem-status">
           {{
             settled
               ? $t("RedeemPoolDialog.status.settled")
-              : $t("RedeemPoolDialog.status.opened", { worker: workerName })
+              : $t("RedeemPoolDialog.status.opened", {
+                  worker: trackedWorker || workerName,
+                })
           }}
         </div>
         <div
@@ -124,6 +165,16 @@
         <div v-else-if="progressUnavailable" class="text-grey-5 text-body2">
           {{ $t("RedeemPoolDialog.status.no_progress") }}
         </div>
+        <div
+          v-if="entry"
+          class="redeem-details text-body2"
+          data-testid="redeem-details"
+        >
+          <div v-for="row in detailRows" :key="row.label" class="row no-wrap">
+            <div class="text-grey-5 q-mr-md">{{ row.label }}</div>
+            <div class="col text-right ellipsis">{{ row.value }}</div>
+          </div>
+        </div>
         <div v-if="!settled" class="text-grey-6 text-caption">
           {{ $t("RedeemPoolDialog.status.background") }}
         </div>
@@ -164,6 +215,10 @@ import {
   secondsLeft,
   trackRate,
   redemptionUrl,
+  redemptionEntries,
+  poolLabel,
+  shortDate,
+  type RedemptionEntry,
   type RedemptionProgress,
 } from "src/js/hashu-redeem";
 import { TIH_PER_PIH, formatTih, isDisplayUnit } from "src/js/hashu";
@@ -188,11 +243,66 @@ export default defineComponent({
       pollTimer: null as ReturnType<typeof setInterval> | null,
       infoTimer: null as ReturnType<typeof setInterval> | null,
       progressUrl: "",
+      trackedWorker: "",
+      trackedMint: "",
     };
   },
   computed: {
-    ...mapWritableState(useUiStore, ["showRedeemPoolDialog"]),
-    ...mapState(useMintsStore, ["activeMintUrl", "activeBalance"]),
+    ...mapWritableState(useUiStore, [
+      "showRedeemPoolDialog",
+      "redeemPoolQuote",
+    ]),
+    ...mapState(useMintsStore, ["activeMintUrl", "activeBalance", "mints"]),
+    /** The mint this sheet redeems from: the redemption's own when
+     * reopened from the Redemptions tab, else the active mint. */
+    /** This redemption as the wallet's history has it (updates when it
+     * settles). */
+    entry(): RedemptionEntry | undefined {
+      if (!this.quoteId) return undefined;
+      return redemptionEntries(useWalletStore().invoiceHistory as any[]).find(
+        (e) => e.quote === this.quoteId
+      );
+    },
+    detailRows(): { label: string; value: string }[] {
+      const e = this.entry;
+      if (!e) return [];
+      const t = (k: string) => this.$t(`RedeemPoolDialog.details.${k}`);
+      const rows = [
+        { label: t("pool"), value: poolLabel(e.poolUrl) },
+        { label: t("worker"), value: e.workerName },
+        { label: t("amount"), value: this.formatCurrency(e.amountTih, "tih") },
+      ];
+      if (e.chargedTih != null) {
+        rows.push(
+          {
+            label: t("charged"),
+            value: this.formatCurrency(e.chargedTih, "tih"),
+          },
+          {
+            label: t("change"),
+            value: this.formatCurrency(e.changeTih ?? 0, "tih"),
+          }
+        );
+      }
+      rows.push({ label: t("started"), value: shortDate(e.date) });
+      if (e.paidDate)
+        rows.push({ label: t("finished"), value: shortDate(e.paidDate) });
+      return rows;
+    },
+    sheetMintUrl(): string {
+      return this.trackedMint || this.activeMintUrl;
+    },
+    sheetMintHost(): string {
+      try {
+        return new URL(this.sheetMintUrl).host;
+      } catch {
+        return this.sheetMintUrl;
+      }
+    },
+    sheetMintName(): string {
+      const m = (this.mints as any[]).find((x) => x.url === this.sheetMintUrl);
+      return m?.nickname || m?.info?.name || this.sheetMintHost;
+    },
     ...mapState(usePriceStore, [
       "hashuPrices",
       "hashuDelivery",
@@ -320,7 +430,8 @@ export default defineComponent({
   },
   watch: {
     showRedeemPoolDialog(open: boolean) {
-      if (open) this.startInfo();
+      if (open && this.redeemPoolQuote) this.resume(this.redeemPoolQuote);
+      else if (open) this.startInfo();
       else this.stopInfo();
     },
   },
@@ -354,6 +465,7 @@ export default defineComponent({
           fallbackPools: this.sentFallbacks,
         });
         this.quoteId = res.quote.quote;
+        this.trackedMint = this.activeMintUrl;
         this.started = true;
         this.settled = res.state === MeltQuoteState.PAID;
         this.progressUrl = redemptionUrl(
@@ -366,6 +478,29 @@ export default defineComponent({
       } finally {
         this.busy = false;
       }
+    },
+    /** Show the progress of a redemption started earlier (from the
+     * Redemptions tab), on whichever mint it went to. */
+    async resume(quote: string) {
+      this.stopPolling();
+      const entry = redemptionEntries(
+        useWalletStore().invoiceHistory as any[]
+      ).find((e) => e.quote === quote);
+      if (!entry) return;
+      this.quoteId = entry.quote;
+      this.trackedWorker = entry.workerName;
+      this.trackedMint = entry.mint;
+      this.started = true;
+      this.settled = !entry.active;
+
+      this.progress = null;
+      this.progressUnavailable = false;
+      this.progressUrl = redemptionUrl(
+        entry.mint,
+        await redemptionId(entry.request)
+      );
+      // A finished one: the history has what it cost and the change.
+      if (entry.active) this.startPolling();
     },
     redemptionPaid(): boolean {
       const entry = (useWalletStore().invoiceHistory as any[]).find(
@@ -420,8 +555,26 @@ export default defineComponent({
         this.progressUnavailable = false;
         this.amountTih = null;
         this.quoteId = "";
+        this.trackedWorker = "";
       }
+      this.trackedMint = "";
+      this.redeemPoolQuote = "";
     },
   },
 });
 </script>
+
+<style scoped>
+.redeem-details {
+  border-top: 1px solid rgba(128, 128, 128, 0.3);
+  padding-top: 8px;
+}
+.redeem-details > div {
+  padding: 3px 0;
+}
+.redeem-from {
+  border: 1px solid rgba(128, 128, 128, 0.3);
+  border-radius: 10px;
+  padding: 8px 12px;
+}
+</style>

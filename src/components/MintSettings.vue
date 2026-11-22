@@ -156,39 +156,20 @@
                     </div>
                   </div>
                 </div>
-                <div
-                  class="text-grey-5"
-                  v-if="!isMintExcludedFromReviews(mint.url)"
+                <q-btn
+                  v-if="canRedeemAt(mint)"
+                  rounded
+                  outline
+                  dense
+                  no-caps
+                  color="primary"
+                  class="q-px-sm q-mr-sm"
+                  data-testid="mint-redeem"
+                  :label="$t('MintSettings.redeem.label')"
+                  @click.stop="redeemAt(mint)"
                 >
-                  <template
-                    v-if="
-                      getRecommendation(mint.url) &&
-                      getRecommendation(mint.url).averageRating !== null
-                    "
-                  >
-                    <span>
-                      ⭐
-                      {{ getRecommendation(mint.url).averageRating.toFixed(1) }}
-                      ·
-                      {{ getRecommendation(mint.url).reviewsCount }}
-                      <span
-                        class="text-primary cursor-pointer"
-                        style="text-decoration: underline"
-                        @click.stop="openReviews(mint.url, mint)"
-                        >{{ $t("MintSettings.reviews_text") }}</span
-                      >
-                    </span>
-                  </template>
-                  <template v-else>
-                    <span
-                      class="text-primary cursor-pointer"
-                      style="text-decoration: underline"
-                      @click.stop="openReviews(mint.url, mint)"
-                    >
-                      {{ $t("MintSettings.no_reviews_yet") }}
-                    </span>
-                  </template>
-                </div>
+                  <q-tooltip>{{ $t("MintSettings.redeem.tooltip") }}</q-tooltip>
+                </q-btn>
               </div>
             </div>
           </q-item>
@@ -413,17 +394,13 @@ import {
   formatHashrate,
 } from "src/js/hashu-redeem";
 import { UNIT_TIH, formatHashprice } from "src/js/hashu";
+import { mintSupportsPaymentMethod } from "src/js/mint-payment-methods";
+import { PaymentMethod } from "src/stores/walletTypes";
 import {
   Pickaxe as PickaxeIcon,
   Tag as TagIcon,
   Timer as TimerIcon,
 } from "lucide-vue-next";
-
-// Mints that should not show reviews
-const EXCLUDED_FROM_REVIEWS = [
-  "http://localhost*", // localhost with any port
-  "https://*cashu.space", // exact match and subdomains
-];
 
 export default defineComponent({
   name: "MintSettings",
@@ -514,9 +491,6 @@ export default defineComponent({
     discoverList() {
       return this.recommendations.filter((r) => !this.isExistingMint(r.url));
     },
-    getRecommendation() {
-      return (url) => this.recommendations.find((r) => r.url === url);
-    },
   },
   watch: {
     // if swapBlocking is true and invoiceWorkerRunning changes to false, then swapBlocking should be set to false
@@ -529,6 +503,26 @@ export default defineComponent({
   methods: {
     formatHashrate,
     formatDuration,
+    /** A Hashu mint: redeems TiH as hashrate (NUT-05 method "hashrate"). */
+    canRedeemAt(mint): boolean {
+      return mintSupportsPaymentMethod(
+        mint,
+        PaymentMethod.Hashrate,
+        "melt",
+        UNIT_TIH
+      );
+    },
+    /** Open "Redeem to pool" on this mint, switching to it (and TiH) first. */
+    async redeemAt(mint) {
+      if (mint.url !== this.activeMintUrl) {
+        await this.activateMintUrlInternal(mint.url);
+      }
+      if (this.activeMintUrl !== mint.url) return;
+      useMintsStore().activeUnit = UNIT_TIH;
+      const ui = useUiStore();
+      ui.redeemPoolQuote = "";
+      ui.showRedeemPoolDialog = true;
+    },
     /** How long redeeming the wallet's whole TiH balance here would take now. */
     mintEta(mint) {
       const d = this.hashuDelivery[mint.url];
@@ -574,15 +568,6 @@ export default defineComponent({
     ...mapActions(useWorkersStore, ["clearAllWorkers"]),
     ...mapActions(useCameraStore, ["closeCamera", "showCamera"]),
     ...mapActions(useSwapStore, ["mintAmountSwap"]),
-    isMintExcludedFromReviews: function (mintUrl) {
-      // Check if mint URL should be excluded from reviews using regex matching
-      return EXCLUDED_FROM_REVIEWS.some((pattern) => {
-        // Convert asterisk pattern to regex
-        const regexPattern = pattern.replace(/\*/g, ".*");
-        const regex = new RegExp(`^${regexPattern}$`);
-        return regex.test(mintUrl);
-      });
-    },
     activateMintUrlInternal: async function (mintUrl) {
       this.activatingMintUrl = mintUrl;
       console.log(`Activating mint ${this.activatingMintUrl}`);
@@ -707,16 +692,6 @@ export default defineComponent({
       } catch (e) {
         console.error(e);
       }
-    },
-    openReviews(url, mint) {
-      // Navigate to ratings page
-      this.$router.push({
-        path: "/mintratings",
-        query: {
-          mintUrl: url,
-          allowCreateReview: "true",
-        },
-      });
     },
     getMintInfoFromCache(url) {
       return this.mintInfoCache.get(url);

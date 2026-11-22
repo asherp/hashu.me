@@ -179,6 +179,40 @@
             </div>
           </div>
 
+          <!-- Reviews (moved here from the mint card) -->
+          <div
+            class="detail-item q-mb-md"
+            v-if="!excludedFromReviews"
+            data-testid="mint-reviews"
+          >
+            <div class="detail-label">
+              <q-icon
+                name="star_outline"
+                size="20px"
+                color="grey-6"
+                class="detail-icon"
+              />
+              <div class="detail-name">
+                {{ $t("MintDetailsDialog.details.reviews.label") }}
+              </div>
+            </div>
+            <div class="detail-value" @click="openReviews">
+              <template v-if="recommendation?.averageRating != null">
+                ⭐ {{ recommendation.averageRating.toFixed(1) }} ·
+                {{
+                  $t(
+                    "MintDetailsDialog.details.reviews.count",
+                    { count: recommendation.reviewsCount },
+                    recommendation.reviewsCount
+                  )
+                }}
+              </template>
+              <template v-else>
+                {{ $t("MintSettings.no_reviews_yet") }}
+              </template>
+            </div>
+          </div>
+
           <!-- Nuts -->
           <div class="detail-item q-mb-md" v-if="mintData.info?.nuts">
             <div class="detail-label">
@@ -581,6 +615,10 @@ import {
   ShieldCheck as ShieldCheckIcon,
 } from "lucide-vue-next";
 import { usePriceStore } from "src/stores/price";
+import { useMintRecommendationsStore } from "src/stores/mintRecommendations";
+
+// Mints that get no reviews row (local and test mints).
+const EXCLUDED_FROM_REVIEWS = ["http://localhost*", "https://*cashu.space"];
 import {
   balanceRedeemEta,
   formatDuration,
@@ -680,6 +718,19 @@ export default defineComponent({
       return result;
     },
     ...mapState(usePriceStore, ["hashuDelivery", "hashuPrices"]),
+    ...mapState(useMintRecommendationsStore, ["recommendations"]),
+    recommendation() {
+      return (this.recommendations as any[]).find(
+        (r) => r.url === this.mintData?.url
+      );
+    },
+    /** Local and test mints have no reviews worth showing. */
+    excludedFromReviews(): boolean {
+      const url = this.mintData?.url || "";
+      return EXCLUDED_FROM_REVIEWS.some((pattern) =>
+        new RegExp("^" + pattern.replace(/\*/g, ".*") + "$").test(url)
+      );
+    },
     tihBalance() {
       return this.mintData?.url
         ? new MintClass(this.mintData).unitBalance(UNIT_TIH)
@@ -770,6 +821,12 @@ export default defineComponent({
     openRemoveMintDialog() {
       this.mintToRemove = Object.assign({}, this.mintData);
       this.showRemoveMintDialog = true;
+    },
+    openReviews() {
+      this.$router.push({
+        path: "/mintratings",
+        query: { mintUrl: this.mintData.url, allowCreateReview: "true" },
+      });
     },
     openCreateReviewDialog() {
       // Navigate to create review page

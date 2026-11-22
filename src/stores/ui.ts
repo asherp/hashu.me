@@ -75,6 +75,9 @@ export const useUiStore = defineStore("ui", {
     showReceiveEcashDrawer: false,
     // hashu.me: redeem TiH vouchers as hashrate to a pool
     showRedeemPoolDialog: false,
+    // Melt quote of a redemption to reopen the redeem sheet on (its
+    // progress), set by the Redemptions tab; empty opens the form.
+    redeemPoolQuote: "",
     showNumericKeyboard: false,
     tab: useLocalStorage("cashu.ui.tab", "history" as string),
     expandHistory: useLocalStorage("cashu.ui.expandHistory", true as boolean),
