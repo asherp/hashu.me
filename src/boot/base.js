@@ -1,4 +1,4 @@
-import { formatSats, toMoneyUnit } from "src/js/money";
+import { formatSats } from "src/js/money";
 import {
   UNIT_TIH,
   formatTih,
@@ -10,6 +10,7 @@ import { useUiStore } from "stores/ui";
 import { Clipboard } from "@capacitor/clipboard";
 import { SafeArea } from "capacitor-plugin-safe-area";
 import { useSettingsStore } from "stores/settings";
+import { usePriceStore } from "stores/price";
 import { formatBigIntCurrency } from "src/js/format-currency";
 window.LOCALE = "en";
 // window.EventHub = new Vue();
@@ -167,7 +168,7 @@ window.windowMixin = {
           value,
           currency,
           window.LOCALE,
-          useSettingsStore().moneyUnit
+          usePriceStore().money()
         );
       }
       if (currency == "sat") return this.formatSat(value);
@@ -194,7 +195,7 @@ window.windowMixin = {
       // hashu.me: follows the Monetary unit setting (sat, ₿, BTC, msat).
       return formatSats(
         parseInt(value),
-        toMoneyUnit(useSettingsStore().moneyUnit),
+        usePriceStore().money(),
         window.LOCALE
       );
     },

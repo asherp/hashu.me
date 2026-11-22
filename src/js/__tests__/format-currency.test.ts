@@ -38,6 +38,19 @@ describe("exact integer currency formatting", () => {
     );
   });
 
+  it("shows sats in USD at the price feed's rate", () => {
+    expect(
+      formatBigIntCurrency(1234n, "sat", "en", {
+        unit: "usd",
+        usdPerBtc: 90000,
+      })
+    ).toBe("$1.11");
+    expect(
+      formatBigIntCurrency(5n, "sat", "en", { unit: "usd", usdPerBtc: 90000 })
+    ).toBe("$0.0045");
+    expect(formatBigIntCurrency(1234n, "sat", "en", "usd")).toBe("1,234 sat");
+  });
+
   it("still accepts the old Bitcoin symbol boolean", () => {
     expect(formatBigIntCurrency(18446744073709551615n, "sat", "en", true)).toBe(
       "₿18,446,744,073,709,551,615"

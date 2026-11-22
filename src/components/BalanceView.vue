@@ -173,7 +173,7 @@ import AnimatedNumber from "src/components/AnimatedNumber.vue";
 import EpochBalances from "src/components/EpochBalances.vue";
 import { useEpochsStore } from "src/stores/epochs";
 import { UNIT_TIH, tihToSats, formatHashprice, unitName } from "src/js/hashu";
-import { formatSats, toMoneyUnit } from "src/js/money";
+import { formatSats } from "src/js/money";
 import { sumProofAmounts } from "src/js/proofs";
 import { useProofsStore } from "src/stores/proofs";
 
@@ -214,12 +214,16 @@ export default defineComponent({
       "hashuDisplayUnit",
       "moneyUnit",
     ]),
+    /** Monetary unit setting with the rates it needs. */
+    money: function () {
+      return usePriceStore().money(this.activeMintUrl);
+    },
     hashprice: function (): string {
       return formatHashprice(
         this.msatPerPih,
         this.hashuDisplayUnit,
         navigator.language,
-        toMoneyUnit(this.moneyUnit)
+        this.money
       );
     },
     ...mapWritableState(useMintsStore, ["activeUnit"]),
@@ -405,7 +409,7 @@ export default defineComponent({
       if (this.isTihUnit(unit)) {
         return `≈ ${formatSats(
           Math.round(val),
-          toMoneyUnit(this.moneyUnit),
+          this.money,
           navigator.language
         )}`;
       }

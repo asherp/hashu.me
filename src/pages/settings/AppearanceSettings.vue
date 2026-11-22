@@ -53,6 +53,9 @@
             $t(`Settings.appearance.money_unit.units.${unit}`)
           }}</q-item-label>
           <q-item-label caption>{{ moneyUnitExample(unit) }}</q-item-label>
+          <q-item-label caption v-if="unit === 'usd'">{{
+            $t("Settings.appearance.money_unit.usd_source")
+          }}</q-item-label>
         </q-item-section>
       </q-item>
     </SettingsSection>
@@ -202,7 +205,11 @@ export default defineComponent({
   methods: {
     /** "1,234 sat · 46 sats/THd": an amount, and the active mint's price if known. */
     moneyUnitExample(unit) {
-      const amount = formatSats(1234, unit, navigator.language);
+      const money = {
+        ...usePriceStore().money(this.activeMintUrl),
+        unit,
+      };
+      const amount = formatSats(1234, money, navigator.language);
       const msat = this.hashuPrices[this.activeMintUrl]?.msatPerPih;
       if (!msat) return amount;
       const hashUnit = isDisplayUnit(this.hashuDisplayUnit)
@@ -212,7 +219,7 @@ export default defineComponent({
         msat,
         hashUnit,
         navigator.language,
-        unit
+        money
       )}`;
     },
     selectTheme: function (themeName) {

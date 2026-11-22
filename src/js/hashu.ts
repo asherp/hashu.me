@@ -1,6 +1,8 @@
 import {
   DEFAULT_MONEY_UNIT,
   formatPricePer,
+  toMoney,
+  type Money,
   type MoneyUnit,
 } from "src/js/money";
 /**
@@ -148,10 +150,15 @@ export function formatHashprice(
   msatPerPih: number,
   unit: DisplayUnit = DEFAULT_DISPLAY_UNIT,
   locale?: string,
-  money: MoneyUnit = DEFAULT_MONEY_UNIT
+  money: MoneyUnit | Money = DEFAULT_MONEY_UNIT
 ): string {
   const msat = tihToSats(DISPLAY_UNITS[unit], msatPerPih) * 1000;
-  return formatPricePer(msat, displayUnitLabel(unit), money, locale);
+  const { usdtPerPih } = toMoney(money);
+  const usd =
+    usdtPerPih && usdtPerPih > 0
+      ? (DISPLAY_UNITS[unit] / TIH_PER_PIH) * usdtPerPih
+      : undefined;
+  return formatPricePer(msat, displayUnitLabel(unit), money, locale, usd);
 }
 
 /**
@@ -161,6 +168,8 @@ export function formatHashprice(
  */
 export type HashuMintPrice = {
   msat_per_pih?: number | null;
+  /** USDT per PiH when the mint sells vouchers for USDT, else null. */
+  usdt_per_pih?: number | null;
   min_buy_tih?: number | null;
   min_redeem_tih?: number | null;
   /** Backup pools a redemption may list; missing on mints without them. */

@@ -329,7 +329,7 @@
                   mintMsatPerPih,
                   settings.hashuDisplayUnit,
                   $i18n.locale,
-                  settings.moneyUnit
+                  mintMoney
                 )
               }}
               <div class="text-caption text-grey-6">
@@ -751,6 +751,10 @@ export default defineComponent({
     },
     isHashuMint() {
       return !!this.mintDelivery || this.mintMsatPerPih > 0;
+    },
+    /** Monetary unit with rates for this mint's price (USD via its USDT price). */
+    mintMoney() {
+      return usePriceStore().money(this.mintData?.url);
     },
     mintMsatPerPih() {
       return this.mintData?.url

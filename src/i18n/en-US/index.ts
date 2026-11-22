@@ -507,7 +507,10 @@ export default {
           bip177: "₿ (BIP-177, one ₿ unit is a sat)",
           btc: "BTC",
           msat: "msat (thousandths of a sat)",
+          usd: "US dollars ($)",
         },
+        usd_source:
+          "Dollar amounts use the BTC price from Coinbase (Privacy > Get exchange rate from Coinbase). Prices use the mint's own USDT price when it sells for USDT.",
       },
       hashu_unit: {
         title: "Hashrate unit",

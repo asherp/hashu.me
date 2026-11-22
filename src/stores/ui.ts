@@ -20,6 +20,7 @@ import { formatBigIntCurrency } from "src/js/format-currency";
 
 import ts from "typescript";
 import { useSettingsStore } from "./settings";
+import { usePriceStore } from "./price";
 
 export type MutexPriority = "foreground" | "normal" | "background";
 
@@ -155,11 +156,7 @@ export const useUiStore = defineStore("ui", {
     },
     formatSat: function (value: number) {
       // hashu.me: follows the Monetary unit setting (sat, ₿, BTC, msat).
-      return formatSats(
-        value,
-        toMoneyUnit(useSettingsStore().moneyUnit),
-        navigator.language
-      );
+      return formatSats(value, usePriceStore().money(), navigator.language);
     },
     fromMsat: function (value: number) {
       return new Intl.NumberFormat(navigator.language).format(value) + " msat";
@@ -188,7 +185,7 @@ export const useUiStore = defineStore("ui", {
           value,
           currency,
           navigator.language,
-          useSettingsStore().moneyUnit
+          usePriceStore().money()
         );
       }
       if (currency == "sat") return this.formatSat(value);

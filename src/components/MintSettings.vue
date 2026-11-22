@@ -394,7 +394,6 @@ import {
   formatHashrate,
 } from "src/js/hashu-redeem";
 import { UNIT_TIH, formatHashprice } from "src/js/hashu";
-import { toMoneyUnit } from "src/js/money";
 import { mintSupportsPaymentMethod } from "src/js/mint-payment-methods";
 import { PaymentMethod } from "src/stores/walletTypes";
 import {
@@ -542,7 +541,7 @@ export default defineComponent({
             msat,
             this.hashuDisplayUnit,
             navigator.language,
-            toMoneyUnit(this.moneyUnit)
+            usePriceStore().money(url)
           )
         : "";
     },

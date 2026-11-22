@@ -130,6 +130,22 @@ describe("market-style day units", () => {
       "46,043 msat/THd"
     );
     expect(formatHashprice(600, "PiH", "en-US", "bip177")).toBe("600 msat/PiH");
+    // USD from the BTC price feed, or from the mint's own USDT price.
+    expect(
+      formatHashprice(600, "PHD", "en-US", { unit: "usd", usdPerBtc: 100000 })
+    ).toBe("$46.04/PHd");
+    expect(
+      formatHashprice(600, "THD", "en-US", { unit: "usd", usdPerBtc: 100000 })
+    ).toBe("$0.046/THd");
+    expect(
+      formatHashprice(600, "PiH", "en-US", {
+        unit: "usd",
+        usdPerBtc: 100000,
+        usdtPerPih: 0.0007,
+      })
+    ).toBe("$0.0007/PiH");
+    // No rate yet: falls back to sats.
+    expect(formatHashprice(600, "THD", "en-US", "usd")).toBe("46 sats/THd");
     expect(formatHashprice(600, "PHSD", "en-US")).toBe("46,043 sats/PH/s/Day");
     expect(formatHashprice(600, "THSD", "en-US")).toBe("46 sats/TH/s/Day");
   });
