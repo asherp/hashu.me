@@ -161,7 +161,7 @@ test("retries a swap after the destination quote service recovers", async ({
   await expect.poll(() => wallet.balanceSats()).toBe(100);
   await expect(
     wallet.mintCard(MINT_B_URL).locator(".currency-unit-text")
-  ).toHaveText("₿0");
+  ).toHaveText("0 sat");
   await page.unroute(quoteUrl);
   await settleSwapDestination(wallet, MINT_B_URL);
   await chooseSwap(wallet, MINT_A_URL, MINT_B_URL, "20");

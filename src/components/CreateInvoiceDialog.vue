@@ -355,7 +355,7 @@ export default defineComponent({
     ...mapState(useSettingsStore, [
       "bitcoinPriceCurrency",
       "useNumericKeyboard",
-      "bip177BitcoinSymbol",
+      "moneyUnit",
     ]),
     ...mapState(usePriceStore, ["bitcoinPrice", "currentCurrencyPrice"]),
     ...mapState(useNpubCashStore, {
@@ -494,7 +494,7 @@ export default defineComponent({
           "mint",
           this.activeUnit
         ),
-        this.bip177BitcoinSymbol
+        this.moneyUnit
       );
     },
     showOnchainAmountWarning(): boolean {
@@ -749,7 +749,7 @@ export default defineComponent({
               "mint",
               wallet.unit
             ),
-            this.bip177BitcoinSymbol
+            this.moneyUnit
           );
           if (error) {
             notifyError(error);

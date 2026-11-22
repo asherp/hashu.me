@@ -217,7 +217,7 @@ export default {
       },
       appearance: {
         title: "Appearance",
-        caption: "Theme, keyboard, Bitcoin symbol and hashrate unit",
+        caption: "Theme, keyboard, monetary unit and hashrate unit",
       },
       language: {
         title: "Language",
@@ -497,6 +497,17 @@ export default {
         title: "Bitcoin symbol",
         description: "Use ₿ symbol instead of sats.",
         toggle: "Use ₿ symbol",
+      },
+      money_unit: {
+        title: "Monetary unit",
+        description:
+          "Unit for showing bitcoin amounts and prices. Prices read as this unit per hashrate unit, like 46 sats/THd.",
+        units: {
+          sat: "sats",
+          bip177: "₿ (BIP-177, one ₿ unit is a sat)",
+          btc: "BTC",
+          msat: "msat (thousandths of a sat)",
+        },
       },
       hashu_unit: {
         title: "Hashrate unit",

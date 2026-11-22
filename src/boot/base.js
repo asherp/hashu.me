@@ -1,3 +1,4 @@
+import { formatSats, toMoneyUnit } from "src/js/money";
 import {
   UNIT_TIH,
   formatTih,
@@ -166,7 +167,7 @@ window.windowMixin = {
           value,
           currency,
           window.LOCALE,
-          useSettingsStore().bip177BitcoinSymbol
+          useSettingsStore().moneyUnit
         );
       }
       if (currency == "sat") return this.formatSat(value);
@@ -190,17 +191,12 @@ window.windowMixin = {
     },
     formatSat: function (value) {
       // convert value to integer
-      value = parseInt(value);
-      if (useSettingsStore().bip177BitcoinSymbol) {
-        if (value >= 0) {
-          return "₿" + new Intl.NumberFormat(window.LOCALE).format(value);
-        } else {
-          return (
-            "-₿" + new Intl.NumberFormat(window.LOCALE).format(Math.abs(value))
-          );
-        }
-      }
-      return new Intl.NumberFormat(window.LOCALE).format(value) + " sat";
+      // hashu.me: follows the Monetary unit setting (sat, ₿, BTC, msat).
+      return formatSats(
+        parseInt(value),
+        toMoneyUnit(useSettingsStore().moneyUnit),
+        window.LOCALE
+      );
     },
     fromMsat: function (value) {
       value = parseInt(value);

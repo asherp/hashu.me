@@ -1,21 +1,16 @@
 import { UNIT_TIH, formatTih } from "src/js/hashu";
+import { formatSats, toMoneyUnit, type MoneyUnit } from "src/js/money";
 
 /** Format integer Cashu amounts without converting large values to numbers. */
 export function formatBigIntCurrency(
   value: bigint,
   currency: string,
   locale = "en",
-  bitcoinSymbol = false
+  money: MoneyUnit | boolean = "sat"
 ): string {
   const numberFormat = new Intl.NumberFormat(locale);
-  if (currency === "sat") {
-    if (bitcoinSymbol) {
-      return value < 0n
-        ? `-₿${numberFormat.format(-value)}`
-        : `₿${numberFormat.format(value)}`;
-    }
-    return `${numberFormat.format(value)} sat`;
-  }
+  // hashu.me: sat amounts follow the Monetary unit setting.
+  if (currency === "sat") return formatSats(value, toMoneyUnit(money), locale);
   if (currency === "msat") return `${numberFormat.format(value)} msat`;
   if (currency === UNIT_TIH) return formatTih(value, locale);
 

@@ -328,7 +328,8 @@
                 formatHashprice(
                   mintMsatPerPih,
                   settings.hashuDisplayUnit,
-                  $i18n.locale
+                  $i18n.locale,
+                  settings.moneyUnit
                 )
               }}
               <div class="text-caption text-grey-6">

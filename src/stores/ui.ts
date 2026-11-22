@@ -1,3 +1,4 @@
+import { formatSats, moneyUnitTicker, toMoneyUnit } from "src/js/money";
 import {
   UNIT_TIH,
   formatTih,
@@ -153,18 +154,12 @@ export const useUiStore = defineStore("ui", {
       this.tab = tab;
     },
     formatSat: function (value: number) {
-      // convert value to integer
-      if (useSettingsStore().bip177BitcoinSymbol) {
-        if (value >= 0) {
-          return "₿" + new Intl.NumberFormat(navigator.language).format(value);
-        } else {
-          return (
-            "-₿" +
-            new Intl.NumberFormat(navigator.language).format(Math.abs(value))
-          );
-        }
-      }
-      return new Intl.NumberFormat(navigator.language).format(value) + " sat";
+      // hashu.me: follows the Monetary unit setting (sat, ₿, BTC, msat).
+      return formatSats(
+        value,
+        toMoneyUnit(useSettingsStore().moneyUnit),
+        navigator.language
+      );
     },
     fromMsat: function (value: number) {
       return new Intl.NumberFormat(navigator.language).format(value) + " msat";
@@ -193,7 +188,7 @@ export const useUiStore = defineStore("ui", {
           value,
           currency,
           navigator.language,
-          useSettingsStore().bip177BitcoinSymbol
+          useSettingsStore().moneyUnit
         );
       }
       if (currency == "sat") return this.formatSat(value);
@@ -264,8 +259,8 @@ export const useUiStore = defineStore("ui", {
   getters: {
     tickerShort() {
       const unit = useMintsStore().activeUnit;
-      if (unit == "sat" && useSettingsStore().bip177BitcoinSymbol) {
-        return "₿";
+      if (unit == "sat") {
+        return moneyUnitTicker(toMoneyUnit(useSettingsStore().moneyUnit));
       } else {
         return unitTickerShortMap[unit as keyof typeof unitTickerShortMap];
       }

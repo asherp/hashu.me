@@ -125,7 +125,7 @@ test("validates new on-chain addresses while preserving quote reuse and history 
   await expect(limitsHint).toHaveCount(0);
   await expect(page.locator(".qr-container:visible")).toHaveCount(0);
   await wallet.enterAmount(999);
-  await expect(error).toContainText("at least ₿1,000");
+  await expect(error).toContainText("at least 1,000 sat");
   await expect(create).toBeDisabled();
   // Move focus off the last keypad button before using the physical keyboard.
   await page.locator(".amount-display:visible").click();
@@ -133,7 +133,7 @@ test("validates new on-chain addresses while preserving quote reuse and history 
   expect(submissions).toBe(0);
   for (let i = 0; i < 3; i++) await page.keyboard.press("Backspace");
   await wallet.enterAmount(5001);
-  await expect(error).toContainText("no more than ₿5,000");
+  await expect(error).toContainText("no more than 5,000 sat");
   await expect(create).toBeDisabled();
   // Move focus off the last keypad button before using the physical keyboard.
   await page.locator(".amount-display:visible").click();

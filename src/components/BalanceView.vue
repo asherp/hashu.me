@@ -173,6 +173,7 @@ import AnimatedNumber from "src/components/AnimatedNumber.vue";
 import EpochBalances from "src/components/EpochBalances.vue";
 import { useEpochsStore } from "src/stores/epochs";
 import { UNIT_TIH, tihToSats, formatHashprice, unitName } from "src/js/hashu";
+import { formatSats, toMoneyUnit } from "src/js/money";
 import { sumProofAmounts } from "src/js/proofs";
 import { useProofsStore } from "src/stores/proofs";
 
@@ -208,12 +209,17 @@ export default defineComponent({
     msatPerPih: function (): number {
       return this.hashuPrices[this.activeMintUrl]?.msatPerPih || 0;
     },
-    ...mapState(useSettingsStore, ["bitcoinPriceCurrency", "hashuDisplayUnit"]),
+    ...mapState(useSettingsStore, [
+      "bitcoinPriceCurrency",
+      "hashuDisplayUnit",
+      "moneyUnit",
+    ]),
     hashprice: function (): string {
       return formatHashprice(
         this.msatPerPih,
         this.hashuDisplayUnit,
-        navigator.language
+        navigator.language,
+        toMoneyUnit(this.moneyUnit)
       );
     },
     ...mapWritableState(useMintsStore, ["activeUnit"]),
@@ -395,13 +401,13 @@ export default defineComponent({
     },
     formatSecondary(val: number, unit: string) {
       // hashu.me: under TiH this is what the vouchers cost at the mint's
-      // price, in sats. Spell the unit out: "₿2" reads as two bitcoin.
+      // price, in the Monetary unit setting (sat, ₿, BTC, msat).
       if (this.isTihUnit(unit)) {
-        return this.$t(
-          "BalanceView.tih_value",
-          { amount: new Intl.NumberFormat(navigator.language).format(val) },
-          Math.round(val)
-        );
+        return `≈ ${formatSats(
+          Math.round(val),
+          toMoneyUnit(this.moneyUnit),
+          navigator.language
+        )}`;
       }
       return this.formatCurrency(val, this.secondaryUnit(unit));
     },
