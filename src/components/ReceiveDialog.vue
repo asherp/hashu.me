@@ -67,7 +67,11 @@
               </div>
               <div class="col q-ml-md">
                 <div class="text-body1 text-weight-medium">
-                  {{ $t("ReceiveDialog.actions.lightning.label") }}
+                  {{
+                    activeUnit === "tih"
+                      ? $t("ReceiveDialog.actions.lightning.buy_label")
+                      : $t("ReceiveDialog.actions.lightning.label")
+                  }}
                 </div>
               </div>
             </div>

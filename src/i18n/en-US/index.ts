@@ -1136,6 +1136,7 @@ export default {
   },
   InvoiceDetailDialog: {
     title: "Receive Lightning",
+    buy_title: "Buy with Lightning",
     create_invoice_title: "Create Invoice",
     inputs: {
       amount: {
@@ -1348,6 +1349,7 @@ export default {
       },
       lightning: {
         label: "Lightning",
+        buy_label: "Buy with Lightning",
         error_no_mints:
           "You need to connect to a mint to receive via Lightning",
       },
