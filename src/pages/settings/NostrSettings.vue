@@ -3,6 +3,14 @@
     :title="$t('Settings.menu.nostr.title')"
     :caption="$t('Settings.menu.nostr.caption')"
   >
+    <!-- hashu.me: your own profile -->
+    <SettingsSection
+      :title="$t('Settings.nostr_profile.title')"
+      :caption="$t('Settings.nostr_profile.description')"
+    >
+      <NostrProfileEditor />
+    </SettingsSection>
+
     <!-- keys -->
     <SettingsSection
       :title="$t('Settings.nostr_keys.title')"
@@ -293,6 +301,7 @@ import { useNostrUserStore } from "src/stores/nostrUser";
 import { useNpubCashStore } from "src/stores/npubcash";
 import SettingsPageShell from "./SettingsPageShell.vue";
 import SettingsSection from "./SettingsSection.vue";
+import NostrProfileEditor from "src/components/NostrProfileEditor.vue";
 
 export default defineComponent({
   name: "NostrSettings",
@@ -300,6 +309,7 @@ export default defineComponent({
   components: {
     SettingsPageShell,
     SettingsSection,
+    NostrProfileEditor,
   },
   data: function () {
     return {
