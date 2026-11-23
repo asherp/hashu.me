@@ -1169,7 +1169,7 @@ export default {
     title: "Send",
     actions: {
       ecash: {
-        label: "Vouchers",
+        label: "Hashes",
         error_no_mints: "No mints available",
       },
       lightning: {
@@ -1343,7 +1343,7 @@ export default {
     title: "Receive",
     actions: {
       ecash: {
-        label: "Vouchers",
+        label: "Hashes",
         error_no_mints: "No mints available",
       },
       lightning: {
