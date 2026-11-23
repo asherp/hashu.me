@@ -308,6 +308,48 @@ export default {
         choose_placeholder: "Select a mint...",
       },
     },
+    nostr_profile: {
+      title: "Your Nostr profile",
+      description:
+        "The name and picture people see when this wallet messages a mint or appears on Nostr.",
+      edit: "Edit profile",
+      create: "Set up profile",
+      none: "No profile yet",
+      loading: "Looking for your profile…",
+      signer_note:
+        "This identity is linked from your {signer}. Saving changes your profile everywhere you use it on Nostr.",
+      signer_approve: "Your signer will ask you to approve.",
+      signer_extension: "signing extension",
+      signer_nsec: "nsec",
+      signer_bunker: "bunker",
+      save: "Save",
+      cancel: "Cancel",
+      saved: "Profile published to {count} relays",
+      unchanged: "Nothing changed",
+      fields: {
+        name: "Username",
+        display_name: "Display name",
+        picture: "Picture URL",
+        about: "About",
+        nip05: "Nostr address (NIP-05)",
+        lud16: "Lightning address",
+      },
+      hints: {
+        picture: "An https link to an image",
+        nip05: "name{'@'}domain, verified by that domain",
+        lud16: "Where people can zap you",
+      },
+      errors: {
+        url: "Use an https:// link",
+        identifier: "Use the name{'@'}domain format",
+        relays_unreachable:
+          "Couldn't reach your relays, so nothing was saved. Check your relays and try again.",
+        signer_mismatch:
+          "Your signer signed with a different key than this identity, so nothing was published.",
+        publish_failed: "No relay accepted the profile. Try again.",
+        generic: "Could not publish your profile",
+      },
+    },
     nostr_keys: {
       title: "Your nostr keys",
       description:

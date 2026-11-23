@@ -1,8 +1,20 @@
 import { defineStore } from "pinia";
-import NDK, { NDKEvent, NDKFilter, NDKKind } from "@nostr-dev-kit/ndk";
+import NDK, {
+  NDKEvent,
+  NDKFilter,
+  NDKKind,
+  NDKRelaySet,
+} from "@nostr-dev-kit/ndk";
 import { useLocalStorage } from "@vueuse/core";
 import { useNostrStore } from "./nostr";
 import Dexie from "dexie";
+import {
+  mergeProfile,
+  parseProfileJson,
+  ProfileForm,
+} from "src/js/nostr-profile";
+
+const PROFILE_FETCH_TIMEOUT_MS = 6000;
 
 type NostrProfile = {
   name?: string;
@@ -18,6 +30,12 @@ export const useNostrUserStore = defineStore("nostrUser", {
   state: () => ({
     pubkey: useLocalStorage<string>("cashu.nostrUser.pubkey", ""),
     profile: null as NostrProfile | null,
+    // hashu.me: full kind 0 content as last seen, unknown keys included
+    profileRaw: {} as Record<string, unknown>,
+    profileTags: [] as string[][],
+    profileCreatedAt: 0,
+    profileLoaded: false,
+    profileSaving: false,
     follows: [] as string[],
     wotHopsByPubkey: {} as Record<string, number>,
     lastUpdatedAt: 0,
@@ -114,6 +132,14 @@ export const useNostrUserStore = defineStore("nostrUser", {
       return await new Promise<void>((resolve) => setTimeout(resolve, ms));
     },
     setPubkey: function (pubkey: string) {
+      if ((pubkey || "") !== this.pubkey) {
+        // a different identity: drop the old one's profile
+        this.profile = null;
+        this.profileRaw = {};
+        this.profileTags = [];
+        this.profileCreatedAt = 0;
+        this.profileLoaded = false;
+      }
       this.pubkey = pubkey || "";
     },
     updateUserProfile: async function (force = false) {
@@ -154,8 +180,99 @@ export const useNostrUserStore = defineStore("nostrUser", {
             const content = JSON.parse(latest.content || "{}");
             this.profile = content as NostrProfile;
           } catch {}
+          this.rememberProfileEvent(latest);
         }
+        this.profileLoaded = true;
       } catch {}
+    },
+    rememberProfileEvent: function (e: NDKEvent) {
+      if ((e.created_at || 0) < this.profileCreatedAt) return;
+      this.profileRaw = parseProfileJson(e.content);
+      this.profileTags = (e.tags || []) as string[][];
+      this.profileCreatedAt = e.created_at || 0;
+      this.profile = this.profileRaw as NostrProfile;
+    },
+    // hashu.me: read the newest kind 0 for the active identity straight from
+    // the relays (no throttle) so a save never builds on a stale copy.
+    fetchLatestProfileEvent: async function (
+      pubkey: string
+    ): Promise<{ event: NDKEvent | null; reached: boolean }> {
+      const nostr = useNostrStore();
+      const ndk = new NDK({ explicitRelayUrls: nostr.relays });
+      try {
+        await Promise.race([
+          ndk.connect(),
+          new Promise((r) => setTimeout(r, PROFILE_FETCH_TIMEOUT_MS)),
+        ]);
+        const relaySet = NDKRelaySet.fromRelayUrls(nostr.relays, ndk);
+        const events = await Promise.race([
+          ndk.fetchEvents(
+            { kinds: [NDKKind.Metadata], authors: [pubkey], limit: 1 },
+            { closeOnEose: true },
+            relaySet
+          ),
+          new Promise<null>((r) =>
+            setTimeout(() => r(null), PROFILE_FETCH_TIMEOUT_MS)
+          ),
+        ]);
+        const reached = ndk.pool.connectedRelays().length > 0;
+        let latest: NDKEvent | null = null;
+        events?.forEach((e) => {
+          if (!latest || (e.created_at || 0) > (latest.created_at || 0))
+            latest = e;
+        });
+        return { event: latest, reached };
+      } catch (e) {
+        console.warn("[nostrUser] latest profile fetch failed", e);
+        return { event: null, reached: false };
+      }
+    },
+    // hashu.me: publish a kind 0 for the active identity with only the
+    // changed fields applied on top of the newest profile on the relays.
+    // Signing goes through whatever signer is active (wallet seed, nsec or
+    // a NIP-07 extension), so linked identities sign in their own signer.
+    publishProfile: async function (edits: Partial<ProfileForm>) {
+      const nostr = useNostrStore();
+      await nostr.initSignerIfNotSet();
+      const pubkey = nostr.pubkey;
+      if (!pubkey) throw new Error("No Nostr identity");
+      this.profileSaving = true;
+      try {
+        const { event: latest, reached } = await this.fetchLatestProfileEvent(
+          pubkey
+        );
+        if (!reached) throw new Error("relays_unreachable");
+        if (latest) this.rememberProfileEvent(latest);
+        const base = latest ? parseProfileJson(latest.content) : {};
+        const merged = mergeProfile(base, edits);
+        const ndk = new NDK({
+          signer: nostr.signer,
+          explicitRelayUrls: nostr.relays,
+        });
+        await Promise.race([
+          ndk.connect(),
+          new Promise((r) => setTimeout(r, PROFILE_FETCH_TIMEOUT_MS)),
+        ]);
+        const event = new NDKEvent(ndk);
+        event.kind = NDKKind.Metadata;
+        event.content = JSON.stringify(merged);
+        event.tags = latest ? ((latest.tags || []) as string[][]) : [];
+        // created_at must beat the event we merged onto, even with clock skew
+        event.created_at = Math.max(
+          Math.floor(Date.now() / 1000),
+          (latest?.created_at || 0) + 1
+        );
+        await event.sign();
+        if (event.pubkey !== pubkey) throw new Error("signer_mismatch");
+        const relays = await event.publish();
+        if (!relays.size) throw new Error("publish_failed");
+        this.setPubkey(pubkey);
+        this.rememberProfileEvent(event);
+        this.profileLoaded = true;
+        return relays.size;
+      } finally {
+        this.profileSaving = false;
+      }
     },
     fetchFollowsOf: async function (pk: string): Promise<string[]> {
       const ndk = this.ensureNdk();
