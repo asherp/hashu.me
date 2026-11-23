@@ -34,6 +34,8 @@
                   ? "Receive On-chain"
                   : isBolt12 && !showNpubCashPreview
                   ? "Receive Bolt12"
+                  : isHashuBuy
+                  ? $t("InvoiceDetailDialog.buy_title")
                   : $t("InvoiceDetailDialog.title")
               }}
             </q-item-label>
@@ -187,6 +189,21 @@
                     </span>
                   </transition>
                 </div>
+                <div
+                  v-else-if="showBuyAmountWarning"
+                  class="amount-warning-badge buy-limit-badge"
+                  role="status"
+                  data-testid="buy-amount-limit"
+                >
+                  <transition name="wobble" mode="out-in" appear>
+                    <span
+                      :key="'buy-warn-' + buyAmountError"
+                      class="text-caption text-weight-medium text-warning amount-warning-text"
+                    >
+                      {{ buyAmountError }}
+                    </span>
+                  </transition>
+                </div>
               </template>
             </AmountInputComponent>
           </transition>
@@ -304,6 +321,16 @@ import {
 import { notifyError } from "src/js/notify";
 import { useNpubCashStore } from "src/stores/npubcash";
 import { lightningAddressToLnurl } from "src/js/lnurl";
+import { TIH_PER_PIH, UNIT_TIH } from "src/js/hashu";
+
+/** "1 PiH (1,024 TiH)" for whole PiH, else "500 TiH". */
+function formatBuyLimit(tih: number): string {
+  const nf = new Intl.NumberFormat(navigator.language);
+  if (tih >= TIH_PER_PIH && tih % TIH_PER_PIH === 0) {
+    return `${nf.format(tih / TIH_PER_PIH)} PiH (${nf.format(tih)} TiH)`;
+  }
+  return `${nf.format(tih)} TiH`;
+}
 
 declare const windowMixin: any;
 
@@ -497,6 +524,39 @@ export default defineComponent({
         this.moneyUnit
       );
     },
+    /** hashu.me: Lightning on a Hashu (TiH) mint buys vouchers. */
+    isHashuBuy(): boolean {
+      return !this.isOnchain && !this.isBolt12 && this.activeUnit === UNIT_TIH;
+    },
+    /**
+     * Purchase limits in TiH: the mint's NUT-04 bolt11 min/max, else the
+     * Hashu floor of 1 PiH (the mint refuses smaller quotes).
+     */
+    buyLimits(): { min: number; max: number | null } {
+      const limits = mintPaymentMethodLimits(
+        this.activeMint,
+        PaymentMethod.Bolt11,
+        "mint",
+        this.activeUnit
+      );
+      return {
+        min: limits?.minAmount != null ? Number(limits.minAmount) : TIH_PER_PIH,
+        max: limits?.maxAmount != null ? Number(limits.maxAmount) : null,
+      };
+    },
+    buyAmountError(): string {
+      if (!this.isHashuBuy) return "";
+      const amount = Number(this.invoiceData.amount) || 0;
+      const { min, max } = this.buyLimits;
+      if (amount < min) return `Minimum purchase is ${formatBuyLimit(min)}`;
+      if (max != null && amount > max)
+        return `Maximum purchase is ${formatBuyLimit(max)}`;
+      return "";
+    },
+    showBuyAmountWarning(): boolean {
+      // Stay quiet until an amount is entered; the disabled button covers zero.
+      return Number(this.invoiceData.amount) > 0 && !!this.buyAmountError;
+    },
     showOnchainAmountWarning(): boolean {
       // Stay quiet until an amount is entered; the disabled button covers zero.
       return (
@@ -516,6 +576,7 @@ export default defineComponent({
         );
       // Bolt12 supports amountless offers; Bolt11 requires a positive amount.
       if (this.isBolt12) return true;
+      if (this.buyAmountError) return false;
       return (
         this.invoiceData.amount != null && Number(this.invoiceData.amount) > 0
       );
@@ -956,6 +1017,9 @@ export default defineComponent({
   z-index: 2;
   pointer-events: none;
   text-align: center;
+}
+.buy-limit-badge {
+  top: calc(100% + 12px);
 }
 .amount-warning-text {
   display: inline-block;

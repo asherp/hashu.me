@@ -165,3 +165,44 @@ export function formatPricePer(
   if (unit === "bip177") return `₿${shown}/${perLabel}`;
   return `${shown} ${sats === 1 ? "sat" : "sats"}/${perLabel}`;
 }
+
+/**
+ * An amount given in msat (a TiH amount's cost, say) in the chosen money
+ * unit. Below a sat, sat and ₿ amounts fall back to msat ("600 msat"),
+ * like prices do; BTC and msat always use their unit. USD uses `usd` when
+ * given (the mint's USDT price), else the BTC rate, else sats.
+ */
+export function formatMsatAmount(
+  msat: number,
+  money: MoneyUnit | Money = DEFAULT_MONEY_UNIT,
+  locale?: string,
+  usd?: number
+): string {
+  const { usdPerBtc } = toMoney(money);
+  let { unit } = toMoney(money);
+  if (unit === "usd") {
+    if (usd != null && usd > 0) return formatUsd(usd, locale);
+    if (usdPerBtc && usdPerBtc > 0)
+      return formatUsd((msat / 1e11) * usdPerBtc, locale);
+    unit = "sat";
+  }
+  const asMsat = () =>
+    `${new Intl.NumberFormat(locale, {
+      maximumFractionDigits: 0,
+    }).format(Math.ceil(msat))} msat`;
+  if (unit === "msat") return asMsat();
+  const sats = msat / 1000;
+  if (unit === "btc") {
+    const shown = new Intl.NumberFormat(locale, {
+      maximumSignificantDigits: 3,
+      maximumFractionDigits: 20,
+    }).format(sats / 1e8);
+    return `${shown} BTC`;
+  }
+  if (sats > 0 && sats < 1) return asMsat();
+  const shown = new Intl.NumberFormat(locale, {
+    maximumFractionDigits: sats >= 10 ? 0 : 3,
+  }).format(sats);
+  if (unit === "bip177") return `₿${shown}`;
+  return `${shown} sat`;
+}

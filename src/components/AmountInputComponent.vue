@@ -45,7 +45,14 @@ import { mapState } from "pinia";
 import { useMintsStore } from "src/stores/mints";
 import { useSettingsStore } from "src/stores/settings";
 import { usePriceStore } from "src/stores/price";
-import { UNIT_TIH, formatTih, isDisplayUnit, tihToSats } from "src/js/hashu";
+import {
+  TIH_PER_PIH,
+  UNIT_TIH,
+  formatTih,
+  isDisplayUnit,
+  tihToSats,
+} from "src/js/hashu";
+import { formatMsatAmount } from "src/js/money";
 declare const windowMixin: any;
 
 const MAX_AMOUNT = 999_999_999;
@@ -115,11 +122,19 @@ export default defineComponent({
         parts.push(formatTih(amount, navigator.language, unit));
       }
       if (msatPerPih) {
-        const sats = tihToSats(amount, msatPerPih);
-        const shown = new Intl.NumberFormat(navigator.language, {
-          maximumFractionDigits: sats < 10 ? 3 : 0,
-        }).format(sats);
-        parts.push(`≈ ${shown} sat`);
+        // Same rule as prices: the Monetary unit setting, msat below a sat.
+        const money = usePriceStore().money(mintUrl);
+        const usd = money.usdtPerPih
+          ? (amount / TIH_PER_PIH) * money.usdtPerPih
+          : undefined;
+        parts.push(
+          `≈ ${formatMsatAmount(
+            tihToSats(amount, msatPerPih) * 1000,
+            money,
+            navigator.language,
+            usd
+          )}`
+        );
       }
       return parts.join(" · ");
     },
@@ -548,6 +563,7 @@ export default defineComponent({
 .fiat-display {
   font-size: 20px;
   text-align: center;
+  white-space: nowrap;
 }
 .fiat-icon {
   position: absolute;
