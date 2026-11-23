@@ -1,4 +1,9 @@
-import { HASHES_PER_TIH, type MintDelivery } from "src/js/hashu";
+import {
+  HASHES_PER_TIH,
+  isDisplayUnit,
+  type DisplayUnit,
+  type MintDelivery,
+} from "src/js/hashu";
 
 /**
  * Redeeming TiH vouchers as hashrate on a Hashu mint.
@@ -127,7 +132,7 @@ export function emptySavedPool(): SavedPool {
  */
 export function fallbackPoolsFor(
   saved: SavedPool[] | undefined,
-  max: number = MAX_FALLBACK_POOLS
+  max: number = MAX_FALLBACK_POOLS,
 ): FallbackPoolRequest[] {
   const out: FallbackPoolRequest[] = [];
   for (const p of saved ?? []) {
@@ -169,7 +174,7 @@ export function isStratumUrl(url: string): boolean {
   return (
     /^stratum\+(tcp|ssl):\/\/[^\s/:]+:\d{1,5}\/?$/.test(u) ||
     /^stratum2\+tcp:\/\/[^\s/:]+(:\d{1,5})?\/[1-9A-HJ-NP-Za-km-z]{40,60}\/?$/.test(
-      u
+      u,
     )
   );
 }
@@ -185,7 +190,7 @@ export function hashrateRequest(
   amountTih: number,
   workerPassword?: string,
   nonce: string = randomNonce(),
-  fallbackPools: FallbackPoolRequest[] = []
+  fallbackPools: FallbackPoolRequest[] = [],
 ): string {
   const req: HashrateRequest = {
     pool_url: poolUrl.trim(),
@@ -201,7 +206,7 @@ export function hashrateRequest(
 }
 
 export function parseHashrateRequest(
-  request: string | undefined
+  request: string | undefined,
 ): HashrateRequest | null {
   if (!request) return null;
   try {
@@ -229,10 +234,10 @@ function randomNonce(): string {
 export async function redemptionId(request: string): Promise<string> {
   const digest = await crypto.subtle.digest(
     "SHA-256",
-    new TextEncoder().encode(request)
+    new TextEncoder().encode(request),
   );
   return Array.from(new Uint8Array(digest).slice(0, 16), (x) =>
-    x.toString(16).padStart(2, "0")
+    x.toString(16).padStart(2, "0"),
   ).join("");
 }
 
@@ -267,7 +272,7 @@ export type RedemptionProgress = {
  * Null when the mint has no hashrate right now. */
 export function estimateRedeemSeconds(
   amountTih: number,
-  delivery: MintDelivery
+  delivery: MintDelivery,
 ): number | null {
   const hs = Number(delivery.hashrate_hs) || 0;
   if (!(hs > 0)) return null;
@@ -294,7 +299,56 @@ export function secondsLeft(p: RedemptionProgress): number | null {
   return rate > 0 && remaining > 0 ? remaining / rate : null;
 }
 
-export function formatHashrate(hs: number): string {
+/** A hashrate unit: its label and hashes per second in one of it. */
+export type HashrateUnit = { label: string; hs: number };
+
+const TH_S: HashrateUnit = { label: "TH/s", hs: 1e12 };
+const PH_S: HashrateUnit = { label: "PH/s", hs: 1e15 };
+
+/**
+ * The hashrate unit that goes with a display unit, so a rate reads in the
+ * same scale as the amounts it delivers: THh/THd/TH/s/Day -> TH/s,
+ * PHh/PHd/PH/s/Day -> PH/s, and the binary units per second (TiH -> TiH/s,
+ * 2^40 H/s), so TiH/s times seconds is the TiH redeemed.
+ */
+export function hashrateUnitFor(unit: DisplayUnit): HashrateUnit {
+  switch (unit) {
+    case "TiH":
+      return { label: "TiH/s", hs: 2 ** 40 };
+    case "PiH":
+      return { label: "PiH/s", hs: 2 ** 50 };
+    case "EiH":
+      return { label: "EiH/s", hs: 2 ** 60 };
+    case "PHH":
+    case "PHD":
+    case "PHSD":
+      return PH_S;
+    default:
+      return TH_S;
+  }
+}
+
+/**
+ * Format a hashrate. With a display unit it is shown in that unit's scale
+ * (see hashrateUnitFor), e.g. "0.007 PH/s" or "6.4 TiH/s"; without one it
+ * picks the SI prefix that fits, e.g. "1.2 TH/s".
+ */
+export function formatHashrate(
+  hs: number,
+  unit?: DisplayUnit | string,
+  locale?: string,
+): string {
+  if (isDisplayUnit(unit)) {
+    const u = hashrateUnitFor(unit);
+    const v = hs > 0 ? hs / u.hs : 0;
+    const options: Intl.NumberFormatOptions =
+      v >= 100 || v === 0
+        ? { maximumFractionDigits: 0 }
+        : v >= 1
+          ? { maximumFractionDigits: 1 }
+          : { maximumSignificantDigits: 2 };
+    return `${new Intl.NumberFormat(locale, options).format(v)} ${u.label}`;
+  }
   if (!(hs > 0)) return "0 H/s";
   const units = ["H/s", "kH/s", "MH/s", "GH/s", "TH/s", "PH/s", "EH/s"];
   let i = 0;
@@ -335,7 +389,7 @@ export type BalanceEta =
 export function balanceRedeemEta(
   balanceTih: number,
   delivery: MintDelivery,
-  minRedeemTih?: number
+  minRedeemTih?: number,
 ): BalanceEta {
   if (!(balanceTih > 0)) return { kind: "empty" };
   if (minRedeemTih && balanceTih < minRedeemTih) {
@@ -422,7 +476,7 @@ export function redemptionEntries(history: HistoryLike[]): RedemptionEntry[] {
     const locked =
       mq && mq.amount != null
         ? Number(mq.amount) + Number(mq.fee_reserve ?? 0)
-        : req?.amount_tih ?? Math.abs(Number(h.amount) || 0);
+        : (req?.amount_tih ?? Math.abs(Number(h.amount) || 0));
     const active = h.status !== "paid";
     const charged = active ? null : Math.abs(Number(h.amount) || 0);
     out.push({

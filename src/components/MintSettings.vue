@@ -106,7 +106,7 @@
                         {{
                           formatCurrency(
                             mintClass(mint).unitBalance(unit),
-                            unit
+                            unit,
                           )
                         }}
                       </span>
@@ -120,7 +120,13 @@
                         <PickaxeIcon
                           :size="14"
                           class="q-mr-xs hashrate-icon"
-                        />{{ formatHashrate(mintHashrate(mint.url)) }}
+                        />{{
+                          formatHashrate(
+                            mintHashrate(mint.url),
+                            hashuDisplayUnit,
+                            $i18n.locale,
+                          )
+                        }}
                       </span>
                       <q-tooltip>
                         {{ $t("MintSettings.hashrate_tooltip") }}
@@ -512,7 +518,7 @@ export default defineComponent({
           mint,
           PaymentMethod.Hashrate,
           "melt",
-          UNIT_TIH
+          UNIT_TIH,
         ) && this.mintClass(mint).unitBalance(UNIT_TIH) > 0
       );
     },
@@ -534,7 +540,7 @@ export default defineComponent({
       return balanceRedeemEta(
         this.mintClass(mint).unitBalance(UNIT_TIH),
         d,
-        this.hashuPrices[mint.url]?.minRedeemTih
+        this.hashuPrices[mint.url]?.minRedeemTih,
       );
     },
     /** A Hashu mint's hashprice in the display unit, e.g. "46 sats/THd"; "" if none. */
@@ -545,7 +551,7 @@ export default defineComponent({
             msat,
             this.hashuDisplayUnit,
             navigator.language,
-            usePriceStore().money(url)
+            usePriceStore().money(url),
           )
         : "";
     },
@@ -603,7 +609,7 @@ export default defineComponent({
       }
       if (!this.validateMintUrl(this.addMintData.url)) {
         notifyError(
-          this.$i18n.t("MintSettings.add.actions.add_mint.error_invalid_url")
+          this.$i18n.t("MintSettings.add.actions.add_mint.error_invalid_url"),
         );
         return;
       }
@@ -658,14 +664,14 @@ export default defineComponent({
         if (!recs || recs.length === 0) {
           this.notifyError(
             this.$i18n.t(
-              "MintSettings.discover.actions.discover.error_no_mints"
-            )
+              "MintSettings.discover.actions.discover.error_no_mints",
+            ),
           );
         } else {
           this.notifySuccess(
             this.$i18n.t("MintSettings.discover.actions.discover.success", {
               length: recs.length,
-            })
+            }),
           );
         }
         this.startSubscriptions();
