@@ -147,11 +147,11 @@
                     change: formatCurrency(progress.change_tih, "tih"),
                   })
                 : progress.filled_tih > 0
-                ? $t("RedeemPoolDialog.status.progress", {
-                    filled: formatCurrency(progress.filled_tih, "tih"),
-                    amount: formatCurrency(progress.amount_tih, "tih"),
-                  })
-                : $t("RedeemPoolDialog.status.waiting")
+                  ? $t("RedeemPoolDialog.status.progress", {
+                      filled: formatCurrency(progress.filled_tih, "tih"),
+                      amount: formatCurrency(progress.amount_tih, "tih"),
+                    })
+                  : $t("RedeemPoolDialog.status.waiting")
             }}
           </div>
         </template>
@@ -260,7 +260,7 @@ export default defineComponent({
     entry(): RedemptionEntry | undefined {
       if (!this.quoteId) return undefined;
       return redemptionEntries(useWalletStore().invoiceHistory as any[]).find(
-        (e) => e.quote === this.quoteId
+        (e) => e.quote === this.quoteId,
       );
     },
     detailRows(): { label: string; value: string }[] {
@@ -281,7 +281,7 @@ export default defineComponent({
           {
             label: t("change"),
             value: this.formatCurrency(e.changeTih ?? 0, "tih"),
-          }
+          },
         );
       }
       rows.push({ label: t("started"), value: shortDate(e.date) });
@@ -395,7 +395,11 @@ export default defineComponent({
       if (secs == null) return this.$t("RedeemPoolDialog.estimate.no_hashrate");
       let t = this.$t("RedeemPoolDialog.estimate.time", {
         time: formatDuration(secs),
-        rate: formatHashrate(d.hashrate_hs),
+        rate: formatHashrate(
+          d.hashrate_hs,
+          useSettingsStore().hashuDisplayUnit,
+          navigator.language,
+        ),
       });
       if (d.queue_tih >= 1) {
         t +=
@@ -415,10 +419,11 @@ export default defineComponent({
       const rate = trackRate(p.track, p.now_ms ?? Date.now());
       if (!(rate > 0)) return "";
       const left = secondsLeft(p);
+      const unit = useSettingsStore().hashuDisplayUnit;
       return left == null
-        ? formatHashrate(rate)
+        ? formatHashrate(rate, unit, navigator.language)
         : this.$t("RedeemPoolDialog.status.rate", {
-            rate: formatHashrate(rate),
+            rate: formatHashrate(rate, unit, navigator.language),
             time: formatDuration(left),
           });
     },
@@ -470,7 +475,7 @@ export default defineComponent({
         this.settled = res.state === MeltQuoteState.PAID;
         this.progressUrl = redemptionUrl(
           this.activeMintUrl,
-          await redemptionId(res.request)
+          await redemptionId(res.request),
         );
         this.startPolling();
       } catch (error) {
@@ -484,7 +489,7 @@ export default defineComponent({
     async resume(quote: string) {
       this.stopPolling();
       const entry = redemptionEntries(
-        useWalletStore().invoiceHistory as any[]
+        useWalletStore().invoiceHistory as any[],
       ).find((e) => e.quote === quote);
       if (!entry) return;
       this.quoteId = entry.quote;
@@ -497,14 +502,14 @@ export default defineComponent({
       this.progressUnavailable = false;
       this.progressUrl = redemptionUrl(
         entry.mint,
-        await redemptionId(entry.request)
+        await redemptionId(entry.request),
       );
       // A finished one: the history has what it cost and the change.
       if (entry.active) this.startPolling();
     },
     redemptionPaid(): boolean {
       const entry = (useWalletStore().invoiceHistory as any[]).find(
-        (i) => i.quote === this.quoteId
+        (i) => i.quote === this.quoteId,
       );
       return entry?.status === "paid";
     },

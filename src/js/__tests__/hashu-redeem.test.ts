@@ -193,6 +193,15 @@ describe("redemption time estimates", () => {
     );
     expect(formatHashrate(1.2e12)).toBe("1.2 TH/s");
     expect(formatHashrate(0)).toBe("0 H/s");
+    // In the scale of the chosen display unit.
+    expect(formatHashrate(7.04e12, "THD", "en-US")).toBe("7 TH/s");
+    expect(formatHashrate(7.04e12, "PHD", "en-US")).toBe("0.007 PH/s");
+    expect(formatHashrate(7.04e12, "PHSD", "en-US")).toBe("0.007 PH/s");
+    expect(formatHashrate(1.25e15, "PHH", "en-US")).toBe("1.3 PH/s");
+    expect(formatHashrate(250e12, "THH", "en-US")).toBe("250 TH/s");
+    expect(formatHashrate(7.04e12, "TiH", "en-US")).toBe("6.4 TiH/s");
+    expect(formatHashrate(2 ** 50 * 3, "PiH", "en-US")).toBe("3 PiH/s");
+    expect(formatHashrate(0, "PHD", "en-US")).toBe("0 PH/s");
     expect(formatDuration(45)).toBe("45 s");
     expect(formatDuration(720)).toBe("12 min");
     expect(formatDuration(12_000)).toBe("3 h 20 min");

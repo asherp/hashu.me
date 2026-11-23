@@ -122,7 +122,7 @@
               "
               @click="
                 isNostrProfileRow(contactInfo) &&
-                  (showNostrProfile = !showNostrProfile)
+                (showNostrProfile = !showNostrProfile)
               "
             >
               <div class="contact-icon-container">
@@ -266,7 +266,7 @@
                   $t(
                     "MintDetailsDialog.details.reviews.count",
                     { count: recommendation.reviewsCount },
-                    recommendation.reviewsCount
+                    recommendation.reviewsCount,
                   )
                 }}
               </template>
@@ -336,7 +336,7 @@
                 {{
                   $t(
                     "MintDetailsDialog.details.currencies.label",
-                    mintUnits.length
+                    mintUnits.length,
                   )
                 }}
               </div>
@@ -359,14 +359,20 @@
               </div>
             </div>
             <div class="detail-value text-right">
-              {{ formatHashrate(mintDelivery.hashrate_hs) }}
+              {{
+                formatHashrate(
+                  mintDelivery.hashrate_hs,
+                  settings.hashuDisplayUnit,
+                  $i18n.locale,
+                )
+              }}
               <div class="text-caption text-grey-6">
                 {{
                   mintDelivery.open_redemptions > 0
                     ? $t(
                         "MintDetailsDialog.details.hashrate.redeeming",
                         { count: mintDelivery.open_redemptions },
-                        mintDelivery.open_redemptions
+                        mintDelivery.open_redemptions,
                       )
                     : $t("MintDetailsDialog.details.hashrate.idle")
                 }}
@@ -392,7 +398,7 @@
                   mintMsatPerPih,
                   settings.hashuDisplayUnit,
                   $i18n.locale,
-                  mintMoney
+                  mintMoney,
                 )
               }}
               <div class="text-caption text-grey-6">
@@ -478,7 +484,7 @@
                     $t(
                       "MintDetailsDialog.reliability.owed.caption",
                       { count: mintDelivery.open_redemptions },
-                      mintDelivery.open_redemptions
+                      mintDelivery.open_redemptions,
                     )
                   }}
                 </div>
@@ -508,7 +514,7 @@
                       published: reliability.totals.hours_published,
                       expected: Math.max(
                         reliability.totals.hours_since_first,
-                        reliability.totals.hours_published
+                        reliability.totals.hours_published,
                       ),
                     })
                   }}
@@ -553,7 +559,7 @@
                     $t(
                       "MintDetailsDialog.reliability.work.redemptions",
                       { count: reliability.totals.redemptions_completed },
-                      reliability.totals.redemptions_completed
+                      reliability.totals.redemptions_completed,
                     )
                   }}
                 </div>
@@ -562,7 +568,7 @@
                     $t(
                       "MintDetailsDialog.reliability.work.blocks",
                       { count: reliability.totals.blocks },
-                      reliability.totals.blocks
+                      reliability.totals.blocks,
                     )
                   }}
                 </div>
@@ -770,7 +776,7 @@ export default defineComponent({
     // hashu.me: the mint's Nostr key from its NUT-06 contact, if any
     mintNostr() {
       const c = (this.mintData?.info?.contact || []).find(
-        (c) => c.method === "nostr"
+        (c) => c.method === "nostr",
       );
       return c ? parseMintNostrContact(c.info) : null;
     },
@@ -839,14 +845,14 @@ export default defineComponent({
     ...mapState(useMintRecommendationsStore, ["recommendations"]),
     recommendation() {
       return (this.recommendations as any[]).find(
-        (r) => r.url === this.mintData?.url
+        (r) => r.url === this.mintData?.url,
       );
     },
     /** Local and test mints have no reviews worth showing. */
     excludedFromReviews(): boolean {
       const url = this.mintData?.url || "";
       return EXCLUDED_FROM_REVIEWS.some((pattern) =>
-        new RegExp("^" + pattern.replace(/\*/g, ".*") + "$").test(url)
+        new RegExp("^" + pattern.replace(/\*/g, ".*") + "$").test(url),
       );
     },
     tihBalance() {
@@ -859,7 +865,7 @@ export default defineComponent({
       return balanceRedeemEta(
         this.tihBalance,
         this.mintDelivery,
-        this.hashuPrices[this.mintData.url]?.minRedeemTih
+        this.hashuPrices[this.mintData.url]?.minRedeemTih,
       );
     },
     /** A Hashu mint answers /checkout/api/info with a price or delivery. */
@@ -921,7 +927,7 @@ export default defineComponent({
     formatDate(unixSeconds) {
       return new Date(unixSeconds * 1000).toLocaleDateString(
         this.$i18n.locale,
-        { year: "numeric", month: "short", day: "numeric" }
+        { year: "numeric", month: "short", day: "numeric" },
       );
     },
     ...mapActions(useMintsStore, [
@@ -978,7 +984,7 @@ export default defineComponent({
         this.triggerMintInfoMotdChanged(newMintInfo, this.mintData, false);
         const mintsStore = useMintsStore();
         const target = mintsStore.mints.find(
-          (m) => m.url === this.mintData.url
+          (m) => m.url === this.mintData.url,
         );
         if (target) {
           target.info = newMintInfo;
@@ -996,7 +1002,7 @@ export default defineComponent({
     if (this.$route.query.mintUrl) {
       const mintsStore = useMintsStore();
       const mint = mintsStore.mints.find(
-        (m) => m.url === this.$route.query.mintUrl
+        (m) => m.url === this.$route.query.mintUrl,
       );
       if (mint) {
         this.mintData = mint;
