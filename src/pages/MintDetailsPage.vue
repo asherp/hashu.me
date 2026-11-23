@@ -155,6 +155,25 @@
                 </div>
               </div>
               <div class="contact-text">{{ contactInfo.info }}</div>
+              <div
+                v-if="isNostrProfileRow(contactInfo) && messageTarget"
+                class="message-icon-wrap q-mr-sm cursor-pointer"
+                data-testid="mint-message-open"
+                @click.stop="showMessages = true"
+              >
+                <message-circle-icon size="20" color="#9E9E9E" />
+                <q-badge
+                  v-if="messageUnread"
+                  floating
+                  rounded
+                  color="primary"
+                  text-color="black"
+                  :label="messageUnread"
+                />
+                <q-tooltip>{{
+                  $t("MintDetailsDialog.contact.nostr.message")
+                }}</q-tooltip>
+              </div>
               <copy-icon
                 @click.stop="copyText(contactInfo.info)"
                 size="20"
@@ -180,9 +199,20 @@
                 :npub="mintNostr.npub"
                 :relays="mintNostrRelays"
                 class="q-mb-md"
+                :can-message="!!messageTarget"
+                @message="showMessages = true"
               />
             </transition>
           </template>
+          <mint-messages-dialog
+            v-if="messageTarget"
+            v-model="showMessages"
+            :pubkey="messageTarget.pubkey"
+            :npub="messageTarget.npub"
+            :relays="messageTarget.relays"
+            :mint-url="mintData.url"
+            :title="mintData.nickname || mintData.info?.name || ''"
+          />
         </div>
 
         <!-- Section Divider -->
@@ -648,8 +678,11 @@ import {
   Hourglass as HourglassIcon,
   ShieldCheck as ShieldCheckIcon,
   ChevronDown as ChevronDownIcon,
+  MessageCircle as MessageCircleIcon,
 } from "lucide-vue-next";
 import MintNostrProfile from "src/components/MintNostrProfile.vue";
+import MintMessagesDialog from "src/components/MintMessagesDialog.vue";
+import { useMintMessagesStore } from "src/stores/mintMessages";
 import { parseMintNostrContact } from "src/js/mint-nostr";
 import { usePriceStore } from "src/stores/price";
 import { useMintRecommendationsStore } from "src/stores/mintRecommendations";
@@ -669,6 +702,8 @@ export default defineComponent({
   components: {
     VueQrcode,
     MintNostrProfile,
+    MintMessagesDialog,
+    MessageCircleIcon,
     ChevronDownIcon,
     QrCodeIcon,
     LinkIcon,
@@ -702,6 +737,7 @@ export default defineComponent({
       },
       showQrCode: false,
       showNostrProfile: false,
+      showMessages: false,
       showAllNuts: false,
       nutNames: {
         7: "Token state check",
@@ -737,6 +773,34 @@ export default defineComponent({
         (c) => c.method === "nostr"
       );
       return c ? parseMintNostrContact(c.info) : null;
+    },
+    // hashu.me: whom "Message" writes to (NIP-17). A Hashu mint names it
+    // in its reliability index: the operator mint's own key, or a supplier's
+    // own npub (null = it takes no messages, e.g. a supplier without one).
+    // Any other mint: its Nostr contact.
+    messageTarget() {
+      const r = this.reliability;
+      if (r) {
+        const m = r.messages;
+        if (!m?.pubkey || !m?.npub) return null;
+        return {
+          pubkey: m.pubkey,
+          npub: m.npub,
+          relays: [
+            ...(Array.isArray(m.relays) ? m.relays : []),
+            ...this.mintNostrRelays,
+          ],
+        };
+      }
+      return this.mintNostr
+        ? { ...this.mintNostr, relays: this.mintNostrRelays }
+        : null;
+    },
+    // hashu.me: unread replies from this mint (NIP-17)
+    messageUnread() {
+      return this.messageTarget
+        ? useMintMessagesStore().unread(this.messageTarget.pubkey)
+        : 0;
     },
     mintNostrRelays() {
       const announced = this.reliability?.announcement?.relays;
@@ -1099,6 +1163,11 @@ export default defineComponent({
   transform: rotate(180deg);
 }
 
+.message-icon-wrap {
+  position: relative;
+  display: inline-flex;
+  flex-shrink: 0;
+}
 .copy-icon {
   color: #636366;
   margin-left: 10px;
