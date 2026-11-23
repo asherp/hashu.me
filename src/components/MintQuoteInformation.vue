@@ -6,7 +6,13 @@
   >
     <div v-if="showAmount && hasValidAmount" class="detail-item q-mb-md">
       <div class="detail-label">
-        <ZapIcon :size="20" :color="iconColor" class="detail-icon" />
+        <PickaxeIcon
+          v-if="isHashUnit"
+          :size="20"
+          :color="iconColor"
+          class="detail-icon"
+        />
+        <ZapIcon v-else :size="20" :color="iconColor" class="detail-icon" />
         <div class="detail-name">Amount</div>
       </div>
       <div class="detail-value">{{ amountDisplay }}</div>
@@ -115,6 +121,7 @@ import { useMintsStore } from "stores/mints";
 import { getShortUrl } from "src/js/wallet-helpers";
 import {
   Zap as ZapIcon,
+  Pickaxe as PickaxeIcon,
   Banknote as BanknoteIcon,
   Info as InfoIcon,
   Clock as ClockIcon,
@@ -122,6 +129,7 @@ import {
   QrCode as QrCodeIcon,
   Hash as HashIcon,
 } from "lucide-vue-next";
+import { UNIT_TIH } from "src/js/hashu";
 import { PaymentMethod } from "src/stores/walletTypes";
 import {
   fetchAddressTxMetadata,
@@ -148,6 +156,7 @@ export default defineComponent({
   mixins: [windowMixin],
   components: {
     ZapIcon,
+    PickaxeIcon,
     BanknoteIcon,
     InfoIcon,
     ClockIcon,
@@ -185,6 +194,9 @@ export default defineComponent({
     ...mapState(useMintsStore, ["activeMintUrl", "activeUnit"]),
     hasQuote(): boolean {
       return Boolean(this.mintQuote && this.mintQuote.quote);
+    },
+    isHashUnit(): boolean {
+      return this.unit?.toLowerCase?.() === UNIT_TIH;
     },
     iconColor(): string {
       return this.$q.dark.isActive ? "#9E9E9E" : "#616161";

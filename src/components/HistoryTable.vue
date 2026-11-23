@@ -21,7 +21,10 @@
               class="transaction-icon"
             />
             <PickaxeIcon
-              v-else-if="transaction.method === PaymentMethod.Hashrate"
+              v-else-if="
+                transaction.method === PaymentMethod.Hashrate ||
+                transaction.unit === UNIT_TIH
+              "
               class="transaction-icon"
             />
             <ZapIcon v-else class="transaction-icon" />
@@ -184,6 +187,7 @@ import {
 } from "lucide-vue-next";
 import { PaymentMethod, UnifiedTransactionType } from "src/stores/walletTypes";
 import { mintQuoteForHistoryInvoice } from "src/js/invoice-history";
+import { UNIT_TIH } from "src/js/hashu";
 
 export default defineComponent({
   name: "HistoryTable",
@@ -198,6 +202,7 @@ export default defineComponent({
   data: function () {
     return {
       PaymentMethod,
+      UNIT_TIH,
       currentPage: 1,
       pageSize: 5,
       filterPending: false,
