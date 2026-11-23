@@ -39,7 +39,7 @@
           >
             <div class="row items-center no-wrap">
               <div class="icon-circle">
-                <CoinsIcon :size="24" />
+                <PickaxeIcon :size="24" />
               </div>
               <div class="col q-ml-md">
                 <div class="text-body1 text-weight-medium">
@@ -83,7 +83,7 @@
           >
             <div class="row items-center no-wrap">
               <div class="icon-circle">
-                <PickaxeIcon :size="24" />
+                <CpuIcon :size="24" />
               </div>
               <div class="col q-ml-md">
                 <div class="text-body1 text-weight-medium">
@@ -132,9 +132,9 @@ import {
   X as XIcon,
   Zap as ZapIcon,
   Scan as ScanIcon,
-  Coins as CoinsIcon,
-  Bitcoin as BitcoinIcon,
   Pickaxe as PickaxeIcon,
+  Bitcoin as BitcoinIcon,
+  Cpu as CpuIcon,
 } from "lucide-vue-next";
 import { PaymentMethod } from "src/stores/walletTypes";
 import { notifyWarning } from "src/js/notify";
@@ -148,11 +148,11 @@ export default defineComponent({
   name: "SendDialog",
   components: {
     XIcon,
-    CoinsIcon,
+    PickaxeIcon,
     ZapIcon,
     ScanIcon,
     BitcoinIcon,
-    PickaxeIcon,
+    CpuIcon,
   },
   mixins: [windowMixin],
   props: {},

@@ -40,7 +40,7 @@
           >
             <div class="row items-center no-wrap">
               <div class="icon-circle">
-                <CoinsIcon :size="24" />
+                <PickaxeIcon :size="24" />
               </div>
               <div class="col q-ml-md">
                 <div class="text-body1 text-weight-medium">
@@ -63,7 +63,7 @@
           >
             <div class="row items-center no-wrap">
               <div class="icon-circle">
-                <PickaxeIcon :size="24" />
+                <ZapIcon :size="24" />
               </div>
               <div class="col q-ml-md">
                 <div class="text-body1 text-weight-medium">
@@ -112,8 +112,8 @@ import { useMintsStore } from "src/stores/mints";
 import { notifyWarning } from "src/js/notify.ts";
 import {
   X as XIcon,
-  Coins as CoinsIcon,
   Pickaxe as PickaxeIcon,
+  Zap as ZapIcon,
   Scan as ScanIcon,
   Bitcoin as BitcoinIcon,
 } from "lucide-vue-next";
@@ -128,8 +128,8 @@ export default defineComponent({
   name: "ReceiveDialog",
   components: {
     XIcon,
-    CoinsIcon,
     PickaxeIcon,
+    ZapIcon,
     ScanIcon,
     BitcoinIcon,
     ReceiveEcashDrawer,
