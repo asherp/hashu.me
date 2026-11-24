@@ -49,6 +49,7 @@ import {
   TIH_PER_PIH,
   UNIT_TIH,
   formatTih,
+  invoiceSats,
   isDisplayUnit,
   tihToSats,
 } from "src/js/hashu";
@@ -89,8 +90,35 @@ export default defineComponent({
       type: Number,
       default: null,
     },
+    // hashu.me: typing buffer in the display unit (e.g. "12.5" PiH) when a
+    // TiH amount is entered in another unit; null types whole TiH. The
+    // parent owns it (the keypad edits it too); modelValue stays TiH.
+    hashuBuffer: {
+      type: String,
+      default: null,
+    },
+    // TiH per display unit, and its written label, for hashuBuffer.
+    hashuFactor: {
+      type: Number,
+      default: 1,
+    },
+    hashuLabel: {
+      type: String,
+      default: "",
+    },
+    // hashu.me: a Lightning purchase on a Hashu mint, so the cost line is
+    // the invoice amount (whole sats, rounded up as the mint bills).
+    hashuBuy: {
+      type: Boolean,
+      default: false,
+    },
   },
-  emits: ["update:modelValue", "enter", "fiat-mode-changed"],
+  emits: [
+    "update:modelValue",
+    "update:hashuBuffer",
+    "enter",
+    "fiat-mode-changed",
+  ],
   data() {
     return {
       amountEditBuffer: "" as string,
@@ -118,7 +146,14 @@ export default defineComponent({
       const amount = this.modelValue || 0;
       const parts: string[] = [];
       const unit = useSettingsStore().hashuDisplayUnit;
-      if (isDisplayUnit(unit) && unit !== "TiH" && amount > 0) {
+      // Typed in the display unit, the amount line already says how many:
+      // only the approximate cost follows.
+      if (
+        !this.inDisplayUnit &&
+        isDisplayUnit(unit) &&
+        unit !== "TiH" &&
+        amount > 0
+      ) {
         parts.push(formatTih(amount, navigator.language, unit));
       }
       if (msatPerPih) {
@@ -127,19 +162,45 @@ export default defineComponent({
         const usd = money.usdtPerPih
           ? (amount / TIH_PER_PIH) * money.usdtPerPih
           : undefined;
-        parts.push(
-          `≈ ${formatMsatAmount(
-            tihToSats(amount, msatPerPih) * 1000,
-            money,
-            navigator.language,
-            usd
-          )}`
-        );
+        if (this.hashuBuy && money.unit !== "usd") {
+          // What the invoice will say, unless the price moves first.
+          if (amount > 0)
+            parts.push(
+              formatMsatAmount(
+                invoiceSats(amount, msatPerPih) * 1000,
+                money,
+                navigator.language
+              )
+            );
+        } else {
+          parts.push(
+            `≈ ${formatMsatAmount(
+              tihToSats(amount, msatPerPih) * 1000,
+              money,
+              navigator.language,
+              usd
+            )}`
+          );
+        }
       }
       return parts.join(" · ");
     },
+    /** hashu.me: amount typed in the display unit, if one is set. */
+    inDisplayUnit(): boolean {
+      return this.activeUnit === UNIT_TIH && this.hashuBuffer != null;
+    },
     formattedAmountDisplay(): string {
       const amount = this.modelValue || 0;
+      if (this.inDisplayUnit) {
+        const buf = this.hashuBuffer || "0";
+        const [int, dec] = buf.split(".");
+        const nf = new Intl.NumberFormat(navigator.language);
+        const intStr = nf.format(Number(int || 0));
+        const sep = nf.formatToParts(1.5).find((p) => p.type === "decimal");
+        return `${intStr}${dec != null ? (sep?.value || ".") + dec : ""} ${
+          this.hashuLabel
+        }`;
+      }
       // hashu.me: amounts are typed in whole TiH, so show them in TiH here
       // whatever the display unit; the secondary line converts.
       if (this.activeUnit === UNIT_TIH) {
@@ -374,6 +435,8 @@ export default defineComponent({
       let buf = this.fiatMode
         ? this.fiatEditBuffer ||
           this.numberToFiatBuffer(this.fiatFromSats(this.modelValue || 0))
+        : this.inDisplayUnit
+        ? this.hashuBuffer || "0"
         : this.amountEditBuffer ||
           (this.modelValue == null ? "0" : String(this.modelValue));
       let handled = false;
@@ -437,7 +500,8 @@ export default defineComponent({
           if (buf.includes(".")) {
             const parts = buf.split(".");
             const decimals = parts[1] ?? "";
-            buf = parts[0] + "." + decimals.slice(0, 2);
+            buf =
+              parts[0] + "." + decimals.slice(0, this.inDisplayUnit ? 3 : 2);
           }
         }
       } else {
@@ -487,6 +551,15 @@ export default defineComponent({
             });
           }
         }
+      } else if (this.inDisplayUnit) {
+        this.$emit("update:hashuBuffer", buf);
+        const num = Number(buf);
+        this.$emit(
+          "update:modelValue",
+          buf === "" || buf === "." || isNaN(num)
+            ? null
+            : Math.min(MAX_AMOUNT, Math.round(num * this.hashuFactor))
+        );
       } else {
         this.amountEditBuffer = buf;
         if (buf === "" || buf === ".") {

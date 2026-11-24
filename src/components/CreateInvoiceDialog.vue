@@ -167,6 +167,11 @@
               key="amount-input"
               class="q-my-auto"
               v-model="invoiceData.amount"
+              :hashu-buffer="hashuDisplay ? hashuBuffer : null"
+              :hashu-factor="hashuDisplay ? hashuDisplay.factor : 1"
+              :hashu-label="hashuDisplay ? hashuDisplay.label : ''"
+              :hashu-buy="isHashuBuy"
+              @update:hashu-buffer="(v: string) => (hashuBuffer = v)"
               :enabled="!isOnchain || !createInvoiceButtonBlocked"
               :muted="showOnchainAmountWarning"
               :show-fiat-conversion="!showOnchainAmountWarning"
@@ -212,6 +217,22 @@
         <!-- Numeric keypad -->
         <!-- Numeric keypad and Secondary Actions -->
         <div class="bottom-panel column justify-end">
+          <div
+            v-if="showAmountInput && buySliderRange"
+            class="row justify-center"
+          >
+            <div
+              class="col-12 col-sm-11 col-md-8 q-px-lg"
+              style="max-width: 600px"
+            >
+              <HashuAmountSlider
+                :model-value="Number(invoiceData.amount) || 0"
+                :min="buySliderRange.min"
+                :max="buySliderRange.max"
+                @update:model-value="(v: number) => (invoiceData.amount = v)"
+              />
+            </div>
+          </div>
           <div class="keypad-wrapper" v-if="showAmountInput">
             <NumericKeyboard
               :force-visible="true"
@@ -221,6 +242,7 @@
                 (activeUnit === 'sat' || activeUnit === 'msat') &&
                 !fiatKeyboardMode
               "
+              :show-decimal="!!hashuDisplay"
               :model-value="String(invoiceData.amount ?? 0)"
               @update:modelValue="
                 (val: string | number) => (invoiceData.amount = Number(val))
@@ -302,6 +324,8 @@ import NumericKeyboard from "src/components/NumericKeyboard.vue";
 import AmountInputComponent from "src/components/AmountInputComponent.vue";
 import OnchainDepositLimits from "src/components/OnchainDepositLimits.vue";
 import EpochPicker from "src/components/EpochPicker.vue";
+import HashuAmountSlider from "src/components/HashuAmountSlider.vue";
+import { useEpochsStore } from "src/stores/epochs";
 import { useWalletStore } from "src/stores/wallet";
 import { useUiStore } from "src/stores/ui";
 import { useMintsStore } from "src/stores/mints";
@@ -321,7 +345,13 @@ import {
 import { notifyError } from "src/js/notify";
 import { useNpubCashStore } from "src/stores/npubcash";
 import { lightningAddressToLnurl } from "src/js/lnurl";
-import { TIH_PER_PIH, UNIT_TIH } from "src/js/hashu";
+import {
+  DISPLAY_UNITS,
+  TIH_PER_PIH,
+  UNIT_TIH,
+  displayUnitLabel,
+  isDisplayUnit,
+} from "src/js/hashu";
 
 /** "1 PiH (1,024 TiH)" for whole PiH, else "500 TiH". */
 function formatBuyLimit(tih: number): string {
@@ -343,6 +373,7 @@ export default defineComponent({
     AmountInputComponent,
     OnchainDepositLimits,
     EpochPicker,
+    HashuAmountSlider,
     VueQrcode,
   },
   props: {},
@@ -362,6 +393,8 @@ export default defineComponent({
       checkedReusableOnchainQuote: null as InvoiceHistory | null,
       /** Future epoch to buy (Hashu mints with epochs); null = now. */
       buyEpoch: null as number | null,
+      /** Amount as typed in the display unit on a Hashu buy (e.g. "12.5"). */
+      hashuBuffer: "" as string,
     };
   },
   computed: {
@@ -544,6 +577,40 @@ export default defineComponent({
         max: limits?.maxAmount != null ? Number(limits.maxAmount) : null,
       };
     },
+    /**
+     * Range of the buy slider in TiH: the purchase minimum up to the most
+     * the mint can sell now (its stock, or the chosen future epoch's free
+     * TiH) and the per-order maximum. Null hides the slider: no known upper
+     * bound, sold out, or nothing between the two ends.
+     */
+    buySliderRange(): { min: number; max: number } | null {
+      if (!this.isHashuBuy) return null;
+      const stock = usePriceStore().hashuStock[this.activeMintUrl];
+      const min = Math.max(this.buyLimits.min, stock?.minBuyTih || 0, 1);
+      let left: number | null | undefined = stock?.availableTih;
+      if (this.buyEpoch != null) {
+        const row = useEpochsStore()
+          .index(this.activeMintUrl)
+          ?.epochs.find((e: any) => e.epoch === this.buyEpoch);
+        left = row?.free_tih;
+      }
+      const caps = [this.buyLimits.max, stock?.maxTih, left].filter(
+        (c): c is number => c != null && Number.isFinite(Number(c))
+      );
+      if (!caps.length) return null;
+      const max = Math.floor(Math.min(...caps.map(Number)));
+      return max > min ? { min, max } : null;
+    },
+    /**
+     * hashu.me: on a Hashu buy the amount is shown and typed in the
+     * display unit setting (PiH, THd, ...); null when that is TiH.
+     */
+    hashuDisplay(): { factor: number; label: string } | null {
+      if (!this.isHashuBuy) return null;
+      const u = useSettingsStore().hashuDisplayUnit;
+      if (!isDisplayUnit(u) || u === "TiH") return null;
+      return { factor: DISPLAY_UNITS[u], label: displayUnitLabel(u) };
+    },
     buyAmountError(): string {
       if (!this.isHashuBuy) return "";
       const amount = Number(this.invoiceData.amount) || 0;
@@ -666,6 +733,7 @@ export default defineComponent({
           this.showNumericKeyboard = !this.showNpubCashPreview;
         });
         this.refreshReusableOnchainQuote();
+        this.refreshHashuStock();
       } else {
         this.checkedReusableOnchainQuote = null;
       }
@@ -681,8 +749,16 @@ export default defineComponent({
           this.enterNpubCashAmountMode();
         }
         this.syncInvoiceTypeWithActiveMint();
+        if (this.showCreateInvoiceDialog) this.refreshHashuStock();
       },
       immediate: true,
+    },
+    "invoiceData.amount": function (amount) {
+      this.syncHashuBuffer(amount);
+    },
+    hashuDisplay: function () {
+      this.hashuBuffer = "";
+      this.syncHashuBuffer(this.invoiceData.amount);
     },
     activeUnit: function () {
       this.syncInvoiceTypeWithActiveMint();
@@ -690,6 +766,25 @@ export default defineComponent({
     },
   },
   methods: {
+    /**
+     * Keep the display-unit buffer on the TiH amount when something else
+     * set it (slider, reset): unless what was typed already rounds to it.
+     */
+    syncHashuBuffer(amount: unknown) {
+      const d = this.hashuDisplay;
+      if (!d) return;
+      const tih = Number(amount) || 0;
+      const typed = Number(this.hashuBuffer);
+      if (this.hashuBuffer !== "" && !isNaN(typed)) {
+        if (Math.round(typed * d.factor) === tih) return;
+      } else if (tih === 0) return;
+      this.hashuBuffer = tih ? String(Number((tih / d.factor).toFixed(3))) : "";
+    },
+    /** hashu.me: fresh stock for the buy slider (Hashu mints only). */
+    refreshHashuStock() {
+      if (this.activeUnit !== UNIT_TIH || !this.activeMintUrl) return;
+      usePriceStore().fetchHashuInfo(this.activeMintUrl);
+    },
     ...mapActions(useWalletStore, [
       "requestMintBolt11",
       "mintOnPaid",

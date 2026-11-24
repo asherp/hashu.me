@@ -15,6 +15,7 @@ import {
   isDisplayUnit,
   tihToDisplay,
   tihToSats,
+  invoiceSats,
   UNIT_TIH,
 } from "src/js/hashu";
 
@@ -148,5 +149,16 @@ describe("market-style day units", () => {
     expect(formatHashprice(600, "THD", "en-US", "usd")).toBe("46 sats/THd");
     expect(formatHashprice(600, "PHSD", "en-US")).toBe("46,043 sats/PH/s/Day");
     expect(formatHashprice(600, "THSD", "en-US")).toBe("46 sats/TH/s/Day");
+  });
+});
+
+describe("invoiceSats", () => {
+  it("rounds up to a whole sat like the mint, never zero", () => {
+    // 12,800 TiH at 600 msat/PiH = 7,500 msat -> 8 sats
+    expect(invoiceSats(12800, 600)).toBe(8);
+    // exactly 6 sats stays 6
+    expect(invoiceSats(10240, 600)).toBe(6);
+    // tiny purchases still bill 1 sat
+    expect(invoiceSats(1024, 1)).toBe(1);
   });
 });
