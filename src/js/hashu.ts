@@ -133,6 +133,17 @@ export function tihToSats(tih: number | bigint, msatPerPih: number): number {
 }
 
 /**
+ * Sats a Hashu mint bills for a Lightning purchase of `tih` at its
+ * msat-per-PiH price: rounded up to a whole sat, never zero. Same formula
+ * as the mint (hashu-mint pricing.rs), so it matches the invoice while the
+ * price holds.
+ */
+export function invoiceSats(tih: number | bigint, msatPerPih: number): number {
+  const msat = (Number(tih) * msatPerPih) / TIH_PER_PIH;
+  return Math.max(1, Math.ceil(msat / 1000));
+}
+
+/**
  * A mint's msat-per-PiH price as sats per terahash-day, the way miners
  * and hashrate markets usually quote it.
  */

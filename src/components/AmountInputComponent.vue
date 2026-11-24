@@ -49,6 +49,7 @@ import {
   TIH_PER_PIH,
   UNIT_TIH,
   formatTih,
+  invoiceSats,
   isDisplayUnit,
   tihToSats,
 } from "src/js/hashu";
@@ -105,6 +106,12 @@ export default defineComponent({
       type: String,
       default: "",
     },
+    // hashu.me: a Lightning purchase on a Hashu mint, so the cost line is
+    // the invoice amount (whole sats, rounded up as the mint bills).
+    hashuBuy: {
+      type: Boolean,
+      default: false,
+    },
   },
   emits: [
     "update:modelValue",
@@ -155,14 +162,26 @@ export default defineComponent({
         const usd = money.usdtPerPih
           ? (amount / TIH_PER_PIH) * money.usdtPerPih
           : undefined;
-        parts.push(
-          `≈ ${formatMsatAmount(
-            tihToSats(amount, msatPerPih) * 1000,
-            money,
-            navigator.language,
-            usd
-          )}`
-        );
+        if (this.hashuBuy && money.unit !== "usd") {
+          // What the invoice will say, unless the price moves first.
+          if (amount > 0)
+            parts.push(
+              formatMsatAmount(
+                invoiceSats(amount, msatPerPih) * 1000,
+                money,
+                navigator.language
+              )
+            );
+        } else {
+          parts.push(
+            `≈ ${formatMsatAmount(
+              tihToSats(amount, msatPerPih) * 1000,
+              money,
+              navigator.language,
+              usd
+            )}`
+          );
+        }
       }
       return parts.join(" · ");
     },

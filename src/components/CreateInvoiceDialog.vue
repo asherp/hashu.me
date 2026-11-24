@@ -170,6 +170,7 @@
               :hashu-buffer="hashuDisplay ? hashuBuffer : null"
               :hashu-factor="hashuDisplay ? hashuDisplay.factor : 1"
               :hashu-label="hashuDisplay ? hashuDisplay.label : ''"
+              :hashu-buy="isHashuBuy"
               @update:hashu-buffer="(v: string) => (hashuBuffer = v)"
               :enabled="!isOnchain || !createInvoiceButtonBlocked"
               :muted="showOnchainAmountWarning"
