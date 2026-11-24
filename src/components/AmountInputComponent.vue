@@ -139,11 +139,14 @@ export default defineComponent({
       const amount = this.modelValue || 0;
       const parts: string[] = [];
       const unit = useSettingsStore().hashuDisplayUnit;
-      if (this.inDisplayUnit) {
-        // The amount is shown in the display unit: name the TiH it buys.
-        if (amount > 0)
-          parts.push(formatTih(amount, navigator.language, "TiH"));
-      } else if (isDisplayUnit(unit) && unit !== "TiH" && amount > 0) {
+      // Typed in the display unit, the amount line already says how many:
+      // only the approximate cost follows.
+      if (
+        !this.inDisplayUnit &&
+        isDisplayUnit(unit) &&
+        unit !== "TiH" &&
+        amount > 0
+      ) {
         parts.push(formatTih(amount, navigator.language, unit));
       }
       if (msatPerPih) {
