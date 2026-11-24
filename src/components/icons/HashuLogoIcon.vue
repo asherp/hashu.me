@@ -1,6 +1,6 @@
 <template>
   <!-- The Hashu "Hash cup" mark (a # whose two stems close into a u), as
-       shipped in public/icons and on hashu.io. Used for redemptions. -->
+       shipped in public/icons and on hashu.io. Used for hashes (vouchers); redemptions use the pickaxe. -->
   <svg
     xmlns="http://www.w3.org/2000/svg"
     :width="size"

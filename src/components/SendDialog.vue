@@ -39,7 +39,7 @@
           >
             <div class="row items-center no-wrap">
               <div class="icon-circle">
-                <PickaxeIcon :size="24" />
+                <HashuLogoIcon :size="24" />
               </div>
               <div class="col q-ml-md">
                 <div class="text-body1 text-weight-medium">
@@ -83,7 +83,7 @@
           >
             <div class="row items-center no-wrap">
               <div class="icon-circle">
-                <HashuLogoIcon :size="24" />
+                <PickaxeIcon :size="24" />
               </div>
               <div class="col q-ml-md">
                 <div class="text-body1 text-weight-medium">
