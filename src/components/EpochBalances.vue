@@ -8,7 +8,7 @@
       :data-testid="`epoch-row-${row.status}`"
       :data-epoch="row.epoch ?? 'perpetual'"
     >
-      <PickaxeIcon
+      <HashuLogoIcon
         v-if="row.status === 'current'"
         :size="18"
         class="q-mr-sm text-grey-6"
@@ -69,11 +69,11 @@ import {
   type EpochStatus,
 } from "src/js/hashu-epochs";
 import { notifyApiError, notifySuccess } from "src/js/notify";
-import { Pickaxe as PickaxeIcon } from "lucide-vue-next";
+import HashuLogoIcon from "src/components/icons/HashuLogoIcon.vue";
 
 export default defineComponent({
   name: "EpochBalances",
-  components: { PickaxeIcon },
+  components: { HashuLogoIcon },
   props: {
     mintUrl: { type: String, required: true },
   },

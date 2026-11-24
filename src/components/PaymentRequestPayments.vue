@@ -16,14 +16,14 @@
       >
         <q-item-section avatar class="q-pr-md" style="min-width: 40px">
           <q-avatar size="28px">
-            <PickaxeIcon class="transaction-icon" />
+            <HashuLogoIcon class="transaction-icon" />
           </q-avatar>
         </q-item-section>
         <q-item-section>
           <q-item-label class="row items-center justify-between">
             <div class="col text-left">
               <span class="transaction-label text-weight-medium">
-                {{ payment.label || "Voucher" }}
+                {{ payment.label || "Hashes" }}
               </span>
             </div>
             <div class="text-right">
@@ -56,11 +56,11 @@ import { HistoryToken } from "src/stores/tokens";
 import { formatDistanceToNow, parseISO } from "date-fns";
 import token from "src/js/token";
 import { useSendTokensStore } from "src/stores/sendTokensStore";
-import { Pickaxe as PickaxeIcon } from "lucide-vue-next";
+import HashuLogoIcon from "src/components/icons/HashuLogoIcon.vue";
 
 export default defineComponent({
   name: "PaymentRequestPayments",
-  components: { PickaxeIcon },
+  components: { HashuLogoIcon },
   props: {
     payments: {
       type: Array as PropType<HistoryToken[]>,

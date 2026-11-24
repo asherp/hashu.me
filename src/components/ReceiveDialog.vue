@@ -40,7 +40,7 @@
           >
             <div class="row items-center no-wrap">
               <div class="icon-circle">
-                <PickaxeIcon :size="24" />
+                <HashuLogoIcon :size="24" />
               </div>
               <div class="col q-ml-md">
                 <div class="text-body1 text-weight-medium">
@@ -116,11 +116,11 @@ import { useMintsStore } from "src/stores/mints";
 import { notifyWarning } from "src/js/notify.ts";
 import {
   X as XIcon,
-  Pickaxe as PickaxeIcon,
   Zap as ZapIcon,
   Scan as ScanIcon,
   Bitcoin as BitcoinIcon,
 } from "lucide-vue-next";
+import HashuLogoIcon from "src/components/icons/HashuLogoIcon.vue";
 import { PaymentMethod } from "src/stores/walletTypes";
 import { useNpubCashStore } from "src/stores/npubcash";
 import {
@@ -132,7 +132,7 @@ export default defineComponent({
   name: "ReceiveDialog",
   components: {
     XIcon,
-    PickaxeIcon,
+    HashuLogoIcon,
     ZapIcon,
     ScanIcon,
     BitcoinIcon,
