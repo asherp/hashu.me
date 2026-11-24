@@ -27,7 +27,7 @@
         >
           <q-item-section avatar class="q-pr-md" style="min-width: 40px">
             <q-avatar size="32px">
-              <PickaxeIcon class="redemption-icon" />
+              <HashuLogoIcon class="redemption-icon" />
             </q-avatar>
           </q-item-section>
           <q-item-section>
@@ -79,7 +79,7 @@
         >
           <q-item-section avatar class="q-pr-md" style="min-width: 40px">
             <q-avatar size="32px">
-              <PickaxeIcon class="redemption-icon text-grey-6" />
+              <HashuLogoIcon class="redemption-icon text-grey-6" />
             </q-avatar>
           </q-item-section>
           <q-item-section>
@@ -134,7 +134,7 @@ import { defineComponent } from "vue";
 import { mapActions, mapState, mapWritableState } from "pinia";
 import axios from "axios";
 import { formatDistanceToNow, parseISO } from "date-fns";
-import { Pickaxe as PickaxeIcon } from "lucide-vue-next";
+import HashuLogoIcon from "src/components/icons/HashuLogoIcon.vue";
 import { useWalletStore } from "src/stores/wallet";
 import { useUiStore } from "src/stores/ui";
 import {
@@ -154,7 +154,7 @@ const PAGE = 10;
 
 export default defineComponent({
   name: "RedemptionsTable",
-  components: { PickaxeIcon },
+  components: { HashuLogoIcon },
   mixins: [windowMixin],
   data() {
     return {

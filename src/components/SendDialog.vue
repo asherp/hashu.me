@@ -83,7 +83,7 @@
           >
             <div class="row items-center no-wrap">
               <div class="icon-circle">
-                <PoolUIcon :size="24" />
+                <HashuLogoIcon :size="24" />
               </div>
               <div class="col q-ml-md">
                 <div class="text-body1 text-weight-medium">
@@ -135,7 +135,7 @@ import {
   Pickaxe as PickaxeIcon,
   Bitcoin as BitcoinIcon,
 } from "lucide-vue-next";
-import PoolUIcon from "src/components/icons/PoolUIcon.vue";
+import HashuLogoIcon from "src/components/icons/HashuLogoIcon.vue";
 import { PaymentMethod } from "src/stores/walletTypes";
 import { notifyWarning } from "src/js/notify";
 import {
@@ -152,7 +152,7 @@ export default defineComponent({
     ZapIcon,
     ScanIcon,
     BitcoinIcon,
-    PoolUIcon,
+    HashuLogoIcon,
   },
   mixins: [windowMixin],
   props: {},
