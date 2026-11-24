@@ -20,7 +20,15 @@
         <q-btn flat class="text-h5" @click="addDigit('8')">8</q-btn>
         <q-btn flat class="text-h5" @click="addDigit('9')">9</q-btn>
 
-        <q-btn flat class="text-h5 invisible" disable>•</q-btn>
+        <q-btn
+          v-if="showDecimal"
+          flat
+          class="text-h5"
+          data-testid="keypad-decimal"
+          @click="sendKey('.')"
+          >{{ decimalSeparator }}</q-btn
+        >
+        <q-btn v-else flat class="text-h5 invisible" disable>•</q-btn>
         <q-btn flat class="text-h5" @click="addDigit('0')">0</q-btn>
         <q-btn flat class="text-h5" @click="backspace">
           <q-icon name="chevron_left" size="md" />
@@ -63,6 +71,11 @@ export default defineComponent({
       type: Boolean,
       default: false,
     },
+    // hashu.me: a decimal key, for amounts typed in a display unit (PiH, THd).
+    showDecimal: {
+      type: Boolean,
+      default: false,
+    },
   },
   emits: ["update:modelValue", "done"],
   data() {
@@ -73,6 +86,13 @@ export default defineComponent({
   computed: {
     ...mapWritableState(useUiStore, ["showNumericKeyboard"]),
     ...mapWritableState(useSettingsStore, ["useNumericKeyboard"]),
+    decimalSeparator(): string {
+      return (
+        new Intl.NumberFormat(navigator.language)
+          .formatToParts(1.5)
+          .find((p) => p.type === "decimal")?.value || "."
+      );
+    },
   },
   methods: {
     sendKey(key: string) {
