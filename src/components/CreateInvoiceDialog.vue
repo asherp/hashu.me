@@ -212,6 +212,22 @@
         <!-- Numeric keypad -->
         <!-- Numeric keypad and Secondary Actions -->
         <div class="bottom-panel column justify-end">
+          <div
+            v-if="showAmountInput && buySliderRange"
+            class="row justify-center"
+          >
+            <div
+              class="col-12 col-sm-11 col-md-8 q-px-lg"
+              style="max-width: 600px"
+            >
+              <HashuAmountSlider
+                :model-value="Number(invoiceData.amount) || 0"
+                :min="buySliderRange.min"
+                :max="buySliderRange.max"
+                @update:model-value="(v: number) => (invoiceData.amount = v)"
+              />
+            </div>
+          </div>
           <div class="keypad-wrapper" v-if="showAmountInput">
             <NumericKeyboard
               :force-visible="true"
@@ -302,6 +318,8 @@ import NumericKeyboard from "src/components/NumericKeyboard.vue";
 import AmountInputComponent from "src/components/AmountInputComponent.vue";
 import OnchainDepositLimits from "src/components/OnchainDepositLimits.vue";
 import EpochPicker from "src/components/EpochPicker.vue";
+import HashuAmountSlider from "src/components/HashuAmountSlider.vue";
+import { useEpochsStore } from "src/stores/epochs";
 import { useWalletStore } from "src/stores/wallet";
 import { useUiStore } from "src/stores/ui";
 import { useMintsStore } from "src/stores/mints";
@@ -343,6 +361,7 @@ export default defineComponent({
     AmountInputComponent,
     OnchainDepositLimits,
     EpochPicker,
+    HashuAmountSlider,
     VueQrcode,
   },
   props: {},
@@ -544,6 +563,30 @@ export default defineComponent({
         max: limits?.maxAmount != null ? Number(limits.maxAmount) : null,
       };
     },
+    /**
+     * Range of the buy slider in TiH: the purchase minimum up to the most
+     * the mint can sell now (its stock, or the chosen future epoch's free
+     * TiH) and the per-order maximum. Null hides the slider: no known upper
+     * bound, sold out, or nothing between the two ends.
+     */
+    buySliderRange(): { min: number; max: number } | null {
+      if (!this.isHashuBuy) return null;
+      const stock = usePriceStore().hashuStock[this.activeMintUrl];
+      const min = Math.max(this.buyLimits.min, stock?.minBuyTih || 0, 1);
+      let left: number | null | undefined = stock?.availableTih;
+      if (this.buyEpoch != null) {
+        const row = useEpochsStore()
+          .index(this.activeMintUrl)
+          ?.epochs.find((e: any) => e.epoch === this.buyEpoch);
+        left = row?.free_tih;
+      }
+      const caps = [this.buyLimits.max, stock?.maxTih, left].filter(
+        (c): c is number => c != null && Number.isFinite(Number(c))
+      );
+      if (!caps.length) return null;
+      const max = Math.floor(Math.min(...caps.map(Number)));
+      return max > min ? { min, max } : null;
+    },
     buyAmountError(): string {
       if (!this.isHashuBuy) return "";
       const amount = Number(this.invoiceData.amount) || 0;
@@ -666,6 +709,7 @@ export default defineComponent({
           this.showNumericKeyboard = !this.showNpubCashPreview;
         });
         this.refreshReusableOnchainQuote();
+        this.refreshHashuStock();
       } else {
         this.checkedReusableOnchainQuote = null;
       }
@@ -681,6 +725,7 @@ export default defineComponent({
           this.enterNpubCashAmountMode();
         }
         this.syncInvoiceTypeWithActiveMint();
+        if (this.showCreateInvoiceDialog) this.refreshHashuStock();
       },
       immediate: true,
     },
@@ -690,6 +735,11 @@ export default defineComponent({
     },
   },
   methods: {
+    /** hashu.me: fresh stock for the buy slider (Hashu mints only). */
+    refreshHashuStock() {
+      if (this.activeUnit !== UNIT_TIH || !this.activeMintUrl) return;
+      usePriceStore().fetchHashuInfo(this.activeMintUrl);
+    },
     ...mapActions(useWalletStore, [
       "requestMintBolt11",
       "mintOnPaid",

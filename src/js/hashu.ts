@@ -171,6 +171,10 @@ export type HashuMintPrice = {
   /** USDT per PiH when the mint sells vouchers for USDT, else null. */
   usdt_per_pih?: number | null;
   min_buy_tih?: number | null;
+  /** TiH the mint can sell right now; null when capacity is not enforced. */
+  available_tih?: number | null;
+  /** Largest single purchase in TiH. */
+  max_tih?: number | null;
   min_redeem_tih?: number | null;
   /** Backup pools a redemption may list; missing on mints without them. */
   max_fallback_pools?: number | null;

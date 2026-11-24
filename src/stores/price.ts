@@ -44,6 +44,18 @@ export const usePriceStore = defineStore("price", {
     // Backup pools each Hashu mint takes per redemption (0 = none, so the
     // wallet leaves them out of the request). Not persisted.
     hashuMaxFallbackPools: {} as Record<string, number>,
+    // What each Hashu mint can sell now, for the buy amount slider. Not
+    // persisted: stock moves with every sale. availableTih null = the mint
+    // does not cap sales by capacity.
+    hashuStock: {} as Record<
+      string,
+      {
+        availableTih: number | null;
+        maxTih?: number;
+        minBuyTih?: number;
+        updated: number;
+      }
+    >,
   }),
   actions: {
     fetchBitcoinPrice: async function () {
@@ -107,6 +119,19 @@ export const usePriceStore = defineStore("price", {
             Math.floor(Number(data?.max_fallback_pools) || 0)
           ),
         };
+        if (data && typeof data === "object" && "available_tih" in data) {
+          const av = data.available_tih;
+          this.hashuStock = {
+            ...this.hashuStock,
+            [mintUrl]: {
+              availableTih:
+                av == null ? null : Math.max(0, Math.floor(Number(av) || 0)),
+              maxTih: Number(data.max_tih) || undefined,
+              minBuyTih: Number(data.min_buy_tih) || undefined,
+              updated: Date.now(),
+            },
+          };
+        }
         const d = data?.delivery;
         // hashrate_hs is null while the mint has seen no shares yet.
         if (d && typeof d === "object") {
