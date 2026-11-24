@@ -456,6 +456,11 @@ export function shortDate(d: string): string {
     : `${mon} ${day} ${m[1]}`;
 }
 
+/** Pool host alone (no scheme, port or V2 key), for sentences. */
+export function poolHost(poolUrl: string): string {
+  return poolLabel(poolUrl).replace(/:\d+$/, "");
+}
+
 /** Pool host and port, without the stratum scheme or a V2 key. */
 export function poolLabel(poolUrl: string): string {
   const m = /^[a-z0-9+]+:\/\/([^/]+)/i.exec(poolUrl.trim());

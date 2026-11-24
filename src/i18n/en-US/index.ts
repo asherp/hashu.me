@@ -1244,11 +1244,13 @@ export default {
     },
     status: {
       opened: "Redemption open. Hashrate is going to { worker }.",
-      settled: "Redemption finished. Change, if any, is back in your wallet.",
+      settled: "Redemption finished.",
+      delivered: "Delivered { delivered } to { pool }.",
+      stopped_change:
+        "Stopped after delivering { delivered } to { pool }. { change } came back to your wallet.",
       progress: "{ filled } of { amount } delivered",
       rate: "{ rate } · about { time } left",
       waiting: "Waiting for the first shares…",
-      charged: "Charged { spent }; { change } came back as change.",
       no_progress:
         "Progress isn't available from this mint. The wallet checks the redemption in the background and adds the change when it ends.",
       background:
