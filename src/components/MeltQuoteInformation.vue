@@ -6,13 +6,7 @@
   >
     <div v-if="showAmount" class="detail-item q-mb-md">
       <div class="detail-label">
-        <PickaxeIcon
-          v-if="isHashUnit"
-          :size="20"
-          :color="iconColor"
-          class="detail-icon"
-        />
-        <ZapIcon v-else :size="20" :color="iconColor" class="detail-icon" />
+        <ZapIcon :size="20" :color="iconColor" class="detail-icon" />
         <div class="detail-name">Amount</div>
       </div>
       <div class="detail-value">{{ amountDisplay }}</div>
@@ -150,7 +144,6 @@ import {
 } from "src/js/onchain";
 import {
   Zap as ZapIcon,
-  Pickaxe as PickaxeIcon,
   ArrowDownUp as ArrowDownUpIcon,
   BadgeCheck as BadgeCheckIcon,
   Clock as ClockIcon,
@@ -160,7 +153,6 @@ import {
   Fingerprint as FingerprintIcon,
   Hash as HashIcon,
 } from "lucide-vue-next";
-import { UNIT_TIH } from "src/js/hashu";
 
 declare const windowMixin: any;
 declare const formatCurrency: any;
@@ -178,7 +170,6 @@ export default defineComponent({
   mixins: [windowMixin],
   components: {
     ZapIcon,
-    PickaxeIcon,
     ArrowDownUpIcon,
     BadgeCheckIcon,
     ClockIcon,
@@ -232,9 +223,6 @@ export default defineComponent({
     ...mapState(useMintsStore, ["activeMintUrl", "activeUnit"]),
     hasQuote(): boolean {
       return Boolean(this.meltQuote && this.meltQuote.quote);
-    },
-    isHashUnit(): boolean {
-      return this.quoteUnit?.toLowerCase?.() === UNIT_TIH;
     },
     iconColor(): string {
       return this.$q.dark.isActive ? "#9E9E9E" : "#616161";

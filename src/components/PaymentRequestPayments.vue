@@ -16,7 +16,7 @@
       >
         <q-item-section avatar class="q-pr-md" style="min-width: 40px">
           <q-avatar size="28px">
-            <CoinsIcon class="transaction-icon" />
+            <PickaxeIcon class="transaction-icon" />
           </q-avatar>
         </q-item-section>
         <q-item-section>
@@ -56,11 +56,11 @@ import { HistoryToken } from "src/stores/tokens";
 import { formatDistanceToNow, parseISO } from "date-fns";
 import token from "src/js/token";
 import { useSendTokensStore } from "src/stores/sendTokensStore";
-import { Coins as CoinsIcon } from "lucide-vue-next";
+import { Pickaxe as PickaxeIcon } from "lucide-vue-next";
 
 export default defineComponent({
   name: "PaymentRequestPayments",
-  components: { CoinsIcon },
+  components: { PickaxeIcon },
   props: {
     payments: {
       type: Array as PropType<HistoryToken[]>,
