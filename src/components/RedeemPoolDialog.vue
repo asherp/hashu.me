@@ -119,7 +119,7 @@
         <div class="text-body1" data-testid="redeem-status">
           {{
             settled
-              ? $t("RedeemPoolDialog.status.settled")
+              ? settledText
               : $t("RedeemPoolDialog.status.opened", {
                   worker: trackedWorker || workerName,
                 })
@@ -137,21 +137,17 @@
             rounded
             size="10px"
             color="primary"
+            instant-feedback
             :value="progressRatio"
           />
           <div class="text-grey-5 text-body2">
             {{
-              settled && progress.change_tih != null
-                ? $t("RedeemPoolDialog.status.charged", {
-                    spent: formatCurrency(progress.spent_tih ?? 0, "tih"),
-                    change: formatCurrency(progress.change_tih, "tih"),
+              progress.filled_tih > 0
+                ? $t("RedeemPoolDialog.status.progress", {
+                    filled: formatCurrency(progress.filled_tih, "tih"),
+                    amount: formatCurrency(progress.amount_tih, "tih"),
                   })
-                : progress.filled_tih > 0
-                  ? $t("RedeemPoolDialog.status.progress", {
-                      filled: formatCurrency(progress.filled_tih, "tih"),
-                      amount: formatCurrency(progress.amount_tih, "tih"),
-                    })
-                  : $t("RedeemPoolDialog.status.waiting")
+                : $t("RedeemPoolDialog.status.waiting")
             }}
           </div>
         </template>
@@ -216,6 +212,7 @@ import {
   trackRate,
   redemptionUrl,
   redemptionEntries,
+  poolHost,
   poolLabel,
   shortDate,
   type RedemptionEntry,
@@ -262,6 +259,29 @@ export default defineComponent({
       return redemptionEntries(useWalletStore().invoiceHistory as any[]).find(
         (e) => e.quote === this.quoteId,
       );
+    },
+    /** What happened, in the amounts the wallet knows: delivered (from
+     * the mint's progress when it has it, else what was charged), to
+     * which pool, and the change if delivery stopped early. */
+    settledText(): string {
+      const e = this.entry;
+      const t = (k: string, a?: Record<string, string>) =>
+        this.$t(`RedeemPoolDialog.status.${k}`, a ?? {});
+      if (!e || e.chargedTih == null) return t("settled");
+      const p = this.progress;
+      const delivered =
+        p && p.filled_tih != null
+          ? Math.min(p.filled_tih, e.chargedTih)
+          : e.chargedTih;
+      const pool = poolHost(e.poolUrl);
+      const args = {
+        delivered: this.formatCurrency(delivered, "tih"),
+        pool,
+        change: this.formatCurrency(e.changeTih ?? 0, "tih"),
+      };
+      return (e.changeTih ?? 0) > 0
+        ? t("stopped_change", args)
+        : t("delivered", args);
     },
     detailRows(): { label: string; value: string }[] {
       const e = this.entry;
@@ -504,14 +524,27 @@ export default defineComponent({
         entry.mint,
         await redemptionId(entry.request),
       );
-      // A finished one: the history has what it cost and the change.
+      // A finished one: the history has what it cost and the change;
+      // read the mint's delivered total once, quietly, for the summary.
       if (entry.active) this.startPolling();
+      else this.fetchFinalProgress();
     },
     redemptionPaid(): boolean {
       const entry = (useWalletStore().invoiceHistory as any[]).find(
         (i) => i.quote === this.quoteId,
       );
       return entry?.status === "paid";
+    },
+    async fetchFinalProgress() {
+      const url = this.progressUrl;
+      try {
+        const { data } = await axios.get<RedemptionProgress>(url, {
+          timeout: 5000,
+        });
+        if (this.progressUrl === url) this.progress = data;
+      } catch {
+        // The summary falls back to what was charged.
+      }
     },
     startPolling() {
       this.stopPolling();

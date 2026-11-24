@@ -406,7 +406,7 @@ export type RedemptionEntry = {
   request: string;
   poolUrl: string;
   workerName: string;
-  /** TiH locked for the redemption (floor plus refundable part). */
+  /** TiH committed to the redemption (floor plus refundable part); shown as "Committed", a record of what went in, not a hold on the change. */
   amountTih: number;
   /** What delivery cost, once finished (the locked amount less change). */
   chargedTih: number | null;
@@ -454,6 +454,11 @@ export function shortDate(d: string): string {
   return Number(m[1]) === new Date().getFullYear()
     ? `${mon} ${day}, ${m[4]}:${m[5]}`
     : `${mon} ${day} ${m[1]}`;
+}
+
+/** Pool host alone (no scheme, port or V2 key), for sentences. */
+export function poolHost(poolUrl: string): string {
+  return poolLabel(poolUrl).replace(/:\d+$/, "");
 }
 
 /** Pool host and port, without the stratum scheme or a V2 key. */
