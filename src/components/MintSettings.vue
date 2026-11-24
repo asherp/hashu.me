@@ -173,7 +173,7 @@
                   data-testid="mint-redeem"
                   @click.stop="redeemAt(mint)"
                 >
-                  <HashuLogoIcon :size="18" class="q-mr-xs" />
+                  <PickaxeIcon :size="18" class="q-mr-xs" />
                   <span>{{ $t("MintSettings.redeem.label") }}</span>
                   <q-tooltip>{{ $t("MintSettings.redeem.tooltip") }}</q-tooltip>
                 </q-btn>
@@ -408,7 +408,6 @@ import {
   Tag as TagIcon,
   Timer as TimerIcon,
 } from "lucide-vue-next";
-import HashuLogoIcon from "src/components/icons/HashuLogoIcon.vue";
 
 export default defineComponent({
   name: "MintSettings",
@@ -416,7 +415,6 @@ export default defineComponent({
   components: {
     AddMintDialog,
     MintInfoContainer,
-    HashuLogoIcon,
     PickaxeIcon,
     TagIcon,
     TimerIcon,

@@ -12,14 +12,15 @@
         <!-- Icon Section -->
         <q-item-section avatar class="q-pr-md" style="min-width: 40px">
           <q-avatar size="32px">
-            <HashuLogoIcon
+            <PickaxeIcon
               v-if="transaction.method === PaymentMethod.Hashrate"
               class="transaction-icon"
               data-testid="history-redemption-icon"
             />
-            <PickaxeIcon
+            <HashuLogoIcon
               v-else-if="isEcashTransaction(transaction)"
               class="transaction-icon"
+              data-testid="history-hashes-icon"
             />
             <BitcoinIcon
               v-else-if="isOnchainTransaction(transaction)"
@@ -385,7 +386,7 @@ export default defineComponent({
       }
       return transaction.type === UnifiedTransactionType.Lightning
         ? "Lightning"
-        : "Voucher";
+        : "Hashes";
     },
 
     getTransactionLabel(transaction) {
