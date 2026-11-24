@@ -667,7 +667,7 @@ export default {
         label: "@:global.actions.add_mint.label",
       },
       receive: {
-        label: "Receive Vouchers",
+        label: "Receive Hashes",
       },
     },
   },
@@ -1255,8 +1255,8 @@ export default {
     },
   },
   SendTokenDialog: {
-    title: "Send Vouchers",
-    title_ecash_text: "Vouchers",
+    title: "Send Hashes",
+    title_ecash_text: "Hashes",
     badge_offline_text: "Offline",
     inputs: {
       amount: {
@@ -1354,7 +1354,7 @@ export default {
     },
   },
   ReceiveEcashDrawer: {
-    title: "Receive Vouchers",
+    title: "Receive Hashes",
     actions: {
       paste: {
         label: "@:global.actions.paste.label",
@@ -1391,8 +1391,8 @@ export default {
         "These words don't read as a voucher. Check that the whole paragraph was copied.",
       repaired: "Read the voucher from words ({ count } fixed).",
     },
-    title: "Receive Vouchers",
-    title_ecash_text: "Vouchers",
+    title: "Receive Hashes",
+    title_ecash_text: "Hashes",
     inputs: {
       tokens_base64: {
         label: "Paste voucher",
