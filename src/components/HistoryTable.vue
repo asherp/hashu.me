@@ -12,16 +12,17 @@
         <!-- Icon Section -->
         <q-item-section avatar class="q-pr-md" style="min-width: 40px">
           <q-avatar size="32px">
+            <HashuLogoIcon
+              v-if="transaction.method === PaymentMethod.Hashrate"
+              class="transaction-icon"
+              data-testid="history-redemption-icon"
+            />
             <PickaxeIcon
-              v-if="isEcashTransaction(transaction)"
+              v-else-if="isEcashTransaction(transaction)"
               class="transaction-icon"
             />
             <BitcoinIcon
               v-else-if="isOnchainTransaction(transaction)"
-              class="transaction-icon"
-            />
-            <PickaxeIcon
-              v-else-if="transaction.method === PaymentMethod.Hashrate"
               class="transaction-icon"
             />
             <ZapIcon v-else class="transaction-icon" />
@@ -181,6 +182,7 @@ import {
   Pickaxe as PickaxeIcon,
   Zap as ZapIcon,
 } from "lucide-vue-next";
+import HashuLogoIcon from "src/components/icons/HashuLogoIcon.vue";
 import { PaymentMethod, UnifiedTransactionType } from "src/stores/walletTypes";
 import { mintQuoteForHistoryInvoice } from "src/js/invoice-history";
 
@@ -188,6 +190,7 @@ export default defineComponent({
   name: "HistoryTable",
   components: {
     BitcoinIcon,
+    HashuLogoIcon,
     PickaxeIcon,
     ZapIcon,
   },
