@@ -406,7 +406,7 @@ export type RedemptionEntry = {
   request: string;
   poolUrl: string;
   workerName: string;
-  /** TiH locked for the redemption (floor plus refundable part). */
+  /** TiH committed to the redemption (floor plus refundable part); shown as "Committed", a record of what went in, not a hold on the change. */
   amountTih: number;
   /** What delivery cost, once finished (the locked amount less change). */
   chargedTih: number | null;

@@ -1203,7 +1203,7 @@ export default {
     details: {
       pool: "Pool",
       worker: "Worker",
-      amount: "Locked",
+      amount: "Committed",
       charged: "Charged",
       change: "Change back",
       started: "Started",

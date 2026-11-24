@@ -47,8 +47,8 @@
               size="6px"
               color="primary"
               class="q-mt-sm"
+              instant-feedback
               :value="ratio(r)"
-              :indeterminate="!progress[r.quote] && !unavailable[r.quote]"
             />
             <q-item-label
               caption

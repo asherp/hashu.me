@@ -137,6 +137,7 @@
             rounded
             size="10px"
             color="primary"
+            instant-feedback
             :value="progressRatio"
           />
           <div class="text-grey-5 text-body2">
