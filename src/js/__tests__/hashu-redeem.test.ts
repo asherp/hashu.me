@@ -10,6 +10,11 @@ import {
   redemptionUrl,
   redemptionEntries,
   poolLabel,
+  redemptionActionUrl,
+  stopHashFor,
+  stopSecretFor,
+  poolTihOf,
+  samePoolTih,
 } from "src/js/hashu-redeem";
 
 describe("hashrate melt request", () => {
@@ -296,5 +301,87 @@ describe("redemptions list", () => {
       "mine.ocean.xyz:3334"
     );
     expect(poolLabel("stratum2+tcp://pool.example/9abc")).toBe("pool.example");
+  });
+});
+
+describe("redeemer stop key", () => {
+  const seed = new Uint8Array(64).fill(7);
+
+  it("derives the same secret from the seed and nonce every time", async () => {
+    const a = await stopSecretFor(seed, "00ff");
+    expect(a).toMatch(/^[0-9a-f]{64}$/);
+    expect(await stopSecretFor(seed, "00ff")).toBe(a);
+    expect(await stopSecretFor(seed, "0100")).not.toBe(a);
+    expect(await stopSecretFor(new Uint8Array(64).fill(8), "00ff")).not.toBe(a);
+  });
+
+  it("puts only the secret's SHA-256 in the request, last", async () => {
+    const secret = "05".repeat(32);
+    const hash = await stopHashFor(secret);
+    // sha256 of 32 bytes of 0x05, as the mint's test computes it.
+    expect(hash).toMatch(/^[0-9a-f]{64}$/);
+    expect(hash).not.toBe(secret);
+    const r = hashrateRequest(
+      "stratum+tcp://p:3333",
+      "w",
+      2048,
+      "",
+      "00ff",
+      [],
+      hash
+    );
+    expect(r).toBe(
+      `{"pool_url":"stratum+tcp://p:3333","worker_name":"w","amount_tih":2048,"nonce":"00ff","stop_hash":"${hash}"}`
+    );
+    expect(parseHashrateRequest(r)?.stop_hash).toBe(hash);
+  });
+
+  it("posts actions next to the progress URL", () => {
+    expect(
+      redemptionActionUrl("https://m/checkout/api/redemption/ab/", "pause")
+    ).toBe("https://m/checkout/api/redemption/ab/pause");
+  });
+});
+
+describe("per-pool totals", () => {
+  it("reads the mint's pool_tih and drops junk", () => {
+    expect(
+      poolTihOf({
+        pool_tih: [
+          { pool_url: "stratum+tcp://a:1", worker_name: "w", tih: 3 },
+          { pool_url: 5, tih: 1 },
+          { pool_url: "stratum+tcp://b:2", tih: "2" },
+        ],
+      })
+    ).toEqual([
+      { pool_url: "stratum+tcp://a:1", worker_name: "w", tih: 3 },
+      { pool_url: "stratum+tcp://b:2", worker_name: "", tih: 2 },
+    ]);
+    expect(poolTihOf({})).toEqual([]);
+    expect(poolTihOf(null)).toEqual([]);
+  });
+
+  it("compares totals in order", () => {
+    const a = [{ pool_url: "p", worker_name: "w", tih: 1 }];
+    expect(samePoolTih(a, [{ ...a[0] }])).toBe(true);
+    expect(samePoolTih(a, [{ ...a[0], tih: 2 }])).toBe(false);
+    expect(samePoolTih(a, [])).toBe(false);
+  });
+
+  it("history entries carry the saved totals", () => {
+    const request = hashrateRequest("stratum+tcp://a:1", "w", 10, "", "00");
+    const [e] = redemptionEntries([
+      {
+        quote: "q",
+        method: "hashrate",
+        request,
+        amount: -10,
+        status: "pending",
+        poolTih: [{ pool_url: "stratum+tcp://b:2", worker_name: "v", tih: 4 }],
+      },
+    ]);
+    expect(e.poolTih).toEqual([
+      { pool_url: "stratum+tcp://b:2", worker_name: "v", tih: 4 },
+    ]);
   });
 });

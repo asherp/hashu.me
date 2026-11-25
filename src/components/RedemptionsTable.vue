@@ -33,19 +33,19 @@
           <q-item-section>
             <q-item-label class="row items-center justify-between no-wrap">
               <div class="col ellipsis text-weight-medium">
-                {{ r.workerName || poolLabel(r.poolUrl) }}
+                {{ workerOf(r) || poolLabel(poolOf(r)) }}
               </div>
               <div class="text-weight-bold text-grey-6 q-ml-sm">
                 {{ formatCurrency(r.amountTih, "tih") }}
               </div>
             </q-item-label>
             <q-item-label caption class="ellipsis text-grey-6">
-              {{ poolLabel(r.poolUrl) }} · {{ mintHost(r.mint) }}
+              {{ poolLabel(poolOf(r)) }} · {{ mintHost(r.mint) }}
             </q-item-label>
             <q-linear-progress
               rounded
               size="6px"
-              color="primary"
+              :color="pausedBy(r) ? 'grey-6' : 'primary'"
               class="q-mt-sm"
               instant-feedback
               :value="ratio(r)"
@@ -55,6 +55,14 @@
               class="q-mt-xs text-grey-6"
               data-testid="redemption-progress"
             >
+              <q-badge
+                v-if="pausedBy(r)"
+                outline
+                color="warning"
+                class="q-mr-xs"
+                data-testid="redemption-paused"
+                :label="$t(`RedemptionsTable.paused_${pausedBy(r)}`)"
+              />
               {{ progressText(r) }}
             </q-item-label>
           </q-item-section>
@@ -92,7 +100,7 @@
               </div>
             </q-item-label>
             <q-item-label caption class="ellipsis text-grey-6">
-              {{ poolLabel(r.poolUrl) }} · {{ mintHost(r.mint) }}
+              {{ pastPools(r) }} · {{ mintHost(r.mint) }}
             </q-item-label>
             <q-item-label caption class="text-grey-6">
               {{
@@ -137,6 +145,7 @@ import { formatDistanceToNow, parseISO } from "date-fns";
 import { Pickaxe as PickaxeIcon } from "lucide-vue-next";
 import { useWalletStore } from "src/stores/wallet";
 import { useUiStore } from "src/stores/ui";
+import { rememberPoolTih } from "src/stores/walletHashrate";
 import {
   redemptionEntries,
   redemptionId,
@@ -208,6 +217,32 @@ export default defineComponent({
       if (!p || !p.amount_tih) return 0;
       return Math.min(1, p.filled_tih / p.amount_tih);
     },
+    /** The pool and worker the mint says it's using now (they change if
+     * the redeemer changes pools), else the original request's. */
+    poolOf(r: RedemptionEntry): string {
+      return this.progress[r.quote]?.pool_url || r.poolUrl;
+    },
+    workerOf(r: RedemptionEntry): string {
+      return this.progress[r.quote]?.worker_name || r.workerName;
+    },
+    /** Where a finished redemption's hashes went, from the totals saved
+     * with it: "pool", or "last pool and N more" after a pool change or
+     * failover. */
+    pastPools(r: RedemptionEntry): string {
+      const p = r.poolTih;
+      if (p.length > 1) {
+        return this.$t("RedemptionsTable.more_pools", {
+          pool: poolLabel(p[p.length - 1].pool_url),
+          count: p.length - 1,
+        });
+      }
+      return poolLabel(p[0]?.pool_url || r.poolUrl);
+    },
+    /** "redeemer" or "operator" while paused, else "". */
+    pausedBy(r: RedemptionEntry): string {
+      const by = this.progress[r.quote]?.paused_by;
+      return by === "operator" || by === "redeemer" ? by : "";
+    },
     progressText(r: RedemptionEntry): string {
       const started = this.$t("RedemptionsTable.started", {
         date: formatDistanceToNow(parseISO(r.date), { addSuffix: true }),
@@ -223,7 +258,7 @@ export default defineComponent({
         filled: this.formatCurrency(p.filled_tih, "tih"),
         amount: this.formatCurrency(p.amount_tih, "tih"),
       });
-      const left = secondsLeft(p);
+      const left = this.pausedBy(r) ? null : secondsLeft(p);
       if (left != null) {
         t +=
           " · " +
@@ -251,6 +286,7 @@ export default defineComponent({
         );
         this.progress[r.quote] = data;
         this.unavailable[r.quote] = false;
+        await rememberPoolTih(r.quote, r.poolTih, data);
         if (data.state === "completed" || data.state === "settled") {
           // Delivery ended: collect the change now rather than waiting for
           // the background checker. It moves the row to Past once paid.

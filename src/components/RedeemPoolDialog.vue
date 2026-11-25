@@ -140,8 +140,14 @@
           {{
             settled
               ? settledText
+              : paused
+              ? $t(
+                  pausedByOperator
+                    ? "RedeemPoolDialog.controls.paused_operator"
+                    : "RedeemPoolDialog.controls.paused",
+                )
               : $t("RedeemPoolDialog.status.opened", {
-                  worker: trackedWorker || workerName,
+                  worker: currentWorker || workerName,
                 })
           }}
         </div>
@@ -156,7 +162,7 @@
           <q-linear-progress
             rounded
             size="10px"
-            color="primary"
+            :color="paused ? 'grey-6' : 'primary'"
             instant-feedback
             :value="progressRatio"
           />
@@ -191,6 +197,169 @@
             <div class="col text-right ellipsis">{{ row.value }}</div>
           </div>
         </div>
+        <div
+          v-if="showPoolTotals"
+          class="redeem-details text-body2"
+          data-testid="redeem-pool-totals"
+        >
+          <div class="text-grey-5">
+            {{ $t("RedeemPoolDialog.details.by_pool") }}
+          </div>
+          <div
+            v-for="p in poolTotals"
+            :key="p.pool_url + ' ' + p.worker_name"
+            class="row no-wrap items-center"
+          >
+            <div class="col ellipsis q-mr-md">
+              {{ poolLabel(p.pool_url) }}
+              <span class="text-grey-6">· {{ p.worker_name }}</span>
+            </div>
+            <div class="text-weight-medium">
+              {{ formatCurrency(p.tih, "tih") }}
+            </div>
+          </div>
+        </div>
+        <!-- redeemer controls -->
+        <template v-if="showControls">
+          <div
+            v-if="!confirmingStop && !changingPool"
+            class="row q-col-gutter-sm"
+          >
+            <div class="col-6">
+              <q-btn
+                rounded
+                outline
+                color="primary"
+                class="full-width"
+                :loading="actionBusy === 'pause' || actionBusy === 'resume'"
+                :disable="actionBusy !== '' || pausedByOperator"
+                :label="
+                  paused
+                    ? $t('RedeemPoolDialog.actions.resume.label')
+                    : $t('RedeemPoolDialog.actions.pause.label')
+                "
+                :data-testid="paused ? 'redeem-resume' : 'redeem-pause'"
+                @click="act(paused ? 'resume' : 'pause')"
+              >
+                <template #default>
+                  <component
+                    :is="paused ? PlayIcon : PauseIcon"
+                    :size="16"
+                    class="q-ml-xs"
+                  />
+                </template>
+              </q-btn>
+            </div>
+            <div class="col-6">
+              <q-btn
+                rounded
+                outline
+                color="negative"
+                class="full-width"
+                :disable="!canStopNow || actionBusy !== ''"
+                :label="$t('RedeemPoolDialog.actions.stop.label')"
+                data-testid="redeem-stop"
+                @click="confirmingStop = true"
+              >
+                <template #default>
+                  <SquareIcon :size="14" class="q-ml-xs" />
+                </template>
+              </q-btn>
+            </div>
+          </div>
+          <div
+            v-if="stopNote && !changingPool"
+            class="text-grey-5 text-body2"
+            data-testid="redeem-stop-note"
+          >
+            {{ stopNote }}
+          </div>
+          <q-btn
+            v-if="!confirmingStop && !changingPool"
+            flat
+            rounded
+            no-caps
+            color="primary"
+            class="full-width"
+            :disable="actionBusy !== ''"
+            :label="$t('RedeemPoolDialog.actions.change_pool.label')"
+            data-testid="redeem-change-pool"
+            @click="changingPool = true"
+          />
+          <template v-if="changingPool">
+            <div class="text-grey-5 text-body2">
+              {{ $t("RedeemPoolDialog.controls.change_pool") }}
+            </div>
+            <PoolSettingsForm :mint-url="sheetMintUrl" />
+            <div class="row q-col-gutter-sm">
+              <div class="col-6">
+                <q-btn
+                  rounded
+                  outline
+                  color="primary"
+                  class="full-width"
+                  :disable="actionBusy !== ''"
+                  :label="$t('RedeemPoolDialog.actions.cancel_change.label')"
+                  data-testid="redeem-pool-cancel"
+                  @click="changingPool = false"
+                />
+              </div>
+              <div class="col-6">
+                <q-btn
+                  rounded
+                  unelevated
+                  color="primary"
+                  class="full-width"
+                  :loading="actionBusy === 'pool'"
+                  :disable="!poolUrlValid || !workerName.trim()"
+                  :label="$t('RedeemPoolDialog.actions.apply_pool.label')"
+                  data-testid="redeem-pool-apply"
+                  @click="act('pool')"
+                />
+              </div>
+            </div>
+          </template>
+          <div v-if="confirmingStop" class="row q-col-gutter-sm">
+            <div class="col-6">
+              <q-btn
+                rounded
+                outline
+                color="primary"
+                class="full-width"
+                :disable="actionBusy !== ''"
+                :label="$t('RedeemPoolDialog.actions.cancel.label')"
+                data-testid="redeem-stop-cancel"
+                @click="confirmingStop = false"
+              />
+            </div>
+            <div class="col-6">
+              <q-btn
+                rounded
+                unelevated
+                color="negative"
+                class="full-width"
+                :loading="actionBusy === 'stop'"
+                :label="$t('RedeemPoolDialog.actions.confirm_stop.label')"
+                data-testid="redeem-stop-confirm"
+                @click="act('stop')"
+              />
+            </div>
+          </div>
+          <div
+            v-if="actionError"
+            class="text-negative text-body2"
+            data-testid="redeem-action-error"
+          >
+            {{ actionError }}
+          </div>
+        </template>
+        <div
+          v-else-if="controlsUnsupported"
+          class="text-grey-6 text-caption"
+          data-testid="redeem-controls-unsupported"
+        >
+          {{ $t("RedeemPoolDialog.controls.unsupported") }}
+        </div>
         <div v-if="!settled" class="text-grey-6 text-caption">
           {{ $t("RedeemPoolDialog.status.background") }}
         </div>
@@ -212,7 +381,12 @@ import { defineComponent } from "vue";
 import { mapActions, mapState, mapWritableState } from "pinia";
 import axios from "axios";
 import { MeltQuoteState } from "@cashu/cashu-ts";
-import { X as XIcon } from "lucide-vue-next";
+import {
+  X as XIcon,
+  Pause as PauseIcon,
+  Play as PlayIcon,
+  Square as SquareIcon,
+} from "lucide-vue-next";
 import { useUiStore } from "src/stores/ui";
 import { useMintsStore } from "src/stores/mints";
 import { useWalletStore } from "src/stores/wallet";
@@ -220,6 +394,7 @@ import { usePriceStore } from "src/stores/price";
 import { useSettingsStore } from "src/stores/settings";
 import PoolSettingsForm from "src/components/PoolSettingsForm.vue";
 import FallbackPoolsForm from "src/components/FallbackPoolsForm.vue";
+import { rememberPoolTih } from "src/stores/walletHashrate";
 import HashuAmountSlider from "src/components/HashuAmountSlider.vue";
 import {
   isStratumUrl,
@@ -232,9 +407,15 @@ import {
   secondsLeft,
   trackRate,
   redemptionUrl,
+  redemptionActionUrl,
   redemptionEntries,
+  parseHashrateRequest,
+  stopSecretFor,
+  type RedeemerAction,
   poolHost,
   poolLabel,
+  poolTihOf,
+  type PoolTih,
   shortDate,
   type RedemptionEntry,
   type RedemptionProgress,
@@ -249,9 +430,13 @@ export default defineComponent({
   name: "RedeemPoolDialog",
   components: {
     XIcon,
+    SquareIcon,
     PoolSettingsForm,
     FallbackPoolsForm,
     HashuAmountSlider,
+  },
+  setup() {
+    return { PauseIcon, PlayIcon };
   },
   mixins: [windowMixin],
   data() {
@@ -268,6 +453,10 @@ export default defineComponent({
       progressUrl: "",
       trackedWorker: "",
       trackedMint: "",
+      confirmingStop: false,
+      changingPool: false,
+      actionBusy: "" as "" | RedeemerAction,
+      actionError: "",
     };
   },
   computed: {
@@ -299,7 +488,12 @@ export default defineComponent({
         p && p.filled_tih != null
           ? Math.min(p.filled_tih, e.chargedTih)
           : e.chargedTih;
-      const pool = poolHost(e.poolUrl);
+      const pool =
+        this.poolTotals.length > 1
+          ? this.$t("RedeemPoolDialog.details.pools_count", {
+              count: this.poolTotals.length,
+            })
+          : poolHost(this.poolTotals[0]?.pool_url || this.currentPoolUrl);
       const args = {
         delivered: this.formatCurrency(delivered, "tih"),
         pool,
@@ -309,13 +503,29 @@ export default defineComponent({
         ? t("stopped_change", args)
         : t("delivered", args);
     },
+    /** TiH per pool: the mint's latest word, else what the wallet saved. */
+    poolTotals(): PoolTih[] {
+      const live = poolTihOf(this.progress);
+      return live.length ? live : this.entry?.poolTih ?? [];
+    },
+    /** Worth a list when more than one pool got hashes, or the only one
+     * isn't the pool shown above (all went to a backup). */
+    showPoolTotals(): boolean {
+      const p = this.poolTotals;
+      if (p.length > 1) return true;
+      return (
+        p.length === 1 &&
+        (p[0].pool_url !== this.currentPoolUrl ||
+          p[0].worker_name !== this.currentWorker)
+      );
+    },
     detailRows(): { label: string; value: string }[] {
       const e = this.entry;
       if (!e) return [];
       const t = (k: string) => this.$t(`RedeemPoolDialog.details.${k}`);
       const rows = [
-        { label: t("pool"), value: poolLabel(e.poolUrl) },
-        { label: t("worker"), value: e.workerName },
+        { label: t("pool"), value: poolLabel(this.currentPoolUrl) },
+        { label: t("worker"), value: this.currentWorker },
         { label: t("amount"), value: this.formatCurrency(e.amountTih, "tih") },
       ];
       if (e.chargedTih != null) {
@@ -353,6 +563,7 @@ export default defineComponent({
       "hashuPrices",
       "hashuDelivery",
       "hashuMaxFallbackPools",
+      "hashuRedeemerControls",
     ]),
     ...mapState(useSettingsStore, {
       poolId: "hashuPoolId",
@@ -461,7 +672,7 @@ export default defineComponent({
     },
     rateText(): string {
       const p = this.progress;
-      if (!p?.track || this.settled) return "";
+      if (!p?.track || this.settled || this.paused) return "";
       const rate = trackRate(p.track, p.now_ms ?? Date.now());
       if (!(rate > 0)) return "";
       const left = secondsLeft(p);
@@ -472,6 +683,58 @@ export default defineComponent({
             rate: formatHashrate(rate, unit, navigator.language),
             time: formatDuration(left),
           });
+    },
+    /** The wallet holds a stop key for this redemption and it's open. */
+    showControls(): boolean {
+      return !this.settled && this.progress?.can_stop === true;
+    },
+    /** Open, readable, but opened without a stop key (an older mint, or
+     * before the wallet sent one). */
+    controlsUnsupported(): boolean {
+      return (
+        !this.settled && !!this.progress && this.progress.can_stop === false
+      );
+    },
+    paused(): boolean {
+      return !this.settled && this.progress?.paused === true;
+    },
+    /** Where the hashes go: the mint's word (it changes when the redeemer
+     * changes pools), else the original request's. */
+    currentPoolUrl(): string {
+      return this.progress?.pool_url || this.entry?.poolUrl || "";
+    },
+    currentWorker(): string {
+      return (
+        this.progress?.worker_name ||
+        this.entry?.workerName ||
+        this.trackedWorker
+      );
+    },
+    pausedByOperator(): boolean {
+      return this.paused && this.progress?.paused_by === "operator";
+    },
+    canStopNow(): boolean {
+      const p = this.progress;
+      return !!p && p.can_stop === true && !p.stop_refusal;
+    },
+    /** What a stop would do now, or why it isn't offered yet. */
+    stopNote(): string {
+      const p = this.progress;
+      if (!p || !this.showControls) return "";
+      const t = (k: string, a?: Record<string, string>) =>
+        this.$t(`RedeemPoolDialog.controls.${k}`, a ?? {});
+      if (p.stop_refusal) {
+        return p.stop_change_tih === 0
+          ? t("stop_nothing_back")
+          : t(this.paused ? "stop_after_floor_paused" : "stop_after_floor", {
+              floor: this.formatCurrency(p.floor_tih ?? TIH_PER_PIH, "tih"),
+            });
+      }
+      if (!this.confirmingStop) return "";
+      return t("stop_preview", {
+        charge: this.formatCurrency(p.stop_charge_tih ?? 0, "tih"),
+        change: this.formatCurrency(p.stop_change_tih ?? 0, "tih"),
+      });
     },
     progressRatio(): number {
       const p = this.progress;
@@ -485,6 +748,10 @@ export default defineComponent({
       else if (open) this.startInfo();
       else this.stopInfo();
     },
+    progress(p: RedemptionProgress | null) {
+      const e = this.entry;
+      if (e && p) void rememberPoolTih(e.quote, e.poolTih, p);
+    },
   },
   beforeUnmount() {
     this.stopPolling();
@@ -493,6 +760,7 @@ export default defineComponent({
   methods: {
     ...mapActions(useWalletStore, ["redeemToPool", "checkOutgoingInvoice"]),
     ...mapActions(usePriceStore, ["fetchHashuInfo"]),
+    poolLabel,
     startInfo() {
       this.stopInfo();
       this.fetchHashuInfo(this.activeMintUrl);
@@ -514,6 +782,7 @@ export default defineComponent({
           workerPassword: this.workerPassword,
           amountTih: this.amountTih as number,
           fallbackPools: this.sentFallbacks,
+          stopKey: this.hashuRedeemerControls[this.activeMintUrl] === true,
         });
         this.quoteId = res.quote.quote;
         this.trackedMint = this.activeMintUrl;
@@ -609,7 +878,53 @@ export default defineComponent({
         if (!this.progress) this.progressUnavailable = true;
       }
     },
+    /** Stop, pause or resume this redemption with the wallet's stop key. */
+    async act(action: RedeemerAction) {
+      const e = this.entry;
+      const nonce = parseHashrateRequest(e?.request)?.nonce;
+      if (!e || !nonce || !this.progressUrl) return;
+      this.actionBusy = action;
+      this.actionError = "";
+      try {
+        const secret = await stopSecretFor(useWalletStore().seed, nonce);
+        const body: Record<string, unknown> = { stop_secret: secret };
+        if (action === "pool") {
+          body.pool_url = this.resolvedPoolUrl;
+          body.worker_name = this.workerName.trim();
+          if (this.workerPassword?.trim())
+            body.worker_password = this.workerPassword.trim();
+          // Backups only to a mint that takes them; else keep its list.
+          if ((this.hashuMaxFallbackPools[this.sheetMintUrl] ?? 0) > 0)
+            body.fallback_pools = this.readyFallbacks.slice(
+              0,
+              this.hashuMaxFallbackPools[this.sheetMintUrl],
+            );
+        }
+        const { data } = await axios.post<RedemptionProgress>(
+          redemptionActionUrl(this.progressUrl, action),
+          body,
+          { timeout: 10000 },
+        );
+        this.progress = data;
+        this.confirmingStop = false;
+        this.changingPool = false;
+        // A stop ends delivery: fetch the change right away.
+        if (action === "stop") await this.poll();
+      } catch (err: any) {
+        const msg =
+          err?.response?.data?.error ?? err?.message ?? String(err ?? "");
+        this.actionError = this.$t("RedeemPoolDialog.controls.failed", {
+          error: msg,
+        });
+      } finally {
+        this.actionBusy = "";
+      }
+    },
     reset() {
+      this.confirmingStop = false;
+      this.changingPool = false;
+      this.actionError = "";
+      this.actionBusy = "";
       this.stopPolling();
       this.stopInfo();
       if (this.started) {

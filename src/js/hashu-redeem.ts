@@ -102,6 +102,7 @@ export type HashrateRequest = {
   amount_tih: number;
   nonce?: string;
   fallback_pools?: FallbackPoolRequest[];
+  stop_hash?: string;
 };
 
 /** Most backup pools a Hashu mint takes after the main one. */
@@ -191,6 +192,7 @@ export function hashrateRequest(
   workerPassword?: string,
   nonce: string = randomNonce(),
   fallbackPools: FallbackPoolRequest[] = [],
+  stopHash?: string,
 ): string {
   const req: HashrateRequest = {
     pool_url: poolUrl.trim(),
@@ -202,6 +204,7 @@ export function hashrateRequest(
   req.nonce = nonce;
   // Only when there are some: older mints refuse unknown fields.
   if (fallbackPools.length) req.fallback_pools = fallbackPools;
+  if (stopHash) req.stop_hash = stopHash;
   return JSON.stringify(req);
 }
 
@@ -219,7 +222,8 @@ export function parseHashrateRequest(
   }
 }
 
-function randomNonce(): string {
+/** A fresh request nonce: 16 hex characters. */
+export function randomNonce(): string {
   const b = new Uint8Array(8);
   crypto.getRandomValues(b);
   return Array.from(b, (x) => x.toString(16).padStart(2, "0")).join("");
@@ -241,6 +245,57 @@ export async function redemptionId(request: string): Promise<string> {
   ).join("");
 }
 
+function toHex(b: ArrayBuffer | Uint8Array): string {
+  return Array.from(new Uint8Array(b), (x) =>
+    x.toString(16).padStart(2, "0"),
+  ).join("");
+}
+
+/**
+ * The secret that stops, pauses and resumes one redemption: HMAC-SHA256
+ * of the request's nonce under the wallet seed. Nothing extra is stored:
+ * the wallet derives it again from its seed and the request in its
+ * history. The mint only ever sees its SHA-256 ([`stopHashFor`]) in the
+ * request, and the secret itself when the redeemer uses it.
+ */
+export async function stopSecretFor(
+  seed: Uint8Array,
+  nonce: string,
+): Promise<string> {
+  const key = await crypto.subtle.importKey(
+    "raw",
+    seed,
+    { name: "HMAC", hash: "SHA-256" },
+    false,
+    ["sign"],
+  );
+  const mac = await crypto.subtle.sign(
+    "HMAC",
+    key,
+    new TextEncoder().encode(`hashu-stop:${nonce}`),
+  );
+  return toHex(mac);
+}
+
+/** The request's `stop_hash` for a stop secret: hex SHA-256 of its bytes. */
+export async function stopHashFor(secretHex: string): Promise<string> {
+  const bytes = new Uint8Array(
+    (secretHex.match(/../g) ?? []).map((h) => parseInt(h, 16)),
+  );
+  return toHex(await crypto.subtle.digest("SHA-256", bytes));
+}
+
+/** What the redeemer can do to an open redemption. */
+export type RedeemerAction = "stop" | "pause" | "resume" | "pool";
+
+/** `POST` target for a redeemer action, next to the progress URL. */
+export function redemptionActionUrl(
+  progressUrl: string,
+  action: RedeemerAction,
+): string {
+  return `${progressUrl.replace(/\/+$/, "")}/${action}`;
+}
+
 /** A redemption's delivered work over time, as the mint's meter saw it. */
 export type RedemptionTrack = {
   opened_ms: number;
@@ -250,6 +305,40 @@ export type RedemptionTrack = {
 };
 
 /** Progress as `GET /checkout/api/redemption/{id}` reports it. */
+/** Whole TiH one pool got from a redemption. */
+export type PoolTih = { pool_url: string; worker_name: string; tih: number };
+
+/** The per-pool totals in a progress answer, cleaned up; empty when the
+ * mint doesn't report them. */
+export function poolTihOf(
+  p: { pool_tih?: unknown } | null | undefined,
+): PoolTih[] {
+  if (!p || !Array.isArray(p.pool_tih)) return [];
+  return p.pool_tih
+    .filter(
+      (x: any) =>
+        x && typeof x.pool_url === "string" && Number.isFinite(Number(x.tih)),
+    )
+    .map((x: any) => ({
+      pool_url: x.pool_url,
+      worker_name: typeof x.worker_name === "string" ? x.worker_name : "",
+      tih: Number(x.tih),
+    }));
+}
+
+/** Same pools with the same totals, in the same order. */
+export function samePoolTih(a: PoolTih[], b: PoolTih[]): boolean {
+  return (
+    a.length === b.length &&
+    a.every(
+      (x, i) =>
+        x.pool_url === b[i].pool_url &&
+        x.worker_name === b[i].worker_name &&
+        x.tih === b[i].tih,
+    )
+  );
+}
+
 export type RedemptionProgress = {
   state: string;
   amount_tih: number;
@@ -257,12 +346,30 @@ export type RedemptionProgress = {
   floor_tih?: number;
   spent_tih?: number;
   change_tih?: number;
+  /** Where its hashes go now (changes if the redeemer changes pools). */
+  pool_url?: string;
+  worker_name?: string;
   /** Backup pools the redemption listed (no passwords). */
   fallback_pools?: { pool_url: string; worker_name: string }[];
   /** Which pool is getting the hashrate: 0 = the main pool, then the
    * backups in order; null while no rig is on it. */
   serving_pool?: number | null;
   serving_pool_url?: string | null;
+  /** Whole TiH each pool got (pools it changed to and backups it failed
+   * over to included), adding up to what was delivered. */
+  pool_tih?: PoolTih[];
+  /** True when the wallet that opened it holds a stop key. */
+  can_stop?: boolean;
+  /** Delivery is paused. */
+  paused?: boolean;
+  /** Who paused it: the wallet ("redeemer") or the mint ("operator"). */
+  paused_by?: "redeemer" | "operator" | null;
+  /** Set while a stop would be refused (below the floor, or it would
+   * return nothing); null when a stop would go through. */
+  stop_refusal?: string | null;
+  /** What a stop right now would charge and return. */
+  stop_charge_tih?: number | null;
+  stop_change_tih?: number | null;
   track?: RedemptionTrack | null;
   now_ms?: number;
 };
@@ -414,6 +521,9 @@ export type RedemptionEntry = {
   active: boolean;
   date: string;
   paidDate?: string;
+  /** TiH per pool, as last reported by the mint and saved with the
+   * history entry; empty if never reported. */
+  poolTih: PoolTih[];
 };
 
 type HistoryLike = {
@@ -428,6 +538,7 @@ type HistoryLike = {
   type?: string;
   method?: string;
   meltQuote?: { amount?: number; fee_reserve?: number; request?: string };
+  poolTih?: unknown;
 };
 
 /** "Nov 21, 14:02" this year, "Nov 21 2025" before; the input as is if
@@ -496,6 +607,7 @@ export function redemptionEntries(history: HistoryLike[]): RedemptionEntry[] {
       active,
       date: h.date ?? "",
       paidDate: h.paidDate,
+      poolTih: poolTihOf({ pool_tih: h.poolTih }),
     });
   }
   return out.sort((a, b) => (a.date < b.date ? 1 : a.date > b.date ? -1 : 0));

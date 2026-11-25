@@ -1217,6 +1217,8 @@ export default {
       change: "Change back",
       started: "Started",
       finished: "Finished",
+      by_pool: "Hashes by pool",
+      pools_count: "{ count } pools",
     },
     balance: "{ balance } available",
     text: "Point hashrate at your pool. Only the hashes delivered are deducted from your balance. The rest comes back as change for future redemption.",
@@ -1250,6 +1252,32 @@ export default {
     actions: {
       redeem: { label: "Redeem" },
       close: { label: "Close" },
+      pause: { label: "Pause" },
+      resume: { label: "Resume" },
+      stop: { label: "Stop" },
+      confirm_stop: { label: "Stop and get change" },
+      cancel: { label: "Keep going" },
+      change_pool: { label: "Change pool" },
+      cancel_change: { label: "Cancel" },
+      apply_pool: { label: "Send hashes here" },
+    },
+    controls: {
+      stop_preview:
+        "Stopping now charges { charge } and returns { change } to your wallet.",
+      stop_after_floor:
+        "You can stop once { floor } is delivered. You can pause any time.",
+      stop_after_floor_paused: "You can stop once { floor } is delivered.",
+      stop_nothing_back:
+        "Stopping now would return nothing, so it isn't offered.",
+      paused:
+        "Paused by you. No hashrate is going to your pool. Resume when you're ready; nothing is charged while paused.",
+      paused_operator:
+        "Paused by the mint operator. No hashrate is going to your pool until they resume it, and nothing is charged meanwhile. You can stop now and get the rest back.",
+      failed: "The mint didn't accept that: { error }",
+      change_pool:
+        "Send the rest of this redemption to another pool. What's delivered so far stays counted, and nothing extra is charged. This also becomes your saved pool.",
+      unsupported:
+        "This mint doesn't offer stop or pause yet. Redemptions from it run to the end.",
     },
     status: {
       opened: "Redemption open. Hashrate is going to { worker }.",
@@ -1694,6 +1722,9 @@ export default {
     started: "Started { date }",
     finished: "{ start } to { end }",
     charged: "Charged { spent } · { change } back",
+    paused_redeemer: "Paused by you",
+    paused_operator: "Paused by the mint",
+    more_pools: "{ pool } and { count } more",
   },
   HistoryTable: {
     empty_text: "No history yet",
