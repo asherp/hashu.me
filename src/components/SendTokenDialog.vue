@@ -30,7 +30,11 @@
               class="dialog-header q-mt-sm"
               :class="$q.dark.isActive ? 'text-white' : 'text-black'"
             >
-              {{ $t("SendTokenDialog.title") }}
+              {{
+                activeUnit === "tih"
+                  ? $t("SendTokenDialog.title")
+                  : $t("SendTokenDialog.other_title")
+              }}
             </q-item-label>
           </div>
           <div

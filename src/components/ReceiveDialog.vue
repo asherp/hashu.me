@@ -40,11 +40,16 @@
           >
             <div class="row items-center no-wrap">
               <div class="icon-circle">
-                <HashuLogoIcon :size="24" />
+                <HashuLogoIcon v-if="activeUnit === 'tih'" :size="24" />
+                <CoinsIcon v-else :size="24" />
               </div>
               <div class="col q-ml-md">
                 <div class="text-body1 text-weight-medium">
-                  {{ $t("ReceiveDialog.actions.ecash.label") }}
+                  {{
+                    activeUnit === "tih"
+                      ? $t("ReceiveDialog.actions.ecash.label")
+                      : $t("ReceiveDialog.actions.ecash.other_label")
+                  }}
                 </div>
               </div>
             </div>
@@ -117,6 +122,7 @@ import { notifyWarning } from "src/js/notify.ts";
 import {
   X as XIcon,
   Zap as ZapIcon,
+  Coins as CoinsIcon,
   Scan as ScanIcon,
   Bitcoin as BitcoinIcon,
 } from "lucide-vue-next";
@@ -132,6 +138,7 @@ export default defineComponent({
   name: "ReceiveDialog",
   components: {
     XIcon,
+    CoinsIcon,
     HashuLogoIcon,
     ZapIcon,
     ScanIcon,

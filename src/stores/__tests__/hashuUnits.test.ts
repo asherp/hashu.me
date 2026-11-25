@@ -48,6 +48,27 @@ describe("hashu auto scale", () => {
     useProofsStore().proofs = [];
     mints.mints = [];
   });
+
+  it("keeps scaling hashes while a sat mint is active", () => {
+    const settings = useSettingsStore();
+    const mints = useMintsStore();
+    mints.mints = [
+      { url: "https://h", keys: [], keysets: [{ id: "x", unit: "tih" }] },
+      { url: "https://s", keys: [], keysets: [{ id: "y", unit: "sat" }] },
+    ] as any;
+    useProofsStore().proofs = [
+      { id: "x", amount: 8192, secret: "s1", C: "c", reserved: false },
+      { id: "y", amount: 2100, secret: "s2", C: "c", reserved: false },
+    ] as any;
+    mints.activeUnit = "sat";
+    settings.hashuDisplayUnit = "TiH";
+    settings.hashuAutoScaleUnit = true;
+    expect(settings.hashuUnit).toBe("PiH");
+    expect(useUiStore().formatCurrency(8192, "tih")).toBe("8 PiH");
+    useProofsStore().proofs = [];
+    mints.mints = [];
+    mints.activeUnit = "tih";
+  });
 });
 
 describe("hashu price", () => {
