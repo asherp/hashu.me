@@ -33,14 +33,14 @@
           <q-item-section>
             <q-item-label class="row items-center justify-between no-wrap">
               <div class="col ellipsis text-weight-medium">
-                {{ r.workerName || poolLabel(r.poolUrl) }}
+                {{ workerOf(r) || poolLabel(poolOf(r)) }}
               </div>
               <div class="text-weight-bold text-grey-6 q-ml-sm">
                 {{ formatCurrency(r.amountTih, "tih") }}
               </div>
             </q-item-label>
             <q-item-label caption class="ellipsis text-grey-6">
-              {{ poolLabel(r.poolUrl) }} · {{ mintHost(r.mint) }}
+              {{ poolLabel(poolOf(r)) }} · {{ mintHost(r.mint) }}
             </q-item-label>
             <q-linear-progress
               rounded
@@ -215,6 +215,14 @@ export default defineComponent({
       const p = this.progress[r.quote];
       if (!p || !p.amount_tih) return 0;
       return Math.min(1, p.filled_tih / p.amount_tih);
+    },
+    /** The pool and worker the mint says it's using now (they change if
+     * the redeemer changes pools), else the original request's. */
+    poolOf(r: RedemptionEntry): string {
+      return this.progress[r.quote]?.pool_url || r.poolUrl;
+    },
+    workerOf(r: RedemptionEntry): string {
+      return this.progress[r.quote]?.worker_name || r.workerName;
     },
     /** "redeemer" or "operator" while paused, else "". */
     pausedBy(r: RedemptionEntry): string {

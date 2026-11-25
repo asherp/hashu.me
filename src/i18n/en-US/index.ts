@@ -1246,6 +1246,9 @@ export default {
       stop: { label: "Stop" },
       confirm_stop: { label: "Stop and get change" },
       cancel: { label: "Keep going" },
+      change_pool: { label: "Change pool" },
+      cancel_change: { label: "Cancel" },
+      apply_pool: { label: "Send hashes here" },
     },
     controls: {
       stop_preview:
@@ -1260,6 +1263,8 @@ export default {
       paused_operator:
         "Paused by the mint operator. No hashrate is going to your pool until they resume it, and nothing is charged meanwhile. You can stop now and get the rest back.",
       failed: "The mint didn't accept that: { error }",
+      change_pool:
+        "Send the rest of this redemption to another pool. What's delivered so far stays counted, and nothing extra is charged. This also becomes your saved pool.",
       unsupported:
         "This mint doesn't offer stop or pause yet. Redemptions from it run to the end.",
     },

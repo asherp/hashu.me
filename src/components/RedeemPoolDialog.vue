@@ -127,7 +127,7 @@
                     : "RedeemPoolDialog.controls.paused",
                 )
               : $t("RedeemPoolDialog.status.opened", {
-                  worker: trackedWorker || workerName,
+                  worker: currentWorker || workerName,
                 })
           }}
         </div>
@@ -179,7 +179,10 @@
         </div>
         <!-- redeemer controls -->
         <template v-if="showControls">
-          <div v-if="!confirmingStop" class="row q-col-gutter-sm">
+          <div
+            v-if="!confirmingStop && !changingPool"
+            class="row q-col-gutter-sm"
+          >
             <div class="col-6">
               <q-btn
                 rounded
@@ -223,12 +226,57 @@
             </div>
           </div>
           <div
-            v-if="stopNote"
+            v-if="stopNote && !changingPool"
             class="text-grey-5 text-body2"
             data-testid="redeem-stop-note"
           >
             {{ stopNote }}
           </div>
+          <q-btn
+            v-if="!confirmingStop && !changingPool"
+            flat
+            rounded
+            no-caps
+            color="primary"
+            class="full-width"
+            :disable="actionBusy !== ''"
+            :label="$t('RedeemPoolDialog.actions.change_pool.label')"
+            data-testid="redeem-change-pool"
+            @click="changingPool = true"
+          />
+          <template v-if="changingPool">
+            <div class="text-grey-5 text-body2">
+              {{ $t("RedeemPoolDialog.controls.change_pool") }}
+            </div>
+            <PoolSettingsForm :mint-url="sheetMintUrl" />
+            <div class="row q-col-gutter-sm">
+              <div class="col-6">
+                <q-btn
+                  rounded
+                  outline
+                  color="primary"
+                  class="full-width"
+                  :disable="actionBusy !== ''"
+                  :label="$t('RedeemPoolDialog.actions.cancel_change.label')"
+                  data-testid="redeem-pool-cancel"
+                  @click="changingPool = false"
+                />
+              </div>
+              <div class="col-6">
+                <q-btn
+                  rounded
+                  unelevated
+                  color="primary"
+                  class="full-width"
+                  :loading="actionBusy === 'pool'"
+                  :disable="!poolUrlValid || !workerName.trim()"
+                  :label="$t('RedeemPoolDialog.actions.apply_pool.label')"
+                  data-testid="redeem-pool-apply"
+                  @click="act('pool')"
+                />
+              </div>
+            </div>
+          </template>
           <div v-if="confirmingStop" class="row q-col-gutter-sm">
             <div class="col-6">
               <q-btn
@@ -359,6 +407,7 @@ export default defineComponent({
       trackedWorker: "",
       trackedMint: "",
       confirmingStop: false,
+      changingPool: false,
       actionBusy: "" as "" | RedeemerAction,
       actionError: "",
     };
@@ -392,7 +441,7 @@ export default defineComponent({
         p && p.filled_tih != null
           ? Math.min(p.filled_tih, e.chargedTih)
           : e.chargedTih;
-      const pool = poolHost(e.poolUrl);
+      const pool = poolHost(this.currentPoolUrl);
       const args = {
         delivered: this.formatCurrency(delivered, "tih"),
         pool,
@@ -407,8 +456,8 @@ export default defineComponent({
       if (!e) return [];
       const t = (k: string) => this.$t(`RedeemPoolDialog.details.${k}`);
       const rows = [
-        { label: t("pool"), value: poolLabel(e.poolUrl) },
-        { label: t("worker"), value: e.workerName },
+        { label: t("pool"), value: poolLabel(this.currentPoolUrl) },
+        { label: t("worker"), value: this.currentWorker },
         { label: t("amount"), value: this.formatCurrency(e.amountTih, "tih") },
       ];
       if (e.chargedTih != null) {
@@ -580,6 +629,18 @@ export default defineComponent({
     },
     paused(): boolean {
       return !this.settled && this.progress?.paused === true;
+    },
+    /** Where the hashes go: the mint's word (it changes when the redeemer
+     * changes pools), else the original request's. */
+    currentPoolUrl(): string {
+      return this.progress?.pool_url || this.entry?.poolUrl || "";
+    },
+    currentWorker(): string {
+      return (
+        this.progress?.worker_name ||
+        this.entry?.workerName ||
+        this.trackedWorker
+      );
     },
     pausedByOperator(): boolean {
       return this.paused && this.progress?.paused_by === "operator";
@@ -753,13 +814,27 @@ export default defineComponent({
       this.actionError = "";
       try {
         const secret = await stopSecretFor(useWalletStore().seed, nonce);
+        const body: Record<string, unknown> = { stop_secret: secret };
+        if (action === "pool") {
+          body.pool_url = this.resolvedPoolUrl;
+          body.worker_name = this.workerName.trim();
+          if (this.workerPassword?.trim())
+            body.worker_password = this.workerPassword.trim();
+          // Backups only to a mint that takes them; else keep its list.
+          if ((this.hashuMaxFallbackPools[this.sheetMintUrl] ?? 0) > 0)
+            body.fallback_pools = this.readyFallbacks.slice(
+              0,
+              this.hashuMaxFallbackPools[this.sheetMintUrl],
+            );
+        }
         const { data } = await axios.post<RedemptionProgress>(
           redemptionActionUrl(this.progressUrl, action),
-          { stop_secret: secret },
+          body,
           { timeout: 10000 },
         );
         this.progress = data;
         this.confirmingStop = false;
+        this.changingPool = false;
         // A stop ends delivery: fetch the change right away.
         if (action === "stop") await this.poll();
       } catch (err: any) {
@@ -774,6 +849,7 @@ export default defineComponent({
     },
     reset() {
       this.confirmingStop = false;
+      this.changingPool = false;
       this.actionError = "";
       this.actionBusy = "";
       this.stopPolling();

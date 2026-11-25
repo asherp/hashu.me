@@ -286,7 +286,7 @@ export async function stopHashFor(secretHex: string): Promise<string> {
 }
 
 /** What the redeemer can do to an open redemption. */
-export type RedeemerAction = "stop" | "pause" | "resume";
+export type RedeemerAction = "stop" | "pause" | "resume" | "pool";
 
 /** `POST` target for a redeemer action, next to the progress URL. */
 export function redemptionActionUrl(
@@ -312,6 +312,9 @@ export type RedemptionProgress = {
   floor_tih?: number;
   spent_tih?: number;
   change_tih?: number;
+  /** Where its hashes go now (changes if the redeemer changes pools). */
+  pool_url?: string;
+  worker_name?: string;
   /** Backup pools the redemption listed (no passwords). */
   fallback_pools?: { pool_url: string; worker_name: string }[];
   /** Which pool is getting the hashrate: 0 = the main pool, then the
