@@ -1,9 +1,6 @@
 <template>
   <!-- hashu.me: units get their own page, next to Pool on the Settings menu -->
-  <SettingsPageShell
-    :title="$t('Settings.menu.units.title')"
-    :caption="$t('Settings.menu.units.caption')"
-  >
+  <SettingsPageShell :title="$t('Settings.menu.units.title')">
     <!-- hashu.me: display unit for TiH vouchers -->
     <SettingsSection
       :title="$t('Settings.appearance.hashu_unit.title')"
