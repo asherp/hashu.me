@@ -1,7 +1,8 @@
 <template>
-  <div class="hashu-amount-slider" data-testid="buy-amount-slider">
+  <div class="hashu-amount-slider" :data-testid="testid">
     <q-slider
       v-model="position"
+      :disable="disable"
       :min="0"
       :max="STEPS"
       :step="1"
@@ -11,8 +12,8 @@
       :aria-label="ariaText"
     />
     <div class="row justify-between text-caption text-grey-6 slider-ends">
-      <span data-testid="buy-amount-slider-min">{{ minLabel }}</span>
-      <span data-testid="buy-amount-slider-max">{{ maxLabel }}</span>
+      <span :data-testid="`${testid}-min`">{{ minLabel }}</span>
+      <span :data-testid="`${testid}-max`">{{ maxLabel }}</span>
     </div>
   </div>
 </template>
@@ -48,6 +49,7 @@ export function tihAtPosition(
 }
 
 export function positionOfTih(tih: number, min: number, max: number): number {
+  if (!(max > min)) return 0;
   const t = Math.min(max, Math.max(min, Number(tih) || min));
   return Math.round((STEPS * Math.log(t / min)) / Math.log(max / min));
 }
@@ -59,6 +61,9 @@ export default defineComponent({
     modelValue: { type: Number, default: 0 },
     min: { type: Number, required: true },
     max: { type: Number, required: true },
+    /** Shown but not draggable (e.g. a balance under the minimum). */
+    disable: { type: Boolean, default: false },
+    testid: { type: String, default: "buy-amount-slider" },
   },
   emits: ["update:modelValue"],
   data() {

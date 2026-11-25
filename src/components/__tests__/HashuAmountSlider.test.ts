@@ -43,4 +43,9 @@ describe("HashuAmountSlider mapping", () => {
       0.02
     );
   });
+
+  it("sits at the start when the range is empty (balance under the minimum)", () => {
+    expect(positionOfTih(500, 1024, 500)).toBe(0);
+    expect(positionOfTih(1024, 1024, 1024)).toBe(0);
+  });
 });
