@@ -189,6 +189,9 @@ export type HashuMintPrice = {
   min_redeem_tih?: number | null;
   /** Backup pools a redemption may list; missing on mints without them. */
   max_fallback_pools?: number | null;
+  /** True when redemptions can carry a stop key (`stop_hash`), so the
+   * wallet can stop, pause and resume them. Missing on older mints. */
+  redeemer_controls?: boolean | null;
   capacity_ends_ms?: number | null;
   delivery?: MintDelivery | null;
 };

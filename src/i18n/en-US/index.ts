@@ -1241,6 +1241,25 @@ export default {
     actions: {
       redeem: { label: "Redeem" },
       close: { label: "Close" },
+      pause: { label: "Pause" },
+      resume: { label: "Resume" },
+      stop: { label: "Stop" },
+      confirm_stop: { label: "Stop and get change" },
+      cancel: { label: "Keep going" },
+    },
+    controls: {
+      stop_preview:
+        "Stopping now charges { charge } and returns { change } to your wallet.",
+      stop_after_floor:
+        "You can stop once { floor } is delivered. You can pause any time.",
+      stop_after_floor_paused: "You can stop once { floor } is delivered.",
+      stop_nothing_back:
+        "Stopping now would return nothing, so it isn't offered.",
+      paused:
+        "Paused. No hashrate is going to your pool. Resume when you're ready; nothing is charged while paused.",
+      failed: "The mint didn't accept that: { error }",
+      unsupported:
+        "This mint doesn't offer stop or pause yet. Redemptions from it run to the end.",
     },
     status: {
       opened: "Redemption open. Hashrate is going to { worker }.",

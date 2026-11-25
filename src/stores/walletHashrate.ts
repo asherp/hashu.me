@@ -8,6 +8,9 @@ import { type AppMeltQuote, normalizeMeltQuote } from "./walletMelt";
 import {
   HASHRATE_METHOD,
   hashrateRequest,
+  randomNonce,
+  stopHashFor,
+  stopSecretFor,
   type FallbackPoolRequest,
 } from "src/js/hashu-redeem";
 import { UNIT_TIH } from "src/js/hashu";
@@ -19,6 +22,10 @@ export type RedeemToPoolInput = {
   amountTih: number;
   /** Backup pools, in order. Leave empty for mints that don't take them. */
   fallbackPools?: FallbackPoolRequest[];
+  /** Put a stop key in the request so the wallet can stop, pause and
+   * resume it. Only for mints that advertise `redeemer_controls`: older
+   * ones refuse unknown fields. */
+  stopKey?: boolean;
 };
 
 /** Ask the active mint for a `hashrate` melt quote. */
@@ -32,13 +39,18 @@ export async function meltQuoteHashrate(
     UNIT_TIH,
     true
   );
+  const nonce = randomNonce();
+  const stopHash = input.stopKey
+    ? await stopHashFor(await stopSecretFor(this.seed, nonce))
+    : undefined;
   const request = hashrateRequest(
     input.poolUrl,
     input.workerName,
     input.amountTih,
     input.workerPassword,
-    undefined,
-    input.fallbackPools ?? []
+    nonce,
+    input.fallbackPools ?? [],
+    stopHash
   );
   try {
     // cdk's custom-method handler also wants the method in the body.

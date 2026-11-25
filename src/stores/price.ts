@@ -44,6 +44,9 @@ export const usePriceStore = defineStore("price", {
     // Backup pools each Hashu mint takes per redemption (0 = none, so the
     // wallet leaves them out of the request). Not persisted.
     hashuMaxFallbackPools: {} as Record<string, number>,
+    // Mints whose redemptions take a stop key (stop, pause, resume from
+    // the wallet). Not persisted.
+    hashuRedeemerControls: {} as Record<string, boolean>,
     // What each Hashu mint can sell now, for the buy amount slider. Not
     // persisted: stock moves with every sale. availableTih null = the mint
     // does not cap sales by capacity.
@@ -112,6 +115,10 @@ export const usePriceStore = defineStore("price", {
           hashuInfoUrl(mintUrl),
           { timeout: 5000 }
         );
+        this.hashuRedeemerControls = {
+          ...this.hashuRedeemerControls,
+          [mintUrl]: data?.redeemer_controls === true,
+        };
         this.hashuMaxFallbackPools = {
           ...this.hashuMaxFallbackPools,
           [mintUrl]: Math.max(
