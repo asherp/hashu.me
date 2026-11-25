@@ -1256,7 +1256,9 @@ export default {
       stop_nothing_back:
         "Stopping now would return nothing, so it isn't offered.",
       paused:
-        "Paused. No hashrate is going to your pool. Resume when you're ready; nothing is charged while paused.",
+        "Paused by you. No hashrate is going to your pool. Resume when you're ready; nothing is charged while paused.",
+      paused_operator:
+        "Paused by the mint operator. No hashrate is going to your pool until they resume it, and nothing is charged meanwhile. You can stop now and get the rest back.",
       failed: "The mint didn't accept that: { error }",
       unsupported:
         "This mint doesn't offer stop or pause yet. Redemptions from it run to the end.",
@@ -1700,6 +1702,8 @@ export default {
     started: "Started { date }",
     finished: "{ start } to { end }",
     charged: "Charged { spent } · { change } back",
+    paused_redeemer: "Paused by you",
+    paused_operator: "Paused by the mint",
   },
   HistoryTable: {
     empty_text: "No history yet",

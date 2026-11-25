@@ -121,7 +121,11 @@
             settled
               ? settledText
               : paused
-              ? $t("RedeemPoolDialog.controls.paused")
+              ? $t(
+                  pausedByOperator
+                    ? "RedeemPoolDialog.controls.paused_operator"
+                    : "RedeemPoolDialog.controls.paused",
+                )
               : $t("RedeemPoolDialog.status.opened", {
                   worker: trackedWorker || workerName,
                 })
@@ -183,7 +187,7 @@
                 color="primary"
                 class="full-width"
                 :loading="actionBusy === 'pause' || actionBusy === 'resume'"
-                :disable="actionBusy !== ''"
+                :disable="actionBusy !== '' || pausedByOperator"
                 :label="
                   paused
                     ? $t('RedeemPoolDialog.actions.resume.label')
@@ -576,6 +580,9 @@ export default defineComponent({
     },
     paused(): boolean {
       return !this.settled && this.progress?.paused === true;
+    },
+    pausedByOperator(): boolean {
+      return this.paused && this.progress?.paused_by === "operator";
     },
     canStopNow(): boolean {
       const p = this.progress;

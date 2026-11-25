@@ -320,8 +320,10 @@ export type RedemptionProgress = {
   serving_pool_url?: string | null;
   /** True when the wallet that opened it holds a stop key. */
   can_stop?: boolean;
-  /** The redeemer paused delivery. */
+  /** Delivery is paused. */
   paused?: boolean;
+  /** Who paused it: the wallet ("redeemer") or the mint ("operator"). */
+  paused_by?: "redeemer" | "operator" | null;
   /** Set while a stop would be refused (below the floor, or it would
    * return nothing); null when a stop would go through. */
   stop_refusal?: string | null;

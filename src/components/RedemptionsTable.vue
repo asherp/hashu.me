@@ -45,7 +45,7 @@
             <q-linear-progress
               rounded
               size="6px"
-              color="primary"
+              :color="pausedBy(r) ? 'grey-6' : 'primary'"
               class="q-mt-sm"
               instant-feedback
               :value="ratio(r)"
@@ -55,6 +55,14 @@
               class="q-mt-xs text-grey-6"
               data-testid="redemption-progress"
             >
+              <q-badge
+                v-if="pausedBy(r)"
+                outline
+                color="warning"
+                class="q-mr-xs"
+                data-testid="redemption-paused"
+                :label="$t(`RedemptionsTable.paused_${pausedBy(r)}`)"
+              />
               {{ progressText(r) }}
             </q-item-label>
           </q-item-section>
@@ -208,6 +216,11 @@ export default defineComponent({
       if (!p || !p.amount_tih) return 0;
       return Math.min(1, p.filled_tih / p.amount_tih);
     },
+    /** "redeemer" or "operator" while paused, else "". */
+    pausedBy(r: RedemptionEntry): string {
+      const by = this.progress[r.quote]?.paused_by;
+      return by === "operator" || by === "redeemer" ? by : "";
+    },
     progressText(r: RedemptionEntry): string {
       const started = this.$t("RedemptionsTable.started", {
         date: formatDistanceToNow(parseISO(r.date), { addSuffix: true }),
@@ -223,7 +236,7 @@ export default defineComponent({
         filled: this.formatCurrency(p.filled_tih, "tih"),
         amount: this.formatCurrency(p.amount_tih, "tih"),
       });
-      const left = secondsLeft(p);
+      const left = this.pausedBy(r) ? null : secondsLeft(p);
       if (left != null) {
         t +=
           " · " +
