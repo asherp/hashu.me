@@ -305,6 +305,40 @@ export type RedemptionTrack = {
 };
 
 /** Progress as `GET /checkout/api/redemption/{id}` reports it. */
+/** Whole TiH one pool got from a redemption. */
+export type PoolTih = { pool_url: string; worker_name: string; tih: number };
+
+/** The per-pool totals in a progress answer, cleaned up; empty when the
+ * mint doesn't report them. */
+export function poolTihOf(
+  p: { pool_tih?: unknown } | null | undefined,
+): PoolTih[] {
+  if (!p || !Array.isArray(p.pool_tih)) return [];
+  return p.pool_tih
+    .filter(
+      (x: any) =>
+        x && typeof x.pool_url === "string" && Number.isFinite(Number(x.tih)),
+    )
+    .map((x: any) => ({
+      pool_url: x.pool_url,
+      worker_name: typeof x.worker_name === "string" ? x.worker_name : "",
+      tih: Number(x.tih),
+    }));
+}
+
+/** Same pools with the same totals, in the same order. */
+export function samePoolTih(a: PoolTih[], b: PoolTih[]): boolean {
+  return (
+    a.length === b.length &&
+    a.every(
+      (x, i) =>
+        x.pool_url === b[i].pool_url &&
+        x.worker_name === b[i].worker_name &&
+        x.tih === b[i].tih,
+    )
+  );
+}
+
 export type RedemptionProgress = {
   state: string;
   amount_tih: number;
@@ -321,6 +355,9 @@ export type RedemptionProgress = {
    * backups in order; null while no rig is on it. */
   serving_pool?: number | null;
   serving_pool_url?: string | null;
+  /** Whole TiH each pool got (pools it changed to and backups it failed
+   * over to included), adding up to what was delivered. */
+  pool_tih?: PoolTih[];
   /** True when the wallet that opened it holds a stop key. */
   can_stop?: boolean;
   /** Delivery is paused. */
@@ -484,6 +521,9 @@ export type RedemptionEntry = {
   active: boolean;
   date: string;
   paidDate?: string;
+  /** TiH per pool, as last reported by the mint and saved with the
+   * history entry; empty if never reported. */
+  poolTih: PoolTih[];
 };
 
 type HistoryLike = {
@@ -498,6 +538,7 @@ type HistoryLike = {
   type?: string;
   method?: string;
   meltQuote?: { amount?: number; fee_reserve?: number; request?: string };
+  poolTih?: unknown;
 };
 
 /** "Nov 21, 14:02" this year, "Nov 21 2025" before; the input as is if
@@ -566,6 +607,7 @@ export function redemptionEntries(history: HistoryLike[]): RedemptionEntry[] {
       active,
       date: h.date ?? "",
       paidDate: h.paidDate,
+      poolTih: poolTihOf({ pool_tih: h.poolTih }),
     });
   }
   return out.sort((a, b) => (a.date < b.date ? 1 : a.date > b.date ? -1 : 0));

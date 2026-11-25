@@ -1208,6 +1208,8 @@ export default {
       change: "Change back",
       started: "Started",
       finished: "Finished",
+      by_pool: "Hashes by pool",
+      pools_count: "{ count } pools",
     },
     balance: "{ balance } available",
     text: "Point hashrate at your pool. Only the hashes delivered are deducted from your balance. The rest comes back as change for future redemption.",
@@ -1709,6 +1711,7 @@ export default {
     charged: "Charged { spent } · { change } back",
     paused_redeemer: "Paused by you",
     paused_operator: "Paused by the mint",
+    more_pools: "{ pool } and { count } more",
   },
   HistoryTable: {
     empty_text: "No history yet",

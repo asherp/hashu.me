@@ -177,6 +177,28 @@
             <div class="col text-right ellipsis">{{ row.value }}</div>
           </div>
         </div>
+        <div
+          v-if="showPoolTotals"
+          class="redeem-details text-body2"
+          data-testid="redeem-pool-totals"
+        >
+          <div class="text-grey-5">
+            {{ $t("RedeemPoolDialog.details.by_pool") }}
+          </div>
+          <div
+            v-for="p in poolTotals"
+            :key="p.pool_url + ' ' + p.worker_name"
+            class="row no-wrap items-center"
+          >
+            <div class="col ellipsis q-mr-md">
+              {{ poolLabel(p.pool_url) }}
+              <span class="text-grey-6">· {{ p.worker_name }}</span>
+            </div>
+            <div class="text-weight-medium">
+              {{ formatCurrency(p.tih, "tih") }}
+            </div>
+          </div>
+        </div>
         <!-- redeemer controls -->
         <template v-if="showControls">
           <div
@@ -352,6 +374,7 @@ import { usePriceStore } from "src/stores/price";
 import { useSettingsStore } from "src/stores/settings";
 import PoolSettingsForm from "src/components/PoolSettingsForm.vue";
 import FallbackPoolsForm from "src/components/FallbackPoolsForm.vue";
+import { rememberPoolTih } from "src/stores/walletHashrate";
 import {
   isStratumUrl,
   resolvePoolUrl,
@@ -370,6 +393,8 @@ import {
   type RedeemerAction,
   poolHost,
   poolLabel,
+  poolTihOf,
+  type PoolTih,
   shortDate,
   type RedemptionEntry,
   type RedemptionProgress,
@@ -441,7 +466,12 @@ export default defineComponent({
         p && p.filled_tih != null
           ? Math.min(p.filled_tih, e.chargedTih)
           : e.chargedTih;
-      const pool = poolHost(this.currentPoolUrl);
+      const pool =
+        this.poolTotals.length > 1
+          ? this.$t("RedeemPoolDialog.details.pools_count", {
+              count: this.poolTotals.length,
+            })
+          : poolHost(this.poolTotals[0]?.pool_url || this.currentPoolUrl);
       const args = {
         delivered: this.formatCurrency(delivered, "tih"),
         pool,
@@ -450,6 +480,22 @@ export default defineComponent({
       return (e.changeTih ?? 0) > 0
         ? t("stopped_change", args)
         : t("delivered", args);
+    },
+    /** TiH per pool: the mint's latest word, else what the wallet saved. */
+    poolTotals(): PoolTih[] {
+      const live = poolTihOf(this.progress);
+      return live.length ? live : this.entry?.poolTih ?? [];
+    },
+    /** Worth a list when more than one pool got hashes, or the only one
+     * isn't the pool shown above (all went to a backup). */
+    showPoolTotals(): boolean {
+      const p = this.poolTotals;
+      if (p.length > 1) return true;
+      return (
+        p.length === 1 &&
+        (p[0].pool_url !== this.currentPoolUrl ||
+          p[0].worker_name !== this.currentWorker)
+      );
     },
     detailRows(): { label: string; value: string }[] {
       const e = this.entry;
@@ -680,6 +726,10 @@ export default defineComponent({
       else if (open) this.startInfo();
       else this.stopInfo();
     },
+    progress(p: RedemptionProgress | null) {
+      const e = this.entry;
+      if (e && p) void rememberPoolTih(e.quote, e.poolTih, p);
+    },
   },
   beforeUnmount() {
     this.stopPolling();
@@ -688,6 +738,7 @@ export default defineComponent({
   methods: {
     ...mapActions(useWalletStore, ["redeemToPool", "checkOutgoingInvoice"]),
     ...mapActions(usePriceStore, ["fetchHashuInfo"]),
+    poolLabel,
     startInfo() {
       this.stopInfo();
       this.fetchHashuInfo(this.activeMintUrl);

@@ -100,7 +100,7 @@
               </div>
             </q-item-label>
             <q-item-label caption class="ellipsis text-grey-6">
-              {{ poolLabel(r.poolUrl) }} · {{ mintHost(r.mint) }}
+              {{ pastPools(r) }} · {{ mintHost(r.mint) }}
             </q-item-label>
             <q-item-label caption class="text-grey-6">
               {{
@@ -145,6 +145,7 @@ import { formatDistanceToNow, parseISO } from "date-fns";
 import { Pickaxe as PickaxeIcon } from "lucide-vue-next";
 import { useWalletStore } from "src/stores/wallet";
 import { useUiStore } from "src/stores/ui";
+import { rememberPoolTih } from "src/stores/walletHashrate";
 import {
   redemptionEntries,
   redemptionId,
@@ -224,6 +225,19 @@ export default defineComponent({
     workerOf(r: RedemptionEntry): string {
       return this.progress[r.quote]?.worker_name || r.workerName;
     },
+    /** Where a finished redemption's hashes went, from the totals saved
+     * with it: "pool", or "last pool and N more" after a pool change or
+     * failover. */
+    pastPools(r: RedemptionEntry): string {
+      const p = r.poolTih;
+      if (p.length > 1) {
+        return this.$t("RedemptionsTable.more_pools", {
+          pool: poolLabel(p[p.length - 1].pool_url),
+          count: p.length - 1,
+        });
+      }
+      return poolLabel(p[0]?.pool_url || r.poolUrl);
+    },
     /** "redeemer" or "operator" while paused, else "". */
     pausedBy(r: RedemptionEntry): string {
       const by = this.progress[r.quote]?.paused_by;
@@ -272,6 +286,7 @@ export default defineComponent({
         );
         this.progress[r.quote] = data;
         this.unavailable[r.quote] = false;
+        await rememberPoolTih(r.quote, r.poolTih, data);
         if (data.state === "completed" || data.state === "settled") {
           // Delivery ended: collect the change now rather than waiting for
           // the background checker. It moves the row to Past once paid.

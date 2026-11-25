@@ -12,8 +12,30 @@ import {
   stopHashFor,
   stopSecretFor,
   type FallbackPoolRequest,
+  poolTihOf,
+  samePoolTih,
+  type PoolTih,
+  type RedemptionProgress,
 } from "src/js/hashu-redeem";
 import { UNIT_TIH } from "src/js/hashu";
+import { usePaymentHistoryStore } from "src/stores/paymentHistory";
+
+/** Save the mint's per-pool totals with the redemption's history entry,
+ * so the wallet keeps a record of which pools got its hashes after the
+ * mint stops reporting them. Writes only when they changed. */
+export async function rememberPoolTih(
+  quote: string,
+  saved: PoolTih[],
+  progress: RedemptionProgress | null | undefined
+): Promise<void> {
+  const next = poolTihOf(progress);
+  if (!next.length || samePoolTih(saved, next)) return;
+  try {
+    await usePaymentHistoryStore().updatePayment(quote, { poolTih: next });
+  } catch (e) {
+    console.warn("could not save per-pool totals", e);
+  }
+}
 
 export type RedeemToPoolInput = {
   poolUrl: string;
