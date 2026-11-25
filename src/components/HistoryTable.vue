@@ -381,12 +381,22 @@ export default defineComponent({
       if (transaction.type === UnifiedTransactionType.Onchain) {
         return "On-chain";
       }
+      // hashu.me: name the row by what happened to the hashes, not by the
+      // rail. Redeeming to a pool is "Mined", buying over Lightning is
+      // "Purchased", and vouchers moving between wallets are "Received" or
+      // "Sent".
+      const incoming = transaction.amount >= 0;
       if (transaction.method === PaymentMethod.Hashrate) {
-        return "Redeemed to pool";
+        return this.$t("HistoryTable.row.labels.mined");
       }
-      return transaction.type === UnifiedTransactionType.Lightning
-        ? "Lightning"
-        : "Hashes";
+      if (transaction.type === UnifiedTransactionType.Lightning) {
+        return incoming
+          ? this.$t("HistoryTable.row.labels.purchased")
+          : this.$t("HistoryTable.row.labels.paid");
+      }
+      return incoming
+        ? this.$t("HistoryTable.row.labels.received")
+        : this.$t("HistoryTable.row.labels.sent");
     },
 
     getTransactionLabel(transaction) {

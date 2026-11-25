@@ -1691,6 +1691,13 @@ export default {
     row: {
       type_label: "Vouchers",
       date_label: "{ value } ago",
+      labels: {
+        mined: "Mined",
+        purchased: "Purchased",
+        paid: "Paid",
+        received: "Received",
+        sent: "Sent",
+      },
     },
     actions: {
       check_status: {
