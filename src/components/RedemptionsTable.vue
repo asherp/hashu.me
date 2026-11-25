@@ -63,6 +63,14 @@
                 data-testid="redemption-paused"
                 :label="$t(`RedemptionsTable.paused_${pausedBy(r)}`)"
               />
+              <q-badge
+                v-else-if="waitingForRig(r)"
+                outline
+                color="warning"
+                class="q-mr-xs"
+                data-testid="redemption-rig-wait"
+                :label="$t('RedemptionsTable.rig_wait')"
+              />
               {{ progressText(r) }}
             </q-item-label>
           </q-item-section>
@@ -154,6 +162,7 @@ import {
   shortDate,
   secondsLeft,
   formatDuration,
+  formatStartIn,
   type RedemptionEntry,
   type RedemptionProgress,
 } from "src/js/hashu-redeem";
@@ -243,6 +252,10 @@ export default defineComponent({
       const by = this.progress[r.quote]?.paused_by;
       return by === "operator" || by === "redeemer" ? by : "";
     },
+    /** Open with no rig on it: every rig is busy with earlier orders. */
+    waitingForRig(r: RedemptionEntry): boolean {
+      return this.progress[r.quote]?.waiting_for_rig === true;
+    },
     progressText(r: RedemptionEntry): string {
       const started = this.$t("RedemptionsTable.started", {
         date: formatDistanceToNow(parseISO(r.date), { addSuffix: true }),
@@ -251,14 +264,25 @@ export default defineComponent({
         return `${this.$t("RedemptionsTable.no_progress")} · ${started}`;
       }
       const p = this.progress[r.quote];
+      const startsIn =
+        this.waitingForRig(r) && p?.start_in_s != null
+          ? this.$t("RedemptionsTable.starts_in", {
+              time: formatStartIn(p.start_in_s),
+            })
+          : "";
       if (!p || !(p.filled_tih > 0)) {
+        if (this.waitingForRig(r)) {
+          return startsIn ? `${startsIn} · ${started}` : started;
+        }
         return `${this.$t("RedemptionsTable.waiting")} · ${started}`;
       }
       let t = this.$t("RedemptionsTable.progress", {
         filled: this.formatCurrency(p.filled_tih, "tih"),
         amount: this.formatCurrency(p.amount_tih, "tih"),
       });
-      const left = this.pausedBy(r) ? null : secondsLeft(p);
+      if (startsIn) return `${t} · ${startsIn}`;
+      const left =
+        this.pausedBy(r) || this.waitingForRig(r) ? null : secondsLeft(p);
       if (left != null) {
         t +=
           " · " +

@@ -149,6 +149,9 @@ export const usePriceStore = defineStore("price", {
               window_s: d.window_s,
               queue_tih: Number(d.queue_tih) || 0,
               open_redemptions: Number(d.open_redemptions) || 0,
+              rigs: d.rigs == null ? null : Number(d.rigs) || 0,
+              start_in_s:
+                d.start_in_s == null ? null : Math.max(0, Number(d.start_in_s)),
               capacityEndsMs: Number(data?.capacity_ends_ms) || undefined,
               updated: Date.now(),
             },

@@ -133,7 +133,7 @@ export function emptySavedPool(): SavedPool {
  */
 export function fallbackPoolsFor(
   saved: SavedPool[] | undefined,
-  max: number = MAX_FALLBACK_POOLS,
+  max: number = MAX_FALLBACK_POOLS
 ): FallbackPoolRequest[] {
   const out: FallbackPoolRequest[] = [];
   for (const p of saved ?? []) {
@@ -175,7 +175,7 @@ export function isStratumUrl(url: string): boolean {
   return (
     /^stratum\+(tcp|ssl):\/\/[^\s/:]+:\d{1,5}\/?$/.test(u) ||
     /^stratum2\+tcp:\/\/[^\s/:]+(:\d{1,5})?\/[1-9A-HJ-NP-Za-km-z]{40,60}\/?$/.test(
-      u,
+      u
     )
   );
 }
@@ -192,7 +192,7 @@ export function hashrateRequest(
   workerPassword?: string,
   nonce: string = randomNonce(),
   fallbackPools: FallbackPoolRequest[] = [],
-  stopHash?: string,
+  stopHash?: string
 ): string {
   const req: HashrateRequest = {
     pool_url: poolUrl.trim(),
@@ -209,7 +209,7 @@ export function hashrateRequest(
 }
 
 export function parseHashrateRequest(
-  request: string | undefined,
+  request: string | undefined
 ): HashrateRequest | null {
   if (!request) return null;
   try {
@@ -238,16 +238,16 @@ export function randomNonce(): string {
 export async function redemptionId(request: string): Promise<string> {
   const digest = await crypto.subtle.digest(
     "SHA-256",
-    new TextEncoder().encode(request),
+    new TextEncoder().encode(request)
   );
   return Array.from(new Uint8Array(digest).slice(0, 16), (x) =>
-    x.toString(16).padStart(2, "0"),
+    x.toString(16).padStart(2, "0")
   ).join("");
 }
 
 function toHex(b: ArrayBuffer | Uint8Array): string {
   return Array.from(new Uint8Array(b), (x) =>
-    x.toString(16).padStart(2, "0"),
+    x.toString(16).padStart(2, "0")
   ).join("");
 }
 
@@ -260,19 +260,19 @@ function toHex(b: ArrayBuffer | Uint8Array): string {
  */
 export async function stopSecretFor(
   seed: Uint8Array,
-  nonce: string,
+  nonce: string
 ): Promise<string> {
   const key = await crypto.subtle.importKey(
     "raw",
     seed,
     { name: "HMAC", hash: "SHA-256" },
     false,
-    ["sign"],
+    ["sign"]
   );
   const mac = await crypto.subtle.sign(
     "HMAC",
     key,
-    new TextEncoder().encode(`hashu-stop:${nonce}`),
+    new TextEncoder().encode(`hashu-stop:${nonce}`)
   );
   return toHex(mac);
 }
@@ -280,7 +280,7 @@ export async function stopSecretFor(
 /** The request's `stop_hash` for a stop secret: hex SHA-256 of its bytes. */
 export async function stopHashFor(secretHex: string): Promise<string> {
   const bytes = new Uint8Array(
-    (secretHex.match(/../g) ?? []).map((h) => parseInt(h, 16)),
+    (secretHex.match(/../g) ?? []).map((h) => parseInt(h, 16))
   );
   return toHex(await crypto.subtle.digest("SHA-256", bytes));
 }
@@ -291,7 +291,7 @@ export type RedeemerAction = "stop" | "pause" | "resume" | "pool";
 /** `POST` target for a redeemer action, next to the progress URL. */
 export function redemptionActionUrl(
   progressUrl: string,
-  action: RedeemerAction,
+  action: RedeemerAction
 ): string {
   return `${progressUrl.replace(/\/+$/, "")}/${action}`;
 }
@@ -311,13 +311,13 @@ export type PoolTih = { pool_url: string; worker_name: string; tih: number };
 /** The per-pool totals in a progress answer, cleaned up; empty when the
  * mint doesn't report them. */
 export function poolTihOf(
-  p: { pool_tih?: unknown } | null | undefined,
+  p: { pool_tih?: unknown } | null | undefined
 ): PoolTih[] {
   if (!p || !Array.isArray(p.pool_tih)) return [];
   return p.pool_tih
     .filter(
       (x: any) =>
-        x && typeof x.pool_url === "string" && Number.isFinite(Number(x.tih)),
+        x && typeof x.pool_url === "string" && Number.isFinite(Number(x.tih))
     )
     .map((x: any) => ({
       pool_url: x.pool_url,
@@ -334,7 +334,7 @@ export function samePoolTih(a: PoolTih[], b: PoolTih[]): boolean {
       (x, i) =>
         x.pool_url === b[i].pool_url &&
         x.worker_name === b[i].worker_name &&
-        x.tih === b[i].tih,
+        x.tih === b[i].tih
     )
   );
 }
@@ -372,14 +372,28 @@ export type RedemptionProgress = {
   stop_change_tih?: number | null;
   track?: RedemptionTrack | null;
   now_ms?: number;
+  /** Rigs filling it now (newer mints; null once finished or paused). */
+  rigs?: number | null;
+  /** Open, not paused, and no rig on it: every rig is busy with earlier
+   * redemptions. */
+  waiting_for_rig?: boolean;
+  /** While waiting for a rig, seconds until one should take it; null
+   * when the mint has no estimate. */
+  start_in_s?: number | null;
 };
+
+/** "about 8 min" style text for a start estimate: whole minutes, at
+ * least one. */
+export function formatStartIn(seconds: number): string {
+  return formatDuration(Math.max(60, Math.round(seconds / 60) * 60));
+}
 
 /** Seconds a new redemption of `amountTih` should take at the mint's
  * current hashrate, counting what earlier redemptions are still owed.
  * Null when the mint has no hashrate right now. */
 export function estimateRedeemSeconds(
   amountTih: number,
-  delivery: MintDelivery,
+  delivery: MintDelivery
 ): number | null {
   const hs = Number(delivery.hashrate_hs) || 0;
   if (!(hs > 0)) return null;
@@ -443,7 +457,7 @@ export function hashrateUnitFor(unit: DisplayUnit): HashrateUnit {
 export function formatHashrate(
   hs: number,
   unit?: DisplayUnit | string,
-  locale?: string,
+  locale?: string
 ): string {
   if (isDisplayUnit(unit)) {
     const u = hashrateUnitFor(unit);
@@ -452,8 +466,8 @@ export function formatHashrate(
       v >= 100 || v === 0
         ? { maximumFractionDigits: 0 }
         : v >= 1
-          ? { maximumFractionDigits: 1 }
-          : { maximumSignificantDigits: 2 };
+        ? { maximumFractionDigits: 1 }
+        : { maximumSignificantDigits: 2 };
     return `${new Intl.NumberFormat(locale, options).format(v)} ${u.label}`;
   }
   if (!(hs > 0)) return "0 H/s";
@@ -496,7 +510,7 @@ export type BalanceEta =
 export function balanceRedeemEta(
   balanceTih: number,
   delivery: MintDelivery,
-  minRedeemTih?: number,
+  minRedeemTih?: number
 ): BalanceEta {
   if (!(balanceTih > 0)) return { kind: "empty" };
   if (minRedeemTih && balanceTih < minRedeemTih) {
@@ -592,7 +606,7 @@ export function redemptionEntries(history: HistoryLike[]): RedemptionEntry[] {
     const locked =
       mq && mq.amount != null
         ? Number(mq.amount) + Number(mq.fee_reserve ?? 0)
-        : (req?.amount_tih ?? Math.abs(Number(h.amount) || 0));
+        : req?.amount_tih ?? Math.abs(Number(h.amount) || 0);
     const active = h.status !== "paid";
     const charged = active ? null : Math.abs(Number(h.amount) || 0);
     out.push({

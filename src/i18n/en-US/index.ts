@@ -1248,6 +1248,11 @@ export default {
         "That runs past the mint's current hashrate rental, so it may take longer.",
       no_hashrate:
         "The mint has no hashrate right now, so delivery starts when its miners are back.",
+      short: {
+        rigs_busy: "All rigs busy · starts in about { time }",
+        queue: "{ queue } queued ahead",
+        no_hashrate: "Starts when the mint's miners are back",
+      },
     },
     actions: {
       redeem: { label: "Redeem" },
@@ -1288,6 +1293,10 @@ export default {
       progress: "{ filled } of { amount } delivered",
       rate: "{ rate } · about { time } left",
       waiting: "Waiting for the first shares…",
+      rig_wait:
+        "Waiting for a rig. Every rig is busy with earlier redemptions; one should start on this in about { time }.",
+      rig_wait_unknown:
+        "Waiting for a rig. Every rig is busy with earlier redemptions; this starts once one frees up.",
       no_progress:
         "Progress isn't available from this mint. The wallet checks the redemption in the background and adds the change when it ends.",
       background:
@@ -1724,6 +1733,8 @@ export default {
     charged: "Charged { spent } · { change } back",
     paused_redeemer: "Paused by you",
     paused_operator: "Paused by the mint",
+    rig_wait: "Waiting for a rig",
+    starts_in: "starts in about { time }",
     more_pools: "{ pool } and { count } more",
   },
   HistoryTable: {
