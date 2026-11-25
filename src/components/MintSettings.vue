@@ -94,7 +94,7 @@
               <div
                 class="row items-center justify-between q-pb-md q-pl-lg q-pr-md"
               >
-                <div class="col">
+                <div class="col-12 col-sm">
                   <!-- Currency units with regular text styling -->
                   <div class="row q-gutter-x-sm">
                     <div
@@ -163,47 +163,53 @@
                     </div>
                   </div>
                 </div>
-                <q-btn
-                  v-if="messageTargetFor(mint)"
-                  rounded
-                  outline
-                  dense
-                  no-caps
-                  color="primary"
-                  class="q-px-sm q-mr-sm"
-                  data-testid="mint-message"
-                  @click.stop="openMessages(mint)"
+                <!-- hashu.me: below the chips on a phone, beside them wider -->
+                <div
+                  v-if="messageTargetFor(mint) || canRedeemAt(mint)"
+                  class="col-12 col-sm-auto row no-wrap items-center justify-end mint-card-actions"
                 >
-                  <MessageCircleIcon :size="18" class="q-mr-xs" />
-                  <span>{{ $t("MintSettings.message.label") }}</span>
-                  <q-badge
-                    v-if="messageUnread(mint)"
-                    floating
+                  <q-btn
+                    v-if="messageTargetFor(mint)"
                     rounded
+                    outline
+                    dense
+                    no-caps
                     color="primary"
-                    text-color="black"
-                    data-testid="mint-message-unread"
-                    >{{ messageUnread(mint) }}</q-badge
+                    class="q-px-sm q-mr-sm"
+                    data-testid="mint-message"
+                    @click.stop="openMessages(mint)"
                   >
-                  <q-tooltip>{{
-                    $t("MintSettings.message.tooltip")
-                  }}</q-tooltip>
-                </q-btn>
-                <q-btn
-                  v-if="canRedeemAt(mint)"
-                  rounded
-                  outline
-                  dense
-                  no-caps
-                  color="primary"
-                  class="q-px-sm q-mr-sm"
-                  data-testid="mint-redeem"
-                  @click.stop="redeemAt(mint)"
-                >
-                  <PickaxeIcon :size="18" class="q-mr-xs" />
-                  <span>{{ $t("MintSettings.redeem.label") }}</span>
-                  <q-tooltip>{{ $t("MintSettings.redeem.tooltip") }}</q-tooltip>
-                </q-btn>
+                    <MessageCircleIcon :size="18" class="q-mr-xs" />
+                    <span>{{ $t("MintSettings.message.label") }}</span>
+                    <q-badge
+                      v-if="messageUnread(mint)"
+                      floating
+                      rounded
+                      color="primary"
+                      text-color="black"
+                      data-testid="mint-message-unread"
+                      >{{ messageUnread(mint) }}</q-badge
+                    >
+                    <q-tooltip>{{
+                      $t("MintSettings.message.tooltip")
+                    }}</q-tooltip>
+                  </q-btn>
+                  <q-btn
+                    v-if="canRedeemAt(mint)"
+                    rounded
+                    outline
+                    dense
+                    no-caps
+                    color="primary"
+                    class="q-px-sm q-mr-sm"
+                    data-testid="mint-redeem"
+                    @click.stop="redeemAt(mint)"
+                  >
+                    <PickaxeIcon :size="18" class="q-mr-xs" />
+                    <span>{{ $t("MintSettings.redeem.label") }}</span>
+                    <q-tooltip>{{ $t("MintSettings.redeem.tooltip") }}</q-tooltip>
+                  </q-btn>
+                </div>
               </div>
             </div>
           </q-item>
@@ -845,6 +851,11 @@ export default defineComponent({
 
 <style>
 @import "src/css/mintlist.css";
+@media (max-width: 599.98px) {
+  .mint-card-actions {
+    padding-top: 8px;
+  }
+}
 .hashrate-icon {
   vertical-align: -2px;
 }
