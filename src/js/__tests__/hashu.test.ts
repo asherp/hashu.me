@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { formatBigIntCurrency } from "src/js/format-currency";
 import {
+  autoScaleDisplayUnit,
   DEFAULT_MINT_URL,
   TIH_PER_PHH,
   TIH_PER_THD,
@@ -160,5 +161,21 @@ describe("invoiceSats", () => {
     expect(invoiceSats(10240, 600)).toBe(6);
     // tiny purchases still bill 1 sat
     expect(invoiceSats(1024, 1)).toBe(1);
+  });
+});
+
+describe("autoScaleDisplayUnit", () => {
+  it("picks the largest unit in the family the amount holds one of", () => {
+    expect(autoScaleDisplayUnit("TiH", 500)).toBe("TiH");
+    expect(autoScaleDisplayUnit("TiH", 4096)).toBe("PiH");
+    expect(autoScaleDisplayUnit("PiH", 2 * 1024 * 1024)).toBe("EiH");
+    expect(autoScaleDisplayUnit("THD", 1200 * TIH_PER_THD)).toBe("PHD");
+    expect(autoScaleDisplayUnit("PHD", 0.36 * TIH_PER_THD)).toBe("THD");
+    expect(autoScaleDisplayUnit("PHSD", 5 * TIH_PER_THD)).toBe("THSD");
+    expect(autoScaleDisplayUnit("THH", 2000 * TIH_PER_THH)).toBe("PHH");
+  });
+
+  it("keeps the chosen unit for an empty balance", () => {
+    expect(autoScaleDisplayUnit("PHD", 0)).toBe("PHD");
   });
 });

@@ -1,7 +1,14 @@
-import { DEFAULT_DISPLAY_UNIT, type DisplayUnit } from "src/js/hashu";
+import {
+  DEFAULT_DISPLAY_UNIT,
+  UNIT_TIH,
+  autoScaleDisplayUnit,
+  isDisplayUnit,
+  type DisplayUnit,
+} from "src/js/hashu";
 import { DEFAULT_MONEY_UNIT, type MoneyUnit } from "src/js/money";
 import { POOL_PRESETS, type SavedPool } from "src/js/hashu-redeem";
 import { defineStore } from "pinia";
+import { useMintsStore } from "src/stores/mints";
 import { useLocalStorage } from "@vueuse/core";
 
 const defaultNostrRelays = [
@@ -92,6 +99,13 @@ export const useSettingsStore = defineStore("settings", {
         "hashu.settings.displayUnit",
         DEFAULT_DISPLAY_UNIT
       ),
+      // hashu.me: auto scale, on by default. Shows hashes in the chosen
+      // unit's family at the scale of the wallet balance (e.g. PHd instead
+      // of 1,200 THd).
+      hashuAutoScaleUnit: useLocalStorage<boolean>(
+        "hashu.settings.autoScaleUnit",
+        true
+      ),
       // hashu.me: the pool and worker that redemptions send hashrate to.
       // Set during onboarding or in Settings > Pool, used by Redeem to pool.
       hashuPoolId: useLocalStorage<string>(
@@ -119,5 +133,21 @@ export const useSettingsStore = defineStore("settings", {
         true
       ),
     };
+  },
+  getters: {
+    /**
+     * hashu.me: the unit to show hashes in right now. The chosen display
+     * unit, or with auto scale on, its family member that suits the
+     * wallet balance in TiH across mints.
+     */
+    hashuUnit(state): DisplayUnit {
+      const chosen = isDisplayUnit(state.hashuDisplayUnit)
+        ? state.hashuDisplayUnit
+        : DEFAULT_DISPLAY_UNIT;
+      if (!state.hashuAutoScaleUnit) return chosen;
+      const mints = useMintsStore();
+      if (mints.activeUnit !== UNIT_TIH) return chosen;
+      return autoScaleDisplayUnit(chosen, mints.totalUnitBalance);
+    },
   },
 });

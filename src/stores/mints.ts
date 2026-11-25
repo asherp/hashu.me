@@ -253,7 +253,7 @@ export const useMintsStore = defineStore("mints", {
       } else if (activeUnit == "msat") {
         return "mSAT";
       } else if (activeUnit == UNIT_TIH) {
-        const unit = this.settingsStoreGlobal.hashuDisplayUnit;
+        const unit = this.settingsStoreGlobal.hashuUnit;
         return isDisplayUnit(unit) ? displayUnitLabel(unit) : UNIT_TIH_LABEL;
       } else {
         return activeUnit;

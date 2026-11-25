@@ -48,8 +48,9 @@ test("changes theme, monetary unit, keyboard preference and language persistentl
   const wallet = new WalletUi(page);
   await wallet.onboard(MINT_A_URL);
   await wallet.mintBolt11(20);
-  await wallet.settings("appearance");
+  await wallet.settings("units");
   await page.locator('[data-testid="money-unit"][data-unit="bip177"]').click();
+  await wallet.settings("appearance");
   await wallet.toggleSetting("Use numeric keyboard", true);
   await page.getByText("bitcoin", { exact: true }).click();
   await page.reload();

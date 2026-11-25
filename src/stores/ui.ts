@@ -173,7 +173,7 @@ export const useUiStore = defineStore("ui", {
         return "****";
       }
       if (currency == UNIT_TIH) {
-        const unit = useSettingsStore().hashuDisplayUnit;
+        const unit = useSettingsStore().hashuUnit;
         return formatTih(
           value,
           navigator.language,

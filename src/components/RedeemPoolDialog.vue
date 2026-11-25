@@ -417,7 +417,7 @@ export default defineComponent({
       return "";
     },
     amountHint(): string {
-      const unit = useSettingsStore().hashuDisplayUnit;
+      const unit = useSettingsStore().hashuUnit;
       if (!this.amountTih || !isDisplayUnit(unit) || unit === "TiH") return "";
       return formatTih(this.amountTih, navigator.language, unit);
     },
@@ -443,7 +443,7 @@ export default defineComponent({
         time: formatDuration(secs),
         rate: formatHashrate(
           d.hashrate_hs,
-          useSettingsStore().hashuDisplayUnit,
+          useSettingsStore().hashuUnit,
           navigator.language,
         ),
       });
@@ -465,7 +465,7 @@ export default defineComponent({
       const rate = trackRate(p.track, p.now_ms ?? Date.now());
       if (!(rate > 0)) return "";
       const left = secondsLeft(p);
-      const unit = useSettingsStore().hashuDisplayUnit;
+      const unit = useSettingsStore().hashuUnit;
       return left == null
         ? formatHashrate(rate, unit, navigator.language)
         : this.$t("RedeemPoolDialog.status.rate", {

@@ -121,7 +121,7 @@ export default defineComponent({
       return formatTih(
         tih,
         navigator.language,
-        useSettingsStore().hashuDisplayUnit
+        useSettingsStore().hashuUnit
       );
     },
     icon(status: EpochStatus): string {

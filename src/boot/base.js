@@ -156,7 +156,7 @@ window.windowMixin = {
       }
       // hashu.me: TiH vouchers follow the chosen display unit.
       if (currency == UNIT_TIH) {
-        const unit = useSettingsStore().hashuDisplayUnit;
+        const unit = useSettingsStore().hashuUnit;
         return formatTih(
           value,
           window.LOCALE,

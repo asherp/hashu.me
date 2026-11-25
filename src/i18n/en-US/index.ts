@@ -215,9 +215,13 @@ export default {
         title: "Experimental",
         caption: "Try new features early",
       },
+      units: {
+        title: "Units",
+        caption: "Hash unit and monetary unit",
+      },
       appearance: {
         title: "Appearance",
-        caption: "Theme, keyboard, monetary unit and hashrate unit",
+        caption: "Theme and keyboard",
       },
       language: {
         title: "Language",
@@ -544,7 +548,7 @@ export default {
       money_unit: {
         title: "Monetary unit",
         description:
-          "Unit for showing bitcoin amounts and prices. Prices read as this unit per hashrate unit, like 46 sats/THd.",
+          "Unit for showing bitcoin amounts and prices. Prices read as this unit per hash unit, like 46 sats/THd.",
         units: {
           sat: "sats",
           bip177: "₿ (BIP-177, one ₿ unit is a sat)",
@@ -556,9 +560,14 @@ export default {
           "Dollar amounts use the BTC price from Coinbase (Privacy > Get exchange rate from Coinbase). Prices use the mint's own USDT price when it sells for USDT.",
       },
       hashu_unit: {
-        title: "Hashrate unit",
+        title: "Hash unit",
         description:
           "Unit for showing hashrate voucher amounts. Vouchers are counted in TiH (2^40 hashes); this only changes how amounts are shown.",
+        auto_scale: {
+          toggle: "Auto scale",
+          description:
+            "Pick the size of the unit from your balance, e.g. PHd instead of 1,200 THd, or THd instead of 0.36 PHd.",
+        },
         units: {
           TiH: "TiH: tebihash, 2^40 hashes",
           PiH: "PiH: pebihash, 1,024 TiH",
@@ -1691,6 +1700,13 @@ export default {
     row: {
       type_label: "Vouchers",
       date_label: "{ value } ago",
+      labels: {
+        mined: "Mined",
+        purchased: "Purchased",
+        paid: "Paid",
+        received: "Received",
+        sent: "Sent",
+      },
     },
     actions: {
       check_status: {

@@ -54,6 +54,7 @@ import {
   Terminal as TerminalIcon,
   Info as InfoIcon,
   Pickaxe as PickaxeIcon,
+  Ruler as RulerIcon,
   ChevronRight as ChevronRightIcon,
 } from "lucide-vue-next";
 
@@ -75,6 +76,13 @@ export default defineComponent({
               key: "pool",
               path: "/settings/pool",
               icon: markRaw(PickaxeIcon),
+            },
+            {
+              // hashu.me: units sit beside the pool, since they shape every
+              // amount shown
+              key: "units",
+              path: "/settings/units",
+              icon: markRaw(RulerIcon),
             },
             {
               key: "backup",

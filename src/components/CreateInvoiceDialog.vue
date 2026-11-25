@@ -631,7 +631,7 @@ export default defineComponent({
      */
     hashuDisplay(): { factor: number; label: string } | null {
       if (!this.isHashuBuy) return null;
-      const u = useSettingsStore().hashuDisplayUnit;
+      const u = useSettingsStore().hashuUnit;
       if (!isDisplayUnit(u) || u === "TiH") return null;
       return { factor: DISPLAY_UNITS[u], label: displayUnitLabel(u) };
     },

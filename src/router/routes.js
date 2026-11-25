@@ -57,6 +57,10 @@ const routes = [
         component: () => import("src/pages/settings/PoolSettings.vue"),
       },
       {
+        path: "units",
+        component: () => import("src/pages/settings/UnitsSettings.vue"),
+      },
+      {
         path: "appearance",
         component: () => import("src/pages/settings/AppearanceSettings.vue"),
       },
