@@ -1,5 +1,5 @@
 <template>
-  <!-- hashu.me: units get their own page, first on the Settings menu -->
+  <!-- hashu.me: units get their own page, next to Pool on the Settings menu -->
   <SettingsPageShell
     :title="$t('Settings.menu.units.title')"
     :caption="$t('Settings.menu.units.caption')"
@@ -9,6 +9,23 @@
       :title="$t('Settings.appearance.hashu_unit.title')"
       :caption="$t('Settings.appearance.hashu_unit.description')"
     >
+      <q-item tag="label">
+        <q-item-section>
+          <q-item-label>{{
+            $t("Settings.appearance.hashu_unit.auto_scale.toggle")
+          }}</q-item-label>
+          <q-item-label caption>{{
+            $t("Settings.appearance.hashu_unit.auto_scale.description")
+          }}</q-item-label>
+        </q-item-section>
+        <q-item-section side>
+          <q-toggle
+            v-model="hashuAutoScaleUnit"
+            color="primary"
+            data-testid="hashu-auto-scale"
+          />
+        </q-item-section>
+      </q-item>
       <q-item
         v-for="unit in hashuDisplayUnits"
         :key="unit"
@@ -99,7 +116,11 @@ export default defineComponent({
     SettingsSection,
   },
   computed: {
-    ...mapWritableState(useSettingsStore, ["moneyUnit", "hashuDisplayUnit"]),
+    ...mapWritableState(useSettingsStore, [
+      "moneyUnit",
+      "hashuDisplayUnit",
+      "hashuAutoScaleUnit",
+    ]),
     ...mapState(useMintsStore, ["activeMintUrl"]),
     ...mapState(usePriceStore, ["hashuPrices"]),
     moneyUnits() {

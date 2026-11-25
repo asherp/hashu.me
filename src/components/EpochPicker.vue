@@ -59,7 +59,7 @@ export default defineComponent({
     options(): { value: number | null; label: string; sub: string }[] {
       const index = this.index;
       if (!index) return [];
-      const unit = useSettingsStore().hashuDisplayUnit;
+      const unit = useSettingsStore().hashuUnit;
       const now = {
         value: null,
         label: this.$t("Epochs.picker.now"),

@@ -145,7 +145,7 @@ export default defineComponent({
       if (this.activeUnit !== UNIT_TIH) return "";
       const amount = this.modelValue || 0;
       const parts: string[] = [];
-      const unit = useSettingsStore().hashuDisplayUnit;
+      const unit = useSettingsStore().hashuUnit;
       // Typed in the display unit, the amount line already says how many:
       // only the approximate cost follows.
       if (

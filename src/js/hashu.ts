@@ -101,6 +101,37 @@ export function displayUnitLabel(unit: DisplayUnit): string {
 
 export const DEFAULT_DISPLAY_UNIT: DisplayUnit = "TiH";
 
+/**
+ * Display units that differ only in scale, smallest first. Auto scale moves
+ * within the chosen unit's family, so a THd user sees THd or PHd and a TiH
+ * user sees TiH, PiH or EiH.
+ */
+const DISPLAY_UNIT_FAMILIES: DisplayUnit[][] = [
+  ["TiH", "PiH", "EiH"],
+  ["THH", "PHH"],
+  ["THD", "PHD"],
+  ["THSD", "PHSD"],
+];
+
+/**
+ * The unit in `unit`'s family that suits an amount of `tih`: the largest
+ * one the amount holds at least one of, else the smallest. Zero keeps
+ * `unit` as chosen.
+ */
+export function autoScaleDisplayUnit(
+  unit: DisplayUnit,
+  tih: number | bigint
+): DisplayUnit {
+  const amount = Math.abs(Number(tih));
+  if (!amount) return unit;
+  const family = DISPLAY_UNIT_FAMILIES.find((f) => f.includes(unit)) ?? [unit];
+  let best = family[0];
+  for (const candidate of family) {
+    if (amount >= DISPLAY_UNITS[candidate]) best = candidate;
+  }
+  return best;
+}
+
 export function isDisplayUnit(unit: unknown): unit is DisplayUnit {
   return typeof unit === "string" && unit in DISPLAY_UNITS;
 }

@@ -70,23 +70,19 @@ export default defineComponent({
     visibleGroups() {
       const groups = [
         {
-          // hashu.me: units first, since they shape every amount shown
-          name: "units",
-          entries: [
-            {
-              key: "units",
-              path: "/settings/units",
-              icon: markRaw(RulerIcon),
-            },
-          ],
-        },
-        {
           name: "wallet",
           entries: [
             {
               key: "pool",
               path: "/settings/pool",
               icon: markRaw(PickaxeIcon),
+            },
+            {
+              // hashu.me: units sit beside the pool, since they shape every
+              // amount shown
+              key: "units",
+              path: "/settings/units",
+              icon: markRaw(RulerIcon),
             },
             {
               key: "backup",

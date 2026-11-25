@@ -71,7 +71,7 @@ export default defineComponent({
   },
   computed: {
     unit(): DisplayUnit {
-      const u = useSettingsStore().hashuDisplayUnit;
+      const u = useSettingsStore().hashuUnit;
       return isDisplayUnit(u) ? u : "TiH";
     },
     position: {

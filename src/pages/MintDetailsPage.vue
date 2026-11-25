@@ -362,7 +362,7 @@
               {{
                 formatHashrate(
                   mintDelivery.hashrate_hs,
-                  settings.hashuDisplayUnit,
+                  settings.hashuUnit,
                   $i18n.locale,
                 )
               }}
@@ -396,7 +396,7 @@
               {{
                 formatHashprice(
                   mintMsatPerPih,
-                  settings.hashuDisplayUnit,
+                  settings.hashuUnit,
                   $i18n.locale,
                   mintMoney,
                 )

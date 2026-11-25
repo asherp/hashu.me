@@ -211,7 +211,7 @@ export default defineComponent({
     },
     ...mapState(useSettingsStore, [
       "bitcoinPriceCurrency",
-      "hashuDisplayUnit",
+      "hashuUnit",
       "moneyUnit",
     ]),
     /** Monetary unit setting with the rates it needs. */
@@ -221,7 +221,7 @@ export default defineComponent({
     hashprice: function (): string {
       return formatHashprice(
         this.msatPerPih,
-        this.hashuDisplayUnit,
+        this.hashuUnit,
         navigator.language,
         this.money
       );

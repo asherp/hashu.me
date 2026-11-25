@@ -2,11 +2,14 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import axios from "axios";
 import { useUiStore } from "src/stores/ui";
 import { useSettingsStore } from "src/stores/settings";
+import { useMintsStore } from "src/stores/mints";
+import { useProofsStore } from "src/stores/proofs";
 import { usePriceStore } from "src/stores/price";
 
 afterEach(() => {
   vi.restoreAllMocks();
   useSettingsStore().hashuDisplayUnit = "TiH";
+  useSettingsStore().hashuAutoScaleUnit = false;
 });
 
 describe("hashu display unit", () => {
@@ -23,6 +26,27 @@ describe("hashu display unit", () => {
     const settings = useSettingsStore();
     (settings as any).hashuDisplayUnit = "bogus";
     expect(useUiStore().formatCurrency(1024, "tih")).toMatch(/TiH$/);
+  });
+});
+
+describe("hashu auto scale", () => {
+  it("scales the shown unit to the wallet balance when on", () => {
+    const settings = useSettingsStore();
+    const mints = useMintsStore();
+    mints.activeUnit = "tih";
+    mints.mints = [
+      { url: "https://m", keys: [], keysets: [{ id: "x", unit: "tih" }] },
+    ] as any;
+    useProofsStore().proofs = [
+      { id: "x", amount: 8192, secret: "s", C: "c", reserved: false },
+    ] as any;
+    settings.hashuDisplayUnit = "TiH";
+    expect(settings.hashuUnit).toBe("TiH");
+    settings.hashuAutoScaleUnit = true;
+    expect(settings.hashuUnit).toBe("PiH");
+    expect(useUiStore().formatCurrency(8192, "tih")).toBe("8 PiH");
+    useProofsStore().proofs = [];
+    mints.mints = [];
   });
 });
 

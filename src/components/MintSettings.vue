@@ -123,7 +123,7 @@
                         />{{
                           formatHashrate(
                             mintHashrate(mint.url),
-                            hashuDisplayUnit,
+                            hashuUnit,
                             $i18n.locale,
                           )
                         }}
@@ -480,7 +480,7 @@ export default defineComponent({
   },
   computed: {
     ...mapWritableState(useSettingsStore, ["getBitcoinPrice"]),
-    ...mapState(useSettingsStore, ["hashuDisplayUnit", "moneyUnit"]),
+    ...mapState(useSettingsStore, ["hashuUnit", "moneyUnit"]),
     ...mapState(useP2PKStore, ["p2pkKeys"]),
     ...mapState(useMintsStore, [
       "activeMintUrl",
@@ -552,7 +552,7 @@ export default defineComponent({
       return msat
         ? formatHashprice(
             msat,
-            this.hashuDisplayUnit,
+            this.hashuUnit,
             navigator.language,
             usePriceStore().money(url),
           )
