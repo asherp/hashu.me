@@ -1248,6 +1248,10 @@ export default {
         "That runs past the mint's current hashrate rental, so it may take longer.",
       no_hashrate:
         "The mint has no hashrate right now, so delivery starts when its miners are back.",
+      short: {
+        queue: "{ queue } queued ahead",
+        no_hashrate: "Starts when the mint's miners are back",
+      },
     },
     actions: {
       redeem: { label: "Redeem" },

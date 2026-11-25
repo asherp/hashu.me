@@ -77,7 +77,26 @@
           :error="amountError !== ''"
           :error-message="amountError"
           data-testid="redeem-amount"
-        />
+        >
+          <template v-if="etaShort" #append>
+            <div
+              class="redeem-eta row no-wrap items-center text-body2"
+              :class="etaWarn ? 'text-warning' : 'text-grey-5'"
+              data-testid="redeem-eta"
+            >
+              <q-icon name="schedule" size="18px" class="q-mr-xs" />
+              <span>{{ etaShort }}</span>
+              <q-tooltip
+                anchor="top middle"
+                self="bottom middle"
+                max-width="280px"
+                class="text-body2"
+              >
+                {{ estimateText }}
+              </q-tooltip>
+            </div>
+          </template>
+        </q-input>
         <HashuAmountSlider
           v-if="balance > 0"
           :model-value="Number(amountTih) || 0"
@@ -97,13 +116,6 @@
               min: formatCurrency(minTih, "tih"),
             })
           }}
-        </div>
-        <div
-          v-if="estimateText"
-          class="text-grey-5 text-body2"
-          data-testid="redeem-estimate"
-        >
-          {{ estimateText }}
         </div>
         <q-btn
           rounded
@@ -144,7 +156,7 @@
               ? $t(
                   pausedByOperator
                     ? "RedeemPoolDialog.controls.paused_operator"
-                    : "RedeemPoolDialog.controls.paused",
+                    : "RedeemPoolDialog.controls.paused"
                 )
               : $t("RedeemPoolDialog.status.opened", {
                   worker: currentWorker || workerName,
@@ -472,7 +484,7 @@ export default defineComponent({
     entry(): RedemptionEntry | undefined {
       if (!this.quoteId) return undefined;
       return redemptionEntries(useWalletStore().invoiceHistory as any[]).find(
-        (e) => e.quote === this.quoteId,
+        (e) => e.quote === this.quoteId
       );
     },
     /** What happened, in the amounts the wallet knows: delivered (from
@@ -537,7 +549,7 @@ export default defineComponent({
           {
             label: t("change"),
             value: this.formatCurrency(e.changeTih ?? 0, "tih"),
-          },
+          }
         );
       }
       rows.push({ label: t("started"), value: shortDate(e.date) });
@@ -629,8 +641,47 @@ export default defineComponent({
     },
     amountHint(): string {
       const unit = useSettingsStore().hashuUnit;
-      if (!this.amountTih || !isDisplayUnit(unit) || unit === "TiH") return "";
-      return formatTih(this.amountTih, navigator.language, unit);
+      const parts: string[] = [];
+      if (this.amountTih && isDisplayUnit(unit) && unit !== "TiH") {
+        parts.push(formatTih(this.amountTih, navigator.language, unit));
+      }
+      const note = this.etaNote;
+      if (note) parts.push(note);
+      return parts.join(" · ");
+    },
+    /** Rough seconds to deliver the typed amount; null when there is no
+     * estimate (nothing typed, invalid amount, or no mint hashrate). */
+    etaSeconds(): number | null {
+      const d = this.delivery;
+      const a = this.amountTih;
+      if (!d || !a || a <= 0 || this.amountError !== "") return null;
+      return estimateRedeemSeconds(a, d);
+    },
+    /** The ETA shown inside the Amount box, e.g. "~41 min". */
+    etaShort(): string {
+      const secs = this.etaSeconds;
+      return secs == null ? "" : `~${formatDuration(secs)}`;
+    },
+    /** The estimate runs past the mint's current hashrate rental. */
+    etaWarn(): boolean {
+      const secs = this.etaSeconds;
+      const ends = this.delivery?.capacityEndsMs;
+      return secs != null && !!ends && Date.now() + secs * 1000 > ends;
+    },
+    /** One short clause under the Amount box about what the ETA leaves out. */
+    etaNote(): string {
+      const d = this.delivery;
+      const a = this.amountTih;
+      if (!d || !a || a <= 0 || this.amountError !== "") return "";
+      if (this.etaSeconds == null) {
+        return this.$t("RedeemPoolDialog.estimate.short.no_hashrate");
+      }
+      if (d.queue_tih >= 1) {
+        return this.$t("RedeemPoolDialog.estimate.short.queue", {
+          queue: this.formatCurrency(Math.round(d.queue_tih), "tih"),
+        });
+      }
+      return "";
     },
     canRedeem(): boolean {
       return (
@@ -655,7 +706,7 @@ export default defineComponent({
         rate: formatHashrate(
           d.hashrate_hs,
           useSettingsStore().hashuUnit,
-          navigator.language,
+          navigator.language
         ),
       });
       if (d.queue_tih >= 1) {
@@ -790,7 +841,7 @@ export default defineComponent({
         this.settled = res.state === MeltQuoteState.PAID;
         this.progressUrl = redemptionUrl(
           this.activeMintUrl,
-          await redemptionId(res.request),
+          await redemptionId(res.request)
         );
         this.startPolling();
       } catch (error) {
@@ -804,7 +855,7 @@ export default defineComponent({
     async resume(quote: string) {
       this.stopPolling();
       const entry = redemptionEntries(
-        useWalletStore().invoiceHistory as any[],
+        useWalletStore().invoiceHistory as any[]
       ).find((e) => e.quote === quote);
       if (!entry) return;
       this.quoteId = entry.quote;
@@ -817,7 +868,7 @@ export default defineComponent({
       this.progressUnavailable = false;
       this.progressUrl = redemptionUrl(
         entry.mint,
-        await redemptionId(entry.request),
+        await redemptionId(entry.request)
       );
       // A finished one: the history has what it cost and the change;
       // read the mint's delivered total once, quietly, for the summary.
@@ -826,7 +877,7 @@ export default defineComponent({
     },
     redemptionPaid(): boolean {
       const entry = (useWalletStore().invoiceHistory as any[]).find(
-        (i) => i.quote === this.quoteId,
+        (i) => i.quote === this.quoteId
       );
       return entry?.status === "paid";
     },
@@ -897,13 +948,13 @@ export default defineComponent({
           if ((this.hashuMaxFallbackPools[this.sheetMintUrl] ?? 0) > 0)
             body.fallback_pools = this.readyFallbacks.slice(
               0,
-              this.hashuMaxFallbackPools[this.sheetMintUrl],
+              this.hashuMaxFallbackPools[this.sheetMintUrl]
             );
         }
         const { data } = await axios.post<RedemptionProgress>(
           redemptionActionUrl(this.progressUrl, action),
           body,
-          { timeout: 10000 },
+          { timeout: 10000 }
         );
         this.progress = data;
         this.confirmingStop = false;
@@ -944,6 +995,10 @@ export default defineComponent({
 </script>
 
 <style scoped>
+.redeem-eta {
+  cursor: help;
+  white-space: nowrap;
+}
 .redeem-details {
   border-top: 1px solid rgba(128, 128, 128, 0.3);
   padding-top: 8px;
