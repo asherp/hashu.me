@@ -216,6 +216,24 @@ export const useMintsStore = defineStore("mints", {
       this.uiStoreGlobal.lastBalanceCached = balance;
       return balance;
     },
+    /**
+     * hashu.me: TiH the wallet can spend now across every Hashu mint,
+     * whichever mint and unit are active. Auto scale picks its unit from
+     * this, so hashes keep one unit while a sat mint is active.
+     */
+    totalTihBalance(): number {
+      const ids = new Set(
+        this.mints
+          .flatMap((m) => m.keysets ?? [])
+          .filter((k) => k.unit === UNIT_TIH)
+          .map((k) => k.id)
+      );
+      return sumProofAmounts(
+        useEpochsStore().spendable(
+          useProofsStore().proofs.filter((p) => ids.has(p.id) && !p.reserved)
+        )
+      );
+    },
     activeBalance(): number {
       return sumProofAmounts(this.activeProofs.flat());
     },
