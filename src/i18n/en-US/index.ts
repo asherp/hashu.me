@@ -1599,6 +1599,7 @@ export default {
         failed: "Couldn't send: { error }",
         refreshing: "Checking for replies…",
         receive: "Receive hashes",
+        claimed: "Already claimed",
         token: "Hashes · { amount }",
         token_unknown: "Cashu token",
       },

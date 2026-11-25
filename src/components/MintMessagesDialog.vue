@@ -58,8 +58,15 @@
               <div class="token-chip ellipsis">
                 {{ part.label }}
               </div>
+              <div
+                v-if="!m.outgoing && claimed[part.text] === 'spent'"
+                class="text-caption text-grey-5 q-mt-xs"
+                data-testid="mint-message-claimed"
+              >
+                {{ $t("MintDetailsDialog.contact.messages.claimed") }}
+              </div>
               <q-btn
-                v-if="!m.outgoing"
+                v-else-if="!m.outgoing"
                 unelevated
                 dense
                 no-caps
@@ -128,6 +135,7 @@ import { useMintMessagesStore, MAX_TEXT } from "src/stores/mintMessages";
 import { useWalletStore } from "src/stores/wallet";
 import { useReceiveTokensStore } from "src/stores/receiveTokensStore";
 import { splitTokens } from "src/js/message-tokens";
+import token from "src/js/token";
 
 declare const windowMixin: any;
 
@@ -160,6 +168,8 @@ export default defineComponent({
       error: "",
       timer: 0 as ReturnType<typeof setInterval> | 0,
       maxText: MAX_TEXT,
+      /** token -> whether the mint says its hashes were already claimed */
+      claimed: {} as Record<string, "checking" | "spent" | "unspent">,
     };
   },
   computed: {
@@ -178,6 +188,7 @@ export default defineComponent({
   },
   watch: {
     "messages.length"() {
+      this.checkClaimed();
       this.store.markRead(this.pubkey);
       this.$nextTick(this.scrollToEnd);
     },
@@ -187,6 +198,8 @@ export default defineComponent({
   },
   methods: {
     onShow() {
+      this.claimed = {};
+      this.checkClaimed();
       this.store.open(this.pubkey, this.relays, this.mintUrl, this.title);
       this.store.markRead(this.pubkey);
       this.$nextTick(this.scrollToEnd);
@@ -208,6 +221,40 @@ export default defineComponent({
           amount: (this as any).formatCurrency(amount, unit),
         })
       );
+    },
+    /**
+     * Ask the mint whether hashes sent to us in this conversation were
+     * already claimed (the payment listener may have received them first),
+     * so the chat shows "Already claimed" instead of a Receive that fails.
+     */
+    async checkClaimed() {
+      const tokens = new Set<string>();
+      for (const m of this.messages) {
+        if (m.outgoing) continue;
+        for (const part of splitTokens(m.text)) {
+          if (part.token && !this.claimed[part.text]) tokens.add(part.text);
+        }
+      }
+      for (const tokenStr of tokens) {
+        this.claimed[tokenStr] = "checking";
+        try {
+          const meta = token.decodeMeta(tokenStr);
+          const decoded = await token.decodeFull(tokenStr);
+          if (!meta || !decoded) throw new Error("undecodable");
+          const wallet = await useWalletStore().mintWallet(
+            token.getMint(meta),
+            token.getUnit(meta)
+          );
+          const { spent } = await wallet.groupProofsByState(decoded.proofs);
+          this.claimed[tokenStr] =
+            spent.length && spent.length === decoded.proofs.length
+              ? "spent"
+              : "unspent";
+        } catch (e) {
+          // Unknown mint or offline: keep the button; receiving says why.
+          this.claimed[tokenStr] = "unspent";
+        }
+      }
     },
     /** Open a token the mint sent in the wallet's receive dialog. */
     receive(tokenStr: string) {
