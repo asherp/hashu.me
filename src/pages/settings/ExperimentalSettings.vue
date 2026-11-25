@@ -7,8 +7,8 @@
       :title="$t('Settings.experimental.title')"
       :caption="$t('Settings.experimental.description')"
     >
-      <!-- receive swaps -->
-      <q-item tag="label">
+      <!-- receive swaps (hidden on Hashu, see MULTI_MINT_SWAPS_ENABLED) -->
+      <q-item v-if="multiMintSwaps" tag="label">
         <q-item-section>
           <q-item-label>
             {{ $t("Settings.experimental.receive_swaps.toggle") }}
@@ -139,6 +139,7 @@
 import { defineComponent } from "vue";
 import { mapWritableState } from "pinia";
 import { useSettingsStore } from "src/stores/settings";
+import { MULTI_MINT_SWAPS_ENABLED } from "src/js/hashu";
 import SettingsPageShell from "./SettingsPageShell.vue";
 import SettingsSection from "./SettingsSection.vue";
 
@@ -148,6 +149,9 @@ export default defineComponent({
   components: {
     SettingsPageShell,
     SettingsSection,
+  },
+  data: function () {
+    return { multiMintSwaps: MULTI_MINT_SWAPS_ENABLED };
   },
   computed: {
     ...mapWritableState(useSettingsStore, [
