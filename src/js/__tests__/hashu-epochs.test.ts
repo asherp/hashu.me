@@ -4,6 +4,7 @@ import {
   convertRequest,
   effectiveEpoch,
   epochBalances,
+  epochPixels,
   epochStatus,
   lockedKeysetIds,
   type HashuEpochIndex,
@@ -107,5 +108,15 @@ describe("hashu epochs", () => {
       amount_tih: 1024,
       nonce: "ab",
     });
+  });
+});
+
+describe("epochPixels", () => {
+  it("is the block's place in its epoch, 11 bits, least significant first", () => {
+    expect(epochPixels(975744)).toEqual(Array(11).fill(0)); // epoch 484 start
+    expect(epochPixels(975745)).toEqual([1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]);
+    // 977578 % 2016 = 1834 = 0b11100101010
+    expect(epochPixels(977578)).toEqual([0, 1, 0, 1, 0, 1, 0, 0, 1, 1, 1]);
+    expect(epochPixels(975743)).toEqual([1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1]); // 2015
   });
 });

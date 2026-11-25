@@ -728,6 +728,8 @@ export default {
   },
   Epochs: {
     epoch: "Epoch {epoch}",
+    pixels:
+      "Block {height}: block {block} of {size} in this epoch (pixels are its bits, lowest first)",
     perpetual: "Perpetual",
     status: {
       current: "Current epoch, until about {date}",
