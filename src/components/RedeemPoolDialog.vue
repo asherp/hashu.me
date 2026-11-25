@@ -76,6 +76,7 @@
           :hint="amountHint"
           :error="amountError !== ''"
           :error-message="amountError"
+          class="redeem-amount"
           data-testid="redeem-amount"
         >
           <template v-if="etaShort" #append>
@@ -995,6 +996,16 @@ export default defineComponent({
 </script>
 
 <style scoped>
+/* No number spinner buttons on the Amount box (the slider sets it). */
+.redeem-amount :deep(input[type="number"]) {
+  -moz-appearance: textfield;
+  appearance: textfield;
+}
+.redeem-amount :deep(input[type="number"]::-webkit-outer-spin-button),
+.redeem-amount :deep(input[type="number"]::-webkit-inner-spin-button) {
+  -webkit-appearance: none;
+  margin: 0;
+}
 .redeem-eta {
   cursor: help;
   white-space: nowrap;
