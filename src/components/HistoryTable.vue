@@ -18,9 +18,16 @@
               data-testid="history-redemption-icon"
             />
             <HashuLogoIcon
-              v-else-if="isEcashTransaction(transaction)"
+              v-else-if="
+                isEcashTransaction(transaction) && isTihTransaction(transaction)
+              "
               class="transaction-icon"
               data-testid="history-hashes-icon"
+            />
+            <CoinsIcon
+              v-else-if="isEcashTransaction(transaction)"
+              class="transaction-icon"
+              data-testid="history-ecash-icon"
             />
             <BitcoinIcon
               v-else-if="isOnchainTransaction(transaction)"
@@ -182,15 +189,18 @@ import {
   Bitcoin as BitcoinIcon,
   Pickaxe as PickaxeIcon,
   Zap as ZapIcon,
+  Coins as CoinsIcon,
 } from "lucide-vue-next";
 import HashuLogoIcon from "src/components/icons/HashuLogoIcon.vue";
 import { PaymentMethod, UnifiedTransactionType } from "src/stores/walletTypes";
 import { mintQuoteForHistoryInvoice } from "src/js/invoice-history";
+import { UNIT_TIH } from "src/js/hashu";
 
 export default defineComponent({
   name: "HistoryTable",
   components: {
     BitcoinIcon,
+    CoinsIcon,
     HashuLogoIcon,
     PickaxeIcon,
     ZapIcon,
@@ -390,13 +400,22 @@ export default defineComponent({
         return this.$t("HistoryTable.row.labels.mined");
       }
       if (transaction.type === UnifiedTransactionType.Lightning) {
-        return incoming
-          ? this.$t("HistoryTable.row.labels.purchased")
-          : this.$t("HistoryTable.row.labels.paid");
+        // Only hashes are bought; sats paid in at a sat mint are received.
+        if (incoming) {
+          return this.isTihTransaction(transaction)
+            ? this.$t("HistoryTable.row.labels.purchased")
+            : this.$t("HistoryTable.row.labels.received");
+        }
+        return this.$t("HistoryTable.row.labels.paid");
       }
       return incoming
         ? this.$t("HistoryTable.row.labels.received")
         : this.$t("HistoryTable.row.labels.sent");
+    },
+
+    /** Hashu vouchers (TiH), as opposed to sats or another mint unit. */
+    isTihTransaction(transaction) {
+      return (transaction.unit || "").toLowerCase() === UNIT_TIH;
     },
 
     getTransactionLabel(transaction) {

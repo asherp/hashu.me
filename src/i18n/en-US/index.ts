@@ -1180,6 +1180,7 @@ export default {
     actions: {
       ecash: {
         label: "Hashes",
+        other_label: "Ecash",
         error_no_mints: "No mints available",
       },
       lightning: {
@@ -1316,6 +1317,7 @@ export default {
   },
   SendTokenDialog: {
     title: "Send Hashes",
+    other_title: "Send Ecash",
     title_ecash_text: "Hashes",
     badge_offline_text: "Offline",
     inputs: {
@@ -1404,6 +1406,7 @@ export default {
     actions: {
       ecash: {
         label: "Hashes",
+        other_label: "Ecash",
         error_no_mints: "No mints available",
       },
       lightning: {

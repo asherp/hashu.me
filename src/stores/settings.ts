@@ -1,6 +1,5 @@
 import {
   DEFAULT_DISPLAY_UNIT,
-  UNIT_TIH,
   autoScaleDisplayUnit,
   isDisplayUnit,
   type DisplayUnit,
@@ -145,9 +144,7 @@ export const useSettingsStore = defineStore("settings", {
         ? state.hashuDisplayUnit
         : DEFAULT_DISPLAY_UNIT;
       if (!state.hashuAutoScaleUnit) return chosen;
-      const mints = useMintsStore();
-      if (mints.activeUnit !== UNIT_TIH) return chosen;
-      return autoScaleDisplayUnit(chosen, mints.totalUnitBalance);
+      return autoScaleDisplayUnit(chosen, useMintsStore().totalTihBalance);
     },
   },
 });
