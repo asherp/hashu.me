@@ -99,11 +99,12 @@ export const useSettingsStore = defineStore("settings", {
         "hashu.settings.displayUnit",
         DEFAULT_DISPLAY_UNIT
       ),
-      // hashu.me: when on, show hashes in the chosen unit's family at the
-      // scale of the wallet balance (e.g. PHd instead of 1,200 THd).
+      // hashu.me: auto scale, on by default. Shows hashes in the chosen
+      // unit's family at the scale of the wallet balance (e.g. PHd instead
+      // of 1,200 THd).
       hashuAutoScaleUnit: useLocalStorage<boolean>(
         "hashu.settings.autoScaleUnit",
-        false
+        true
       ),
       // hashu.me: the pool and worker that redemptions send hashrate to.
       // Set during onboarding or in Settings > Pool, used by Redeem to pool.
