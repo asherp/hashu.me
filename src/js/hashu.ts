@@ -247,6 +247,11 @@ export type MintDelivery = {
   window_s?: number;
   queue_tih: number;
   open_redemptions: number;
+  /** Rigs filling the mint's redemptions now (newer mints). */
+  rigs?: number | null;
+  /** Seconds until a redemption opened now gets its first rig: 0 when a
+   * rig is free; null when the mint has no estimate (or is older). */
+  start_in_s?: number | null;
 };
 
 /** URL of a mint's Hashu price endpoint. */

@@ -179,7 +179,10 @@
             instant-feedback
             :value="progressRatio"
           />
-          <div class="text-grey-5 text-body2">
+          <div
+            v-if="progress.filled_tih > 0 || !rigWaitText"
+            class="text-grey-5 text-body2"
+          >
             {{
               progress.filled_tih > 0
                 ? $t("RedeemPoolDialog.status.progress", {
@@ -191,7 +194,15 @@
           </div>
         </template>
         <div
-          v-if="rateText"
+          v-if="rigWaitText"
+          class="row no-wrap items-start text-warning text-body2"
+          data-testid="redeem-rig-wait"
+        >
+          <q-icon name="schedule" size="18px" class="q-mr-xs q-mt-xs" />
+          <div class="col">{{ rigWaitText }}</div>
+        </div>
+        <div
+          v-else-if="rateText"
           class="text-grey-5 text-body2"
           data-testid="redeem-rate"
         >
@@ -416,6 +427,7 @@ import {
   redemptionId,
   estimateRedeemSeconds,
   formatDuration,
+  formatStartIn,
   formatHashrate,
   secondsLeft,
   trackRate,
@@ -677,6 +689,13 @@ export default defineComponent({
       if (this.etaSeconds == null) {
         return this.$t("RedeemPoolDialog.estimate.short.no_hashrate");
       }
+      // Every rig is busy with earlier redemptions: say when this starts.
+      const start = d.start_in_s;
+      if (start != null && start >= 60) {
+        return this.$t("RedeemPoolDialog.estimate.short.rigs_busy", {
+          time: formatStartIn(start),
+        });
+      }
       if (d.queue_tih >= 1) {
         return this.$t("RedeemPoolDialog.estimate.short.queue", {
           queue: this.formatCurrency(Math.round(d.queue_tih), "tih"),
@@ -721,6 +740,16 @@ export default defineComponent({
         t += " " + this.$t("RedeemPoolDialog.estimate.past_rental");
       }
       return t;
+    },
+    /** Open with no rig on it: every rig is busy with earlier orders. */
+    rigWaitText(): string {
+      const p = this.progress;
+      if (!p?.waiting_for_rig || this.settled || this.paused) return "";
+      return p.start_in_s != null
+        ? this.$t("RedeemPoolDialog.status.rig_wait", {
+            time: formatStartIn(p.start_in_s),
+          })
+        : this.$t("RedeemPoolDialog.status.rig_wait_unknown");
     },
     rateText(): string {
       const p = this.progress;
