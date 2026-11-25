@@ -118,14 +118,23 @@
             })
           }}
         </div>
+        <div
+          v-if="poolCheckText"
+          class="row no-wrap items-start text-body2"
+          :class="poolCheckClass"
+          data-testid="redeem-pool-check"
+        >
+          <q-icon :name="poolCheckIcon" size="18px" class="q-mr-xs q-mt-xs" />
+          <div class="col">{{ poolCheckText }}</div>
+        </div>
         <q-btn
           rounded
           unelevated
           color="primary"
           class="full-width"
-          :loading="busy"
+          :loading="busy && !checkingPool"
           :disable="!canRedeem"
-          :label="$t('RedeemPoolDialog.actions.redeem.label')"
+          :label="redeemLabel"
           data-testid="redeem-submit"
           @click="redeem"
         />
@@ -170,6 +179,15 @@
           data-testid="redeem-on-backup"
         >
           {{ backupNotice }}
+        </div>
+        <div
+          v-if="poolCheckText && !settled"
+          class="row no-wrap items-start text-body2"
+          :class="poolCheckClass"
+          data-testid="redeem-pool-check-status"
+        >
+          <q-icon :name="poolCheckIcon" size="18px" class="q-mr-xs q-mt-xs" />
+          <div class="col">{{ poolCheckText }}</div>
         </div>
         <template v-if="progress">
           <q-linear-progress
@@ -433,6 +451,10 @@ import {
   trackRate,
   redemptionUrl,
   redemptionActionUrl,
+  poolCheckUrl,
+  poolCheckClear,
+  poolCheckKey,
+  type PoolCheckResult,
   redemptionEntries,
   parseHashrateRequest,
   stopSecretFor,
@@ -482,6 +504,10 @@ export default defineComponent({
       changingPool: false,
       actionBusy: "" as "" | RedeemerAction,
       actionError: "",
+      /** The last pool test, for the pool and worker in poolCheckFor. */
+      poolCheck: null as PoolCheckResult | null,
+      poolCheckFor: "",
+      checkingPool: false,
     };
   },
   computed: {
@@ -589,7 +615,58 @@ export default defineComponent({
       "hashuDelivery",
       "hashuMaxFallbackPools",
       "hashuRedeemerControls",
+      "hashuPoolCheck",
     ]),
+    currentPoolKey(): string {
+      return poolCheckKey(
+        this.resolvedPoolUrl,
+        this.workerName,
+        this.workerPassword
+      );
+    },
+    /** The last pool test, if it was for what's typed now. */
+    currentPoolCheck(): PoolCheckResult | null {
+      return this.poolCheck && this.poolCheckFor === this.currentPoolKey
+        ? this.poolCheck
+        : null;
+    },
+    /** A test that needs the redeemer to tap again: failed or plain. */
+    poolCheckNeedsAck(): boolean {
+      const c = this.currentPoolCheck;
+      return !!c && !c.refused && !poolCheckClear(c);
+    },
+    poolCheckText(): string {
+      const c = this.started ? this.poolCheck : this.currentPoolCheck;
+      if (!c) return "";
+      if (c.refused) return c.refusal || "";
+      const t = (k: string, a?: Record<string, string>) =>
+        this.$t(`RedeemPoolDialog.pool_check.${k}`, a ?? {});
+      const parts: string[] = [];
+      if (!c.ok) parts.push(t("failed", { error: c.error || c.stage || "" }));
+      else parts.push(t(`ok_${c.transport}`));
+      if (!c.encrypted) parts.push(t("plain"));
+      if (!this.started && !poolCheckClear(c)) parts.push(t("anyway"));
+      return parts.join(" ");
+    },
+    poolCheckIcon(): string {
+      const c = this.started ? this.poolCheck : this.currentPoolCheck;
+      if (!c) return "";
+      if (!c.ok || c.refused) return "error_outline";
+      return c.encrypted ? "lock" : "lock_open";
+    },
+    poolCheckClass(): string {
+      const c = this.started ? this.poolCheck : this.currentPoolCheck;
+      if (!c) return "";
+      if (!c.ok || c.refused) return "text-negative";
+      return c.encrypted ? "text-positive" : "text-warning";
+    },
+    redeemLabel(): string {
+      if (this.checkingPool)
+        return this.$t("RedeemPoolDialog.actions.checking_pool.label");
+      if (this.poolCheckNeedsAck)
+        return this.$t("RedeemPoolDialog.actions.redeem_anyway.label");
+      return this.$t("RedeemPoolDialog.actions.redeem.label");
+    },
     ...mapState(useSettingsStore, {
       poolId: "hashuPoolId",
       poolUrl: "hashuPoolUrl",
@@ -853,10 +930,56 @@ export default defineComponent({
       if (this.infoTimer) clearInterval(this.infoTimer);
       this.infoTimer = null;
     },
+    /** Ask the mint to test the pool and worker. True when the
+     * redemption may go ahead now: the pool passed over an encrypted
+     * link, the redeemer already saw this pool's warning, or the mint
+     * can't test pools. */
+    async poolCheckPasses(): Promise<boolean> {
+      const mint = this.activeMintUrl;
+      if (!this.hashuPoolCheck[mint]) return true;
+      if (this.poolCheckNeedsAck) return true;
+      const key = this.currentPoolKey;
+      this.checkingPool = true;
+      try {
+        const { data } = await axios.post<PoolCheckResult>(
+          poolCheckUrl(mint),
+          {
+            pool_url: this.resolvedPoolUrl,
+            worker_name: this.workerName.trim(),
+            worker_password: this.workerPassword || undefined,
+          },
+          { timeout: 25000 }
+        );
+        this.poolCheck = data;
+        this.poolCheckFor = key;
+        return poolCheckClear(data);
+      } catch (error: any) {
+        // 400: the mint won't take this pool (bad URL, private address).
+        const msg =
+          error?.response?.status === 400 && error?.response?.data?.error;
+        if (msg) {
+          this.poolCheck = {
+            ok: false,
+            transport: "plain",
+            encrypted: false,
+            error: msg,
+            refused: true,
+            refusal: msg,
+          };
+          this.poolCheckFor = key;
+          return false;
+        }
+        // The test itself failed (network, busy mint): don't block.
+        return true;
+      } finally {
+        this.checkingPool = false;
+      }
+    },
     async redeem() {
       if (!this.canRedeem) return;
       this.busy = true;
       try {
+        if (!(await this.poolCheckPasses())) return;
         const res = await this.redeemToPool({
           poolUrl: this.resolvedPoolUrl,
           workerName: this.workerName,
@@ -1017,6 +1140,8 @@ export default defineComponent({
         this.quoteId = "";
         this.trackedWorker = "";
       }
+      this.poolCheck = null;
+      this.poolCheckFor = "";
       this.trackedMint = "";
       this.redeemPoolQuote = "";
     },

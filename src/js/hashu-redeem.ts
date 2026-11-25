@@ -47,9 +47,9 @@ export const POOL_PRESETS: PoolPreset[] = [
   {
     id: "braiins",
     name: "Braiins Pool",
-    url: "stratum+tcp://stratum.braiins.com:3333",
+    url: "stratum+ssl://stratum.braiins.com:3443",
     worker: "username.hashu",
-    hint: "Your Braiins account username, then .hashu (any label).",
+    hint: "Your Braiins account username, then .hashu (any label). Connects over TLS.",
   },
   {
     id: "viabtc",
@@ -494,6 +494,43 @@ export function formatDuration(seconds: number): string {
   const d = Math.floor(s / 86400);
   const h = Math.round((s % 86400) / 3600);
   return h ? `${d} d ${h} h` : `${d} d`;
+}
+
+/** What `POST /checkout/api/pool-check` says about a pool and worker. */
+export type PoolCheckResult = {
+  /** The pool answered and accepted the worker. */
+  ok: boolean;
+  transport: "plain" | "tls" | "sv2";
+  /** TLS or Stratum V2. */
+  encrypted: boolean;
+  /** Where it failed: url, connect, subscribe or authorize. */
+  stage?: string;
+  error?: string;
+  /** Set for a plain stratum+tcp link. */
+  warning?: string;
+  /** The mint takes only encrypted pools and this one isn't. */
+  refused?: boolean;
+  refusal?: string;
+};
+
+export function poolCheckUrl(mintUrl: string): string {
+  return `${mintUrl.replace(/\/+$/, "")}/checkout/api/pool-check`;
+}
+
+/** Whether a redemption can go ahead without asking: the pool accepted
+ * the worker over an encrypted link. */
+export function poolCheckClear(c: PoolCheckResult): boolean {
+  return c.ok && c.encrypted && !c.refused;
+}
+
+/** The pool, worker and password a check was for, to tell when the
+ * redeemer changed them. */
+export function poolCheckKey(
+  poolUrl: string,
+  worker: string,
+  password?: string
+): string {
+  return [poolUrl.trim(), worker.trim(), password ?? ""].join("\n");
 }
 
 export function redemptionUrl(mintUrl: string, id: string): string {
