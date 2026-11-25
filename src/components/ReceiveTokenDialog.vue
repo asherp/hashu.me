@@ -232,6 +232,7 @@
                   </q-btn>
                   <q-btn
                     v-if="
+                      multiMintSwaps &&
                       enableReceiveSwaps &&
                       activeMintUrl &&
                       mints.length > 0 &&
@@ -300,6 +301,7 @@ import { useP2PKStore } from "src/stores/p2pk";
 import { usePRStore } from "src/stores/payment-request";
 import { usePriceStore } from "src/stores/price";
 import { useSwapStore } from "src/stores/swap";
+import { MULTI_MINT_SWAPS_ENABLED } from "src/js/hashu";
 import { useSettingsStore } from "src/stores/settings";
 import token from "src/js/token";
 import {
@@ -335,6 +337,7 @@ export default defineComponent({
   data: function () {
     return {
       showP2PKDialog: false,
+      multiMintSwaps: MULTI_MINT_SWAPS_ENABLED,
       swapSelected: false,
       untrustedMintInfo: null as GetInfoResponse | null,
       swapProcessing: false,

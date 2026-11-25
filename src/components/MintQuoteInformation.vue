@@ -4,21 +4,50 @@
     class="mint-quote-information q-mt-md"
     :class="containerTextClass"
   >
-    <div v-if="showAmount && hasValidAmount" class="detail-item q-mb-md">
-      <div class="detail-label">
-        <ZapIcon :size="20" :color="iconColor" class="detail-icon" />
-        <div class="detail-name">Amount</div>
+    <template v-if="isHashQuote">
+      <!-- Hashu: the bolt row is what the invoice costs, the Quantity row
+           is the hashes it buys, in the wallet's display unit. -->
+      <div
+        v-if="showAmount && invoiceAmountDisplay"
+        class="detail-item q-mb-md"
+      >
+        <div class="detail-label">
+          <ZapIcon :size="20" :color="iconColor" class="detail-icon" />
+          <div class="detail-name">Amount</div>
+        </div>
+        <div class="detail-value">{{ invoiceAmountDisplay }}</div>
       </div>
-      <div class="detail-value">{{ amountDisplay }}</div>
-    </div>
 
-    <div class="detail-item q-mb-md">
-      <div class="detail-label">
-        <BanknoteIcon :size="20" :color="iconColor" class="detail-icon" />
-        <div class="detail-name">Unit</div>
+      <div v-if="hasValidAmount" class="detail-item q-mb-md">
+        <div class="detail-label">
+          <HashuLogoIcon
+            :size="20"
+            :style="{ color: iconColor }"
+            class="detail-icon"
+          />
+          <div class="detail-name">Quantity</div>
+        </div>
+        <div class="detail-value">{{ amountDisplay }}</div>
       </div>
-      <div class="detail-value">{{ unitDisplay }}</div>
-    </div>
+    </template>
+
+    <template v-else>
+      <div v-if="showAmount && hasValidAmount" class="detail-item q-mb-md">
+        <div class="detail-label">
+          <ZapIcon :size="20" :color="iconColor" class="detail-icon" />
+          <div class="detail-name">Amount</div>
+        </div>
+        <div class="detail-value">{{ amountDisplay }}</div>
+      </div>
+
+      <div class="detail-item q-mb-md">
+        <div class="detail-label">
+          <BanknoteIcon :size="20" :color="iconColor" class="detail-icon" />
+          <div class="detail-name">Unit</div>
+        </div>
+        <div class="detail-value">{{ unitDisplay }}</div>
+      </div>
+    </template>
 
     <div v-if="stateDisplay" class="detail-item q-mb-md">
       <div class="detail-label">
@@ -113,6 +142,9 @@ import { defineComponent, PropType } from "vue";
 import { mapState } from "pinia";
 import { useMintsStore } from "stores/mints";
 import { getShortUrl } from "src/js/wallet-helpers";
+import { decode as decodeBolt11 } from "light-bolt11-decoder";
+import { UNIT_TIH, unitName } from "src/js/hashu";
+import HashuLogoIcon from "src/components/icons/HashuLogoIcon.vue";
 import {
   Zap as ZapIcon,
   Banknote as BanknoteIcon,
@@ -154,6 +186,7 @@ export default defineComponent({
     BuildingIcon,
     QrCodeIcon,
     HashIcon,
+    HashuLogoIcon,
   },
   props: {
     mintQuote: {
@@ -198,7 +231,34 @@ export default defineComponent({
       return "sat";
     },
     unitDisplay(): string {
-      return this.unit?.toUpperCase?.() || "";
+      return this.unit ? unitName(this.unit) : "";
+    },
+    isHashQuote(): boolean {
+      return (this.unit || "").toLowerCase() === UNIT_TIH;
+    },
+    /** msat the Lightning invoice asks for, from its BOLT11 amount. */
+    invoiceMsat(): number | null {
+      const request = this.invoice?.request || this.mintQuote?.request;
+      if (!request || this.isOnchain) return null;
+      try {
+        const amount = decodeBolt11(request).sections.find(
+          (s: any) => s.name === "amount"
+        ) as any;
+        const msat = Number(amount?.value);
+        return Number.isFinite(msat) && msat > 0 ? msat : null;
+      } catch {
+        return null;
+      }
+    },
+    /** The invoice's price: sats (in the Monetary unit), msat below 1 sat. */
+    invoiceAmountDisplay(): string {
+      const msat = this.invoiceMsat;
+      if (msat === null) return "";
+      const ui = this as any;
+      if (msat % 1000 !== 0 && msat < 1000) {
+        return ui.formatCurrency(msat, "msat");
+      }
+      return ui.formatCurrency(msat / 1000, "sat");
     },
     hasValidAmount(): boolean {
       const amount =

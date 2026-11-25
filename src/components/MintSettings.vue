@@ -265,16 +265,16 @@
       </div>
     </div>
 
-    <!-- Swap section -->
+    <!-- Swap section (hidden on Hashu, see MULTI_MINT_SWAPS_ENABLED) -->
 
-    <div class="section-divider q-mb-md q-px-md">
+    <div v-if="multiMintSwaps" class="section-divider q-mb-md q-px-md">
       <div class="divider-line"></div>
       <div class="divider-text">
         {{ $t("MintSettings.swap.title") }}
       </div>
       <div class="divider-line"></div>
     </div>
-    <div class="q-px-xs text-left" on-left>
+    <div v-if="multiMintSwaps" class="q-px-xs text-left" on-left>
       <q-list padding>
         <q-item>
           <q-item-section>
@@ -388,6 +388,7 @@ import { useNostrStore } from "src/stores/nostr";
 import { useP2PKStore } from "src/stores/p2pk";
 import { useWorkersStore } from "src/stores/workers";
 import { useSwapStore } from "src/stores/swap";
+import { MULTI_MINT_SWAPS_ENABLED } from "src/js/hashu";
 import { useUiStore } from "src/stores/ui";
 import { notifyError, notifyWarning } from "src/js/notify";
 import { EventBus } from "../js/eventBus";
@@ -460,6 +461,7 @@ export default defineComponent({
     return {
       discoveringMints: false,
       addingMint: false,
+      multiMintSwaps: MULTI_MINT_SWAPS_ENABLED,
       swapData: {
         fromUrl: {
           url: "",

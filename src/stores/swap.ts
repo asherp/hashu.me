@@ -10,6 +10,7 @@ import { useProofsStore } from "./proofs";
 import { notifyError, notifyWarning } from "../js/notify";
 import token from "src/js/token";
 import { i18n } from "../boot/i18n";
+import { MULTI_MINT_SWAPS_ENABLED } from "src/js/hashu";
 
 /**
  * The tokens store handles everything related to tokens and proofs
@@ -42,6 +43,11 @@ export const useSwapStore = defineStore("swap", {
   actions: {
     //
     mintAmountSwap: async function (swapAmountData: SwapAmountData) {
+      // hashu.me: Hashu mints never melt to Lightning, so a swap would fail
+      // after the melt attempt. Refuse up front (see MULTI_MINT_SWAPS_ENABLED).
+      if (!MULTI_MINT_SWAPS_ENABLED) {
+        throw new Error("Swaps between mints are not supported on Hashu.");
+      }
       const walletStore = useWalletStore();
       const mintStore = useMintsStore();
       if (this.swapBlocking) {
@@ -112,6 +118,11 @@ export const useSwapStore = defineStore("swap", {
       return tokenAmount - meltAmount;
     },
     meltProofsToMint: async function (tokenJson: Token, mint: StoredMint) {
+      // hashu.me: Hashu mints never melt to Lightning, so a swap would fail
+      // after the melt attempt. Refuse up front (see MULTI_MINT_SWAPS_ENABLED).
+      if (!MULTI_MINT_SWAPS_ENABLED) {
+        throw new Error("Swaps between mints are not supported on Hashu.");
+      }
       const proofsStore = useProofsStore();
       const walletStore = useWalletStore();
       if (this.swapBlocking) {

@@ -78,6 +78,26 @@
           :error-message="amountError"
           data-testid="redeem-amount"
         />
+        <HashuAmountSlider
+          v-if="balance > 0"
+          :model-value="Number(amountTih) || 0"
+          :min="minTih"
+          :max="balance"
+          :disable="balance < minTih"
+          testid="redeem-amount-slider"
+          @update:model-value="(v: number) => (amountTih = v)"
+        />
+        <div
+          v-if="balance > 0 && balance < minTih"
+          class="text-grey-5 text-caption"
+          data-testid="redeem-below-min"
+        >
+          {{
+            $t("MintDetailsDialog.details.eta.below_min", {
+              min: formatCurrency(minTih, "tih"),
+            })
+          }}
+        </div>
         <div
           v-if="estimateText"
           class="text-grey-5 text-body2"
@@ -375,6 +395,7 @@ import { useSettingsStore } from "src/stores/settings";
 import PoolSettingsForm from "src/components/PoolSettingsForm.vue";
 import FallbackPoolsForm from "src/components/FallbackPoolsForm.vue";
 import { rememberPoolTih } from "src/stores/walletHashrate";
+import HashuAmountSlider from "src/components/HashuAmountSlider.vue";
 import {
   isStratumUrl,
   resolvePoolUrl,
@@ -412,6 +433,7 @@ export default defineComponent({
     SquareIcon,
     PoolSettingsForm,
     FallbackPoolsForm,
+    HashuAmountSlider,
   },
   setup() {
     return { PauseIcon, PlayIcon };

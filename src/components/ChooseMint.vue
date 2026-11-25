@@ -51,8 +51,11 @@
               </div>
               <div v-if="showBalances && chosenMint" class="mint-balance-label">
                 <span v-if="!chosenMint.errored" class="text-grey-6">
-                  {{ formatCurrency(selectedMintBalance, activeUnit) }}
-                  {{ $t("ChooseMint.available_text") }}
+                  <template v-if="balanceText">{{ balanceText }}</template>
+                  <template v-else>
+                    {{ formatCurrency(selectedMintBalance, activeUnit) }}
+                    {{ $t("ChooseMint.available_text") }}
+                  </template>
                 </span>
                 <span v-else class="text-red">
                   {{ $t("ChooseMint.badge_mint_error_text") }}
@@ -209,6 +212,12 @@ export default defineComponent({
     filterMintOperation: {
       type: String as () => "mint" | "melt",
       default: "mint",
+    },
+    // hashu.me: replaces the "<balance> available" line under the chosen
+    // mint, e.g. with the mint's supply for sale on Buy with Lightning.
+    balanceText: {
+      type: String,
+      default: "",
     },
   },
   emits: ["update:modelValue"],
