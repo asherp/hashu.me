@@ -1039,6 +1039,11 @@ export default {
       label: "Redeem",
       tooltip: "Redeem this mint's vouchers as hashrate to your pool",
     },
+    message: {
+      label: "Message",
+      tooltip: "Send this mint a private message over Nostr",
+    },
+    eta_label: "ETA",
     eta_tooltip:
       "About how long redeeming your whole balance here would take at this hashrate, after redemptions already queued.",
     price_tooltip:

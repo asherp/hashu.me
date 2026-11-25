@@ -153,8 +153,9 @@
                     >
                       <span class="currency-unit-text">
                         <TimerIcon :size="14" class="q-mr-xs hashrate-icon" />{{
-                          formatDuration(mintEta(mint).seconds)
+                          $t("MintSettings.eta_label")
                         }}
+                        {{ formatDuration(mintEta(mint).seconds) }}
                       </span>
                       <q-tooltip>
                         {{ $t("MintSettings.eta_tooltip") }}
@@ -162,6 +163,32 @@
                     </div>
                   </div>
                 </div>
+                <q-btn
+                  v-if="messageTargetFor(mint)"
+                  rounded
+                  outline
+                  dense
+                  no-caps
+                  color="primary"
+                  class="q-px-sm q-mr-sm"
+                  data-testid="mint-message"
+                  @click.stop="openMessages(mint)"
+                >
+                  <MessageCircleIcon :size="18" class="q-mr-xs" />
+                  <span>{{ $t("MintSettings.message.label") }}</span>
+                  <q-badge
+                    v-if="messageUnread(mint)"
+                    floating
+                    rounded
+                    color="primary"
+                    text-color="black"
+                    data-testid="mint-message-unread"
+                    >{{ messageUnread(mint) }}</q-badge
+                  >
+                  <q-tooltip>{{
+                    $t("MintSettings.message.tooltip")
+                  }}</q-tooltip>
+                </q-btn>
                 <q-btn
                   v-if="canRedeemAt(mint)"
                   rounded
@@ -182,6 +209,17 @@
           </q-item>
         </div>
       </q-list>
+      <!-- hashu.me: private messages (NIP-17) with the mint picked above -->
+      <mint-messages-dialog
+        v-if="messageMint && messageTargetFor(messageMint)"
+        :key="messageMint.url"
+        v-model="showMessages"
+        :pubkey="messageTargetFor(messageMint).pubkey"
+        :npub="messageTargetFor(messageMint).npub"
+        :relays="messageTargetFor(messageMint).relays"
+        :mint-url="messageMint.url"
+        :title="messageMint.nickname || messageMint.info?.name || ''"
+      />
 
       <!-- Mint discovery -->
       <div class="q-px-md q-mb-md row justify-center">
@@ -395,6 +433,9 @@ import { EventBus } from "../js/eventBus";
 import AddMintDialog from "src/components/AddMintDialog.vue";
 import { useMintRecommendationsStore } from "src/stores/mintRecommendations";
 import MintInfoContainer from "./MintInfoContainer.vue";
+import MintMessagesDialog from "src/components/MintMessagesDialog.vue";
+import { useMintMessagesStore } from "src/stores/mintMessages";
+import { mintMessageTarget } from "src/js/mint-nostr";
 import { usePriceStore } from "src/stores/price";
 import {
   balanceRedeemEta,
@@ -405,6 +446,7 @@ import { UNIT_TIH, formatHashprice } from "src/js/hashu";
 import { mintSupportsPaymentMethod } from "src/js/mint-payment-methods";
 import { PaymentMethod } from "src/stores/walletTypes";
 import {
+  MessageCircle as MessageCircleIcon,
   Pickaxe as PickaxeIcon,
   Tag as TagIcon,
   Timer as TimerIcon,
@@ -416,6 +458,8 @@ export default defineComponent({
   components: {
     AddMintDialog,
     MintInfoContainer,
+    MintMessagesDialog,
+    MessageCircleIcon,
     PickaxeIcon,
     TagIcon,
     TimerIcon,
@@ -476,6 +520,11 @@ export default defineComponent({
       activatingMintUrl: "",
       mintInfoCache: new Map(),
       fetchingMintInfo: new Set(),
+      // hashu.me: each mint's reliability index (null = not a Hashu mint or
+      // offline), loaded once per mint for whom "Message" writes to.
+      reliabilityByUrl: {} as Record<string, any>,
+      messageMint: null as any,
+      showMessages: false,
     };
   },
   computed: {
@@ -502,6 +551,12 @@ export default defineComponent({
     },
   },
   watch: {
+    mints: {
+      immediate: true,
+      handler(mints) {
+        (mints || []).forEach((m) => this.loadReliability(m.url));
+      },
+    },
     // if swapBlocking is true and invoiceWorkerRunning changes to false, then swapBlocking should be set to false
     invoiceWorkerRunning: function (val) {
       if (this.swapBlocking && !val) {
@@ -535,6 +590,42 @@ export default defineComponent({
       const ui = useUiStore();
       ui.redeemPoolQuote = "";
       ui.showRedeemPoolDialog = true;
+    },
+    /** Load a mint's reliability index once: a Hashu mint names its DM
+     * target there (or none). Other mints answer 404 and fall back to their
+     * NUT-06 Nostr contact. */
+    async loadReliability(url: string) {
+      if (url in this.reliabilityByUrl) return;
+      this.reliabilityByUrl[url] = undefined;
+      let data = null;
+      try {
+        const res = await fetch(
+          `${url.replace(/\/+$/, "")}/v1/hashu/reliability?limit=1`
+        );
+        if (res.ok) {
+          const json = await res.json();
+          if (json?.totals) data = json;
+        }
+      } catch (e) {
+        // Offline or not a Hashu mint: use the Nostr contact.
+      }
+      this.reliabilityByUrl[url] = data;
+    },
+    /** Whom "Message" writes to for this mint; null hides the button
+     * (also while its reliability index is still loading). */
+    messageTargetFor(mint) {
+      const r = this.reliabilityByUrl[mint.url];
+      if (r === undefined) return null;
+      return mintMessageTarget(mint.info, r);
+    },
+    messageUnread(mint): number {
+      const t = this.messageTargetFor(mint);
+      return t ? useMintMessagesStore().unread(t.pubkey) : 0;
+    },
+    openMessages(mint) {
+      this.messageMint = mint;
+      this.showMessages = false;
+      this.$nextTick(() => (this.showMessages = true));
     },
     /** How long redeeming the wallet's whole TiH balance here would take now. */
     mintEta(mint) {
