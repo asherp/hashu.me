@@ -1,5 +1,10 @@
 <template>
-  <div v-if="show" class="epoch-balances q-mt-md" data-testid="epoch-balances">
+  <div
+    v-if="show"
+    class="epoch-balances"
+    :class="embedded ? 'epoch-balances--embedded' : 'q-mt-md'"
+    data-testid="epoch-balances"
+  >
     <div
       v-for="row in rows"
       :key="`${row.status}:${row.epoch}`"
@@ -76,6 +81,9 @@ export default defineComponent({
   components: { HashuLogoIcon },
   props: {
     mintUrl: { type: String, required: true },
+    /** Inside a mint card: no frame, and shown even when every voucher
+     * is in the current epoch (the card was opened to see this). */
+    embedded: { type: Boolean, default: false },
   },
   data() {
     return {
@@ -96,6 +104,7 @@ export default defineComponent({
     },
     show(): boolean {
       if (!this.index) return false;
+      if (this.embedded) return true;
       // Nothing to explain when everything is in the current epoch.
       return this.rows.some((r) => r.status !== "current") || this.canBuy;
     },
@@ -180,6 +189,13 @@ export default defineComponent({
   border-radius: 12px;
   border: 1px solid rgba(128, 128, 128, 0.25);
   padding: 6px 0;
+}
+.epoch-balances--embedded {
+  max-width: none;
+  width: 100%;
+  border: none;
+  border-top: 1px solid rgba(128, 128, 128, 0.2);
+  border-radius: 0;
 }
 .epoch-row--future {
   opacity: 0.8;

@@ -19,7 +19,7 @@
             :active="mint.url == activeMintUrl"
             active-class="text-weight-bold text-primary"
             clickable
-            @click="activateMintUrlInternal(mint.url)"
+            @click="onCardClick(mint)"
             class="mint-card q-mb-md cursor-pointer"
             :style="{
               'border-radius': '10px',
@@ -211,6 +211,29 @@
                   </q-btn>
                 </div>
               </div>
+              <!-- hashu.me: the mint's vouchers by difficulty epoch; a
+                   click on the card opens and closes them -->
+              <template v-if="hasEpochs(mint)">
+                <div
+                  v-if="mint.url === expandedMintUrl"
+                  class="q-px-sm q-pb-sm"
+                  @click.stop
+                >
+                  <EpochBalances :mint-url="mint.url" embedded />
+                </div>
+                <div class="row justify-center mint-card-expand">
+                  <q-icon
+                    :name="
+                      mint.url === expandedMintUrl
+                        ? 'expand_less'
+                        : 'expand_more'
+                    "
+                    size="sm"
+                    color="grey-6"
+                    data-testid="mint-epochs-toggle"
+                  />
+                </div>
+              </template>
             </div>
           </q-item>
         </div>
@@ -439,6 +462,8 @@ import { EventBus } from "../js/eventBus";
 import AddMintDialog from "src/components/AddMintDialog.vue";
 import { useMintRecommendationsStore } from "src/stores/mintRecommendations";
 import MintInfoContainer from "./MintInfoContainer.vue";
+import EpochBalances from "src/components/EpochBalances.vue";
+import { useEpochsStore } from "src/stores/epochs";
 import MintMessagesDialog from "src/components/MintMessagesDialog.vue";
 import { useMintMessagesStore } from "src/stores/mintMessages";
 import { mintMessageTarget } from "src/js/mint-nostr";
@@ -465,6 +490,7 @@ export default defineComponent({
     AddMintDialog,
     MintInfoContainer,
     MintMessagesDialog,
+    EpochBalances,
     MessageCircleIcon,
     PickaxeIcon,
     TagIcon,
@@ -530,6 +556,8 @@ export default defineComponent({
       // offline), loaded once per mint for whom "Message" writes to.
       reliabilityByUrl: {} as Record<string, any>,
       messageMint: null as any,
+      // hashu.me: the mint card showing its epoch breakdown ("" = none)
+      expandedMintUrl: "",
       showMessages: false,
     };
   },
@@ -560,7 +588,10 @@ export default defineComponent({
     mints: {
       immediate: true,
       handler(mints) {
-        (mints || []).forEach((m) => this.loadReliability(m.url));
+        (mints || []).forEach((m) => {
+          this.loadReliability(m.url);
+          useEpochsStore().refresh(m.url);
+        });
       },
     },
     // if swapBlocking is true and invoiceWorkerRunning changes to false, then swapBlocking should be set to false
@@ -623,6 +654,19 @@ export default defineComponent({
       const r = this.reliabilityByUrl[mint.url];
       if (r === undefined) return null;
       return mintMessageTarget(mint.info, r);
+    },
+    /** A Hashu mint with difficulty epochs (it serves an epoch index). */
+    hasEpochs(mint): boolean {
+      return !!useEpochsStore().index(mint.url);
+    },
+    /** A click on a card makes it the active mint, and opens or closes
+     * its epoch breakdown (switching mints opens the new one's). */
+    async onCardClick(mint) {
+      const wasActive = mint.url === this.activeMintUrl;
+      if (!wasActive) await this.activateMintUrlInternal(mint.url);
+      if (!this.hasEpochs(mint)) return;
+      this.expandedMintUrl =
+        wasActive && this.expandedMintUrl === mint.url ? "" : mint.url;
     },
     messageUnread(mint): number {
       const t = this.messageTargetFor(mint);
@@ -851,6 +895,10 @@ export default defineComponent({
 
 <style>
 @import "src/css/mintlist.css";
+.mint-card-expand {
+  margin-top: -12px;
+  padding-bottom: 2px;
+}
 @media (max-width: 599.98px) {
   .mint-card-actions {
     padding-top: 8px;
