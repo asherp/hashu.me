@@ -39,8 +39,9 @@ export type MintConversation = {
   lastRead: number;
 };
 
-/** Longest message, as on the mint side. */
-export const MAX_TEXT = 4000;
+/** Longest message, as on the mint side: room for a token of a couple
+ * dozen proofs, which a mint sends hashes as. */
+export const MAX_TEXT = 16000;
 const PUBLISH_TIMEOUT_MS = 8000;
 const QUERY_WAIT_MS = 6000;
 /** Messages kept per conversation. */

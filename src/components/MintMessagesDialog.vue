@@ -49,7 +49,33 @@
           :class="{ out: m.outgoing }"
           :data-testid="m.outgoing ? 'mint-message-out' : 'mint-message-in'"
         >
-          <div class="bubble-text">{{ m.text }}</div>
+          <template v-for="(part, i) in splitTokens(m.text)" :key="i">
+            <div
+              v-if="part.token"
+              class="bubble-token"
+              data-testid="mint-message-token"
+            >
+              <div class="token-chip ellipsis">
+                {{ part.label }}
+              </div>
+              <q-btn
+                v-if="!m.outgoing"
+                unelevated
+                dense
+                no-caps
+                rounded
+                color="primary"
+                text-color="black"
+                class="q-mt-xs q-px-md"
+                :label="$t('MintDetailsDialog.contact.messages.receive')"
+                data-testid="mint-message-receive"
+                @click="receive(part.text)"
+              />
+            </div>
+            <div v-else-if="part.text.trim()" class="bubble-text">
+              {{ part.text.trim() }}
+            </div>
+          </template>
           <div class="bubble-time">{{ when(m.created_at) }}</div>
         </div>
       </div>
@@ -100,11 +126,16 @@ import { defineComponent, PropType } from "vue";
 import { X as XIcon } from "lucide-vue-next";
 import { useMintMessagesStore, MAX_TEXT } from "src/stores/mintMessages";
 import { useWalletStore } from "src/stores/wallet";
+import { useReceiveTokensStore } from "src/stores/receiveTokensStore";
+import { splitTokens } from "src/js/message-tokens";
+
+declare const windowMixin: any;
 
 const SYNC_EVERY_MS = 15000;
 
 export default defineComponent({
   name: "MintMessagesDialog",
+  mixins: [windowMixin],
   components: { XIcon },
   props: {
     modelValue: { type: Boolean, default: false },
@@ -170,6 +201,22 @@ export default defineComponent({
       clearInterval(this.timer as any);
       this.timer = 0;
       this.store.markRead(this.pubkey);
+    },
+    splitTokens(text: string) {
+      return splitTokens(text, (amount, unit) =>
+        this.$t("MintDetailsDialog.contact.messages.token", {
+          amount: (this as any).formatCurrency(amount, unit),
+        })
+      );
+    },
+    /** Open a token the mint sent in the wallet's receive dialog. */
+    receive(tokenStr: string) {
+      const receive = useReceiveTokensStore();
+      receive.receiveData.tokensBase64 = tokenStr;
+      receive.showReceiveTokens = true;
+      this.$emit("update:modelValue", false);
+      // The receive dialog lives on the wallet page.
+      if (this.$route?.path !== "/") this.$router.push("/");
     },
     scrollToEnd() {
       const el = this.$refs.scroller as HTMLElement | undefined;
@@ -241,6 +288,15 @@ export default defineComponent({
   word-break: break-word;
   font-size: 15px;
   line-height: 1.4;
+}
+.bubble-token {
+  margin: 4px 0;
+}
+.token-chip {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 12px;
+  opacity: 0.8;
+  max-width: 100%;
 }
 .bubble-time {
   font-size: 11px;
