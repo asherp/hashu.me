@@ -54,6 +54,7 @@ import {
   Terminal as TerminalIcon,
   Info as InfoIcon,
   Pickaxe as PickaxeIcon,
+  Ruler as RulerIcon,
   ChevronRight as ChevronRightIcon,
 } from "lucide-vue-next";
 
@@ -68,6 +69,17 @@ export default defineComponent({
     ...mapState(useUiStore, ["ndefSupported"]),
     visibleGroups() {
       const groups = [
+        {
+          // hashu.me: units first, since they shape every amount shown
+          name: "units",
+          entries: [
+            {
+              key: "units",
+              path: "/settings/units",
+              icon: markRaw(RulerIcon),
+            },
+          ],
+        },
         {
           name: "wallet",
           entries: [

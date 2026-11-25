@@ -215,9 +215,13 @@ export default {
         title: "Experimental",
         caption: "Try new features early",
       },
+      units: {
+        title: "Units",
+        caption: "Hashrate unit and monetary unit",
+      },
       appearance: {
         title: "Appearance",
-        caption: "Theme, keyboard, monetary unit and hashrate unit",
+        caption: "Theme and keyboard",
       },
       language: {
         title: "Language",
