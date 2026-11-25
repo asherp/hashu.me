@@ -74,6 +74,7 @@
             <ChooseMint
               :filter-payment-method="mintFilterMethod"
               filter-mint-operation="mint"
+              :balance-text="hashuSupplyText"
             />
             <EpochPicker
               v-if="!isOnchain && !isBolt12 && activeUnit === 'tih'"
@@ -560,6 +561,29 @@ export default defineComponent({
     /** hashu.me: Lightning on a Hashu (TiH) mint buys vouchers. */
     isHashuBuy(): boolean {
       return !this.isOnchain && !this.isBolt12 && this.activeUnit === UNIT_TIH;
+    },
+    /**
+     * hashu.me: on a Hashu buy the line under the mint shows what the mint
+     * has for sale (its stock, or the chosen future epoch's free TiH), not
+     * the wallet's balance there. Empty when the mint publishes no stock.
+     */
+    hashuSupplyText(): string {
+      if (!this.isHashuBuy) return "";
+      const stock = usePriceStore().hashuStock[this.activeMintUrl];
+      let left: number | null | undefined = stock?.availableTih;
+      if (this.buyEpoch != null) {
+        const row = useEpochsStore()
+          .index(this.activeMintUrl)
+          ?.epochs.find((e: any) => e.epoch === this.buyEpoch);
+        left = row?.free_tih;
+      }
+      if (left == null || !Number.isFinite(Number(left))) return "";
+      if (Number(left) <= 0) return "Sold out";
+      return `${(this as any).formatCurrency(
+        Math.floor(Number(left)),
+        UNIT_TIH,
+        true
+      )} for sale`;
     },
     /**
      * Purchase limits in TiH: the mint's NUT-04 bolt11 min/max, else the
