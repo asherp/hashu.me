@@ -232,6 +232,12 @@ export type HashuMintPrice = {
   /** True when redemptions can carry a stop key (`stop_hash`), so the
    * wallet can stop, pause and resume them. Missing on older mints. */
   redeemer_controls?: boolean | null;
+  /** True when the mint tests a pool before a redemption
+   * (`POST /checkout/api/pool-check`). Missing on older mints. */
+  pool_check?: boolean | null;
+  /** True when the mint redeems only to stratum+ssl:// or stratum2+tcp://
+   * pools. */
+  encrypted_pools_only?: boolean | null;
   capacity_ends_ms?: number | null;
   delivery?: MintDelivery | null;
 };

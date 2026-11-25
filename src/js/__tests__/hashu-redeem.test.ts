@@ -15,6 +15,9 @@ import {
   stopSecretFor,
   poolTihOf,
   samePoolTih,
+  poolCheckUrl,
+  poolCheckClear,
+  poolCheckKey,
 } from "src/js/hashu-redeem";
 
 describe("hashrate melt request", () => {
@@ -383,5 +386,45 @@ describe("per-pool totals", () => {
     expect(e.poolTih).toEqual([
       { pool_url: "stratum+tcp://b:2", worker_name: "v", tih: 4 },
     ]);
+  });
+});
+
+describe("pool check", () => {
+  it("builds the pool-check URL", () => {
+    expect(poolCheckUrl("https://mint.hashu.io/")).toBe(
+      "https://mint.hashu.io/checkout/api/pool-check"
+    );
+  });
+  it("goes ahead only for an accepted worker on an encrypted link", () => {
+    expect(
+      poolCheckClear({ ok: true, transport: "tls", encrypted: true })
+    ).toBe(true);
+    expect(
+      poolCheckClear({ ok: true, transport: "plain", encrypted: false })
+    ).toBe(false);
+    expect(
+      poolCheckClear({ ok: false, transport: "sv2", encrypted: true })
+    ).toBe(false);
+    expect(
+      poolCheckClear({
+        ok: true,
+        transport: "tls",
+        encrypted: true,
+        refused: true,
+      })
+    ).toBe(false);
+  });
+  it("keys a check by pool, worker and password", () => {
+    expect(poolCheckKey(" stratum+ssl://p:1 ", "w ", "x")).toBe(
+      poolCheckKey("stratum+ssl://p:1", "w", "x")
+    );
+    expect(poolCheckKey("stratum+ssl://p:1", "w", "x")).not.toBe(
+      poolCheckKey("stratum+ssl://p:1", "w", "y")
+    );
+  });
+  it("Braiins preset uses TLS", () => {
+    expect(POOL_PRESETS.find((p) => p.id === "braiins")?.url).toBe(
+      "stratum+ssl://stratum.braiins.com:3443"
+    );
   });
 });

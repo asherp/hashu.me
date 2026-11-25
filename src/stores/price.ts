@@ -47,6 +47,9 @@ export const usePriceStore = defineStore("price", {
     // Mints whose redemptions take a stop key (stop, pause, resume from
     // the wallet). Not persisted.
     hashuRedeemerControls: {} as Record<string, boolean>,
+    // Mints that test a pool before a redemption (pool-check API). Not
+    // persisted.
+    hashuPoolCheck: {} as Record<string, boolean>,
     // What each Hashu mint can sell now, for the buy amount slider. Not
     // persisted: stock moves with every sale. availableTih null = the mint
     // does not cap sales by capacity.
@@ -118,6 +121,10 @@ export const usePriceStore = defineStore("price", {
         this.hashuRedeemerControls = {
           ...this.hashuRedeemerControls,
           [mintUrl]: data?.redeemer_controls === true,
+        };
+        this.hashuPoolCheck = {
+          ...this.hashuPoolCheck,
+          [mintUrl]: data?.pool_check === true,
         };
         this.hashuMaxFallbackPools = {
           ...this.hashuMaxFallbackPools,

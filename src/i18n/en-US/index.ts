@@ -1228,7 +1228,7 @@ export default {
       other_pool: "Other pool",
       pool_url: {
         label: "Pool URL",
-        hint: "stratum+tcp://host:port",
+        hint: "stratum+ssl://host:port",
         invalid:
           "Use stratum+tcp://host:port, stratum+ssl://host:port, or stratum2+tcp://host/key for Stratum V2",
       },
@@ -1266,6 +1266,17 @@ export default {
       change_pool: { label: "Change pool" },
       cancel_change: { label: "Cancel" },
       apply_pool: { label: "Send hashes here" },
+      checking_pool: { label: "Testing your pool…" },
+      redeem_anyway: { label: "Redeem anyway" },
+    },
+    pool_check: {
+      ok_tls: "Pool connected over TLS and accepted your worker.",
+      ok_sv2: "Pool connected over Stratum V2 and accepted your worker.",
+      ok_plain: "Pool connected and accepted your worker.",
+      failed: "Pool test failed: { error }.",
+      plain:
+        "This connection is not encrypted (plain stratum+tcp). Anyone on the network path can pose as the pool and take your shares. Use the pool's stratum+ssl:// or Stratum V2 address if it has one.",
+      anyway: "Choose Redeem anyway to go ahead.",
     },
     controls: {
       stop_preview:
