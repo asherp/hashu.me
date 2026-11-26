@@ -732,7 +732,7 @@ export default {
       "Block {height}: block {block} of {size} in this epoch (pixels are its bits, lowest first)",
     perpetual: "Perpetual",
     status: {
-      current: "Current epoch, until about {date}",
+      current: "Current epoch, ends {date}",
       future: "Spendable from about {date}",
       expired: "Expired. Convert to the current epoch",
       perpetual: "Not dated to an epoch",
