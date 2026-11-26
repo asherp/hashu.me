@@ -748,9 +748,8 @@ export default {
     picker: {
       label: "Difficulty epoch",
       now: "Current epoch {epoch}",
-      now_sub: "Ends {date}",
-      now_sub_left: "Ends {date}, {free} left",
-      future_sub: "From {date}, {free} left",
+      range: "{start} – {end}",
+      left: "{free} left",
       future_note:
         "These vouchers can be spent or redeemed from about {date}, when the epoch starts.",
     },

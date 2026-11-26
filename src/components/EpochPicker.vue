@@ -19,9 +19,19 @@
       @update:model-value="onSelect"
     >
       <template #selected-item="scope">
-        <div class="column q-py-xs ellipsis">
-          <span class="text-weight-medium">{{ scope.opt.label }}</span>
-          <span class="text-caption epoch-picker-sub">{{ scope.opt.sub }}</span>
+        <div class="column full-width q-py-xs">
+          <div class="row no-wrap items-baseline">
+            <span class="text-weight-medium ellipsis">{{
+              scope.opt.label
+            }}</span>
+            <q-space />
+            <span class="text-caption epoch-picker-sub q-ml-sm">{{
+              scope.opt.range
+            }}</span>
+          </div>
+          <span v-if="scope.opt.left" class="text-caption epoch-picker-sub">{{
+            scope.opt.left
+          }}</span>
         </div>
       </template>
       <template #option="scope">
@@ -33,7 +43,12 @@
             <q-item-label class="text-weight-medium">{{
               scope.opt.label
             }}</q-item-label>
-            <q-item-label caption>{{ scope.opt.sub }}</q-item-label>
+            <q-item-label v-if="scope.opt.left" caption>{{
+              scope.opt.left
+            }}</q-item-label>
+          </q-item-section>
+          <q-item-section side top>
+            <q-item-label caption>{{ scope.opt.range }}</q-item-label>
           </q-item-section>
         </q-item>
       </template>
@@ -55,6 +70,7 @@ import { usePriceStore } from "src/stores/price";
 import { formatTih } from "src/js/hashu";
 import {
   buyableEpochs,
+  epochStartsAt,
   formatEpochDate,
   type HashuEpochRow,
 } from "src/js/hashu-epochs";
@@ -70,6 +86,17 @@ export default defineComponent({
     index() {
       return useEpochsStore().index(this.mintUrl);
     },
+    /**
+     * Estimated start of the current epoch: the mint's row gives the start
+     * of its sales window (about now), so count back from the tip instead.
+     */
+    currentStart(): number | undefined {
+      const index = this.index;
+      const row = index?.epochs.find((r) => r.epoch === index.epoch);
+      if (!index || !row || !index.tip_height) return row?.starts_at;
+      const blocks = Math.max(0, index.tip_height - row.start_height);
+      return Math.floor(Date.now() / 1000) - blocks * 600;
+    },
     selectValue(): string {
       return this.modelValue == null ? "now" : String(this.modelValue);
     },
@@ -77,34 +104,45 @@ export default defineComponent({
       key: string;
       value: number | null;
       label: string;
-      sub: string;
+      range: string;
+      left: string;
     }[] {
       const index = this.index;
       if (!index) return [];
       const unit = useSettingsStore().hashuUnit;
-      const fmt = (tih: number) => formatTih(tih, navigator.language, unit);
-      const left = usePriceStore().hashuStock[this.mintUrl]?.availableTih;
-      const ends = formatEpochDate(index.ends_at);
+      const fmtLeft = (tih: number | null | undefined) =>
+        tih == null
+          ? ""
+          : this.$t("Epochs.picker.left", {
+              free: formatTih(tih, navigator.language, unit),
+            });
+      // Estimated dates: an epoch ends when the next one starts, else after
+      // its 2,016 blocks at ten minutes each.
+      const range = (e: number, start: number | undefined, end?: number) => {
+        const row = index.epochs.find((r) => r.epoch === e);
+        const s = start ?? row?.starts_at;
+        const t =
+          end ??
+          epochStartsAt(index, e + 1) ??
+          (row ? row.starts_at + (row.end_height - row.start_height) * 600 : 0);
+        return this.$t("Epochs.picker.range", {
+          start: formatEpochDate(s),
+          end: formatEpochDate(t),
+        });
+      };
       const now = {
         key: "now",
         value: null,
         label: this.$t("Epochs.picker.now", { epoch: index.epoch }),
-        sub:
-          left == null
-            ? this.$t("Epochs.picker.now_sub", { date: ends })
-            : this.$t("Epochs.picker.now_sub_left", {
-                date: ends,
-                free: fmt(left),
-              }),
+        range: range(index.epoch, this.currentStart, index.ends_at),
+        left: fmtLeft(usePriceStore().hashuStock[this.mintUrl]?.availableTih),
       };
       const future = buyableEpochs(index).map((e: HashuEpochRow) => ({
         key: String(e.epoch),
         value: e.epoch,
         label: this.$t("Epochs.epoch", { epoch: e.epoch }),
-        sub: this.$t("Epochs.picker.future_sub", {
-          date: formatEpochDate(e.starts_at),
-          free: fmt(e.free_tih ?? 0),
-        }),
+        range: range(e.epoch, e.starts_at),
+        left: fmtLeft(e.free_tih ?? 0),
       }));
       return [now, ...future];
     },
