@@ -19,6 +19,8 @@
       @update:model-value="onSelect"
     >
       <template #selected-item="scope">
+        <!-- No amount here: the mint line above already shows what the
+             selected epoch has for sale. -->
         <div class="column full-width q-py-xs">
           <div class="row no-wrap items-baseline">
             <span class="text-weight-medium ellipsis">{{
@@ -29,9 +31,6 @@
               scope.opt.range
             }}</span>
           </div>
-          <span v-if="scope.opt.left" class="text-caption epoch-picker-sub">{{
-            scope.opt.left
-          }}</span>
         </div>
       </template>
       <template #option="scope">
