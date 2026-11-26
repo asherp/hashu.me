@@ -728,9 +728,11 @@ export default {
   },
   Epochs: {
     epoch: "Epoch {epoch}",
+    pixels:
+      "Block {height}: block {block} of {size} in this epoch (pixels are its bits, lowest first)",
     perpetual: "Perpetual",
     status: {
-      current: "Current epoch, until about {date}",
+      current: "Current epoch, ends {date}",
       future: "Spendable from about {date}",
       expired: "Expired. Convert to the current epoch",
       perpetual: "Not dated to an epoch",
@@ -1039,6 +1041,11 @@ export default {
       label: "Redeem",
       tooltip: "Redeem this mint's vouchers as hashrate to your pool",
     },
+    message: {
+      label: "Message",
+      tooltip: "Send this mint a private message over Nostr",
+    },
+    eta_label: "ETA",
     eta_tooltip:
       "About how long redeeming your whole balance here would take at this hashrate, after redemptions already queued.",
     price_tooltip:

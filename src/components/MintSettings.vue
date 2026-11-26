@@ -19,7 +19,7 @@
             :active="mint.url == activeMintUrl"
             active-class="text-weight-bold text-primary"
             clickable
-            @click="activateMintUrlInternal(mint.url)"
+            @click="onCardClick(mint)"
             class="mint-card q-mb-md cursor-pointer"
             :style="{
               'border-radius': '10px',
@@ -94,7 +94,7 @@
               <div
                 class="row items-center justify-between q-pb-md q-pl-lg q-pr-md"
               >
-                <div class="col">
+                <div class="col-12 col-sm">
                   <!-- Currency units with regular text styling -->
                   <div class="row q-gutter-x-sm">
                     <div
@@ -153,8 +153,9 @@
                     >
                       <span class="currency-unit-text">
                         <TimerIcon :size="14" class="q-mr-xs hashrate-icon" />{{
-                          formatDuration(mintEta(mint).seconds)
+                          $t("MintSettings.eta_label")
                         }}
+                        {{ formatDuration(mintEta(mint).seconds) }}
                       </span>
                       <q-tooltip>
                         {{ $t("MintSettings.eta_tooltip") }}
@@ -162,26 +163,92 @@
                     </div>
                   </div>
                 </div>
-                <q-btn
-                  v-if="canRedeemAt(mint)"
-                  rounded
-                  outline
-                  dense
-                  no-caps
-                  color="primary"
-                  class="q-px-sm q-mr-sm"
-                  data-testid="mint-redeem"
-                  @click.stop="redeemAt(mint)"
+                <!-- hashu.me: below the chips on a phone, beside them wider -->
+                <div
+                  v-if="messageTargetFor(mint) || canRedeemAt(mint)"
+                  class="col-12 col-sm-auto row no-wrap items-center justify-end mint-card-actions"
                 >
-                  <PickaxeIcon :size="18" class="q-mr-xs" />
-                  <span>{{ $t("MintSettings.redeem.label") }}</span>
-                  <q-tooltip>{{ $t("MintSettings.redeem.tooltip") }}</q-tooltip>
-                </q-btn>
+                  <q-btn
+                    v-if="messageTargetFor(mint)"
+                    rounded
+                    outline
+                    dense
+                    no-caps
+                    color="primary"
+                    class="q-px-sm q-mr-sm"
+                    data-testid="mint-message"
+                    @click.stop="openMessages(mint)"
+                  >
+                    <MessageCircleIcon :size="18" class="q-mr-xs" />
+                    <span>{{ $t("MintSettings.message.label") }}</span>
+                    <q-badge
+                      v-if="messageUnread(mint)"
+                      floating
+                      rounded
+                      color="primary"
+                      text-color="black"
+                      data-testid="mint-message-unread"
+                      >{{ messageUnread(mint) }}</q-badge
+                    >
+                    <q-tooltip>{{
+                      $t("MintSettings.message.tooltip")
+                    }}</q-tooltip>
+                  </q-btn>
+                  <q-btn
+                    v-if="canRedeemAt(mint)"
+                    rounded
+                    outline
+                    dense
+                    no-caps
+                    color="primary"
+                    class="q-px-sm q-mr-sm"
+                    data-testid="mint-redeem"
+                    @click.stop="redeemAt(mint)"
+                  >
+                    <PickaxeIcon :size="18" class="q-mr-xs" />
+                    <span>{{ $t("MintSettings.redeem.label") }}</span>
+                    <q-tooltip>{{ $t("MintSettings.redeem.tooltip") }}</q-tooltip>
+                  </q-btn>
+                </div>
               </div>
+              <!-- hashu.me: the mint's vouchers by difficulty epoch; a
+                   click on the card opens and closes them -->
+              <template v-if="hasEpochs(mint)">
+                <div
+                  v-if="mint.url === expandedMintUrl"
+                  class="q-px-sm q-pb-sm"
+                  @click.stop
+                >
+                  <EpochBalances :mint-url="mint.url" embedded />
+                </div>
+                <div class="row justify-center mint-card-expand">
+                  <q-icon
+                    :name="
+                      mint.url === expandedMintUrl
+                        ? 'expand_less'
+                        : 'expand_more'
+                    "
+                    size="sm"
+                    color="grey-6"
+                    data-testid="mint-epochs-toggle"
+                  />
+                </div>
+              </template>
             </div>
           </q-item>
         </div>
       </q-list>
+      <!-- hashu.me: private messages (NIP-17) with the mint picked above -->
+      <mint-messages-dialog
+        v-if="messageMint && messageTargetFor(messageMint)"
+        :key="messageMint.url"
+        v-model="showMessages"
+        :pubkey="messageTargetFor(messageMint).pubkey"
+        :npub="messageTargetFor(messageMint).npub"
+        :relays="messageTargetFor(messageMint).relays"
+        :mint-url="messageMint.url"
+        :title="messageMint.nickname || messageMint.info?.name || ''"
+      />
 
       <!-- Mint discovery -->
       <div class="q-px-md q-mb-md row justify-center">
@@ -395,6 +462,11 @@ import { EventBus } from "../js/eventBus";
 import AddMintDialog from "src/components/AddMintDialog.vue";
 import { useMintRecommendationsStore } from "src/stores/mintRecommendations";
 import MintInfoContainer from "./MintInfoContainer.vue";
+import EpochBalances from "src/components/EpochBalances.vue";
+import { useEpochsStore } from "src/stores/epochs";
+import MintMessagesDialog from "src/components/MintMessagesDialog.vue";
+import { useMintMessagesStore } from "src/stores/mintMessages";
+import { mintMessageTarget } from "src/js/mint-nostr";
 import { usePriceStore } from "src/stores/price";
 import {
   balanceRedeemEta,
@@ -405,6 +477,7 @@ import { UNIT_TIH, formatHashprice } from "src/js/hashu";
 import { mintSupportsPaymentMethod } from "src/js/mint-payment-methods";
 import { PaymentMethod } from "src/stores/walletTypes";
 import {
+  MessageCircle as MessageCircleIcon,
   Pickaxe as PickaxeIcon,
   Tag as TagIcon,
   Timer as TimerIcon,
@@ -416,6 +489,9 @@ export default defineComponent({
   components: {
     AddMintDialog,
     MintInfoContainer,
+    MintMessagesDialog,
+    EpochBalances,
+    MessageCircleIcon,
     PickaxeIcon,
     TagIcon,
     TimerIcon,
@@ -476,6 +552,13 @@ export default defineComponent({
       activatingMintUrl: "",
       mintInfoCache: new Map(),
       fetchingMintInfo: new Set(),
+      // hashu.me: each mint's reliability index (null = not a Hashu mint or
+      // offline), loaded once per mint for whom "Message" writes to.
+      reliabilityByUrl: {} as Record<string, any>,
+      messageMint: null as any,
+      // hashu.me: the mint card showing its epoch breakdown ("" = none)
+      expandedMintUrl: "",
+      showMessages: false,
     };
   },
   computed: {
@@ -502,6 +585,15 @@ export default defineComponent({
     },
   },
   watch: {
+    mints: {
+      immediate: true,
+      handler(mints) {
+        (mints || []).forEach((m) => {
+          this.loadReliability(m.url);
+          useEpochsStore().refresh(m.url);
+        });
+      },
+    },
     // if swapBlocking is true and invoiceWorkerRunning changes to false, then swapBlocking should be set to false
     invoiceWorkerRunning: function (val) {
       if (this.swapBlocking && !val) {
@@ -535,6 +627,55 @@ export default defineComponent({
       const ui = useUiStore();
       ui.redeemPoolQuote = "";
       ui.showRedeemPoolDialog = true;
+    },
+    /** Load a mint's reliability index once: a Hashu mint names its DM
+     * target there (or none). Other mints answer 404 and fall back to their
+     * NUT-06 Nostr contact. */
+    async loadReliability(url: string) {
+      if (url in this.reliabilityByUrl) return;
+      this.reliabilityByUrl[url] = undefined;
+      let data = null;
+      try {
+        const res = await fetch(
+          `${url.replace(/\/+$/, "")}/v1/hashu/reliability?limit=1`
+        );
+        if (res.ok) {
+          const json = await res.json();
+          if (json?.totals) data = json;
+        }
+      } catch (e) {
+        // Offline or not a Hashu mint: use the Nostr contact.
+      }
+      this.reliabilityByUrl[url] = data;
+    },
+    /** Whom "Message" writes to for this mint; null hides the button
+     * (also while its reliability index is still loading). */
+    messageTargetFor(mint) {
+      const r = this.reliabilityByUrl[mint.url];
+      if (r === undefined) return null;
+      return mintMessageTarget(mint.info, r);
+    },
+    /** A Hashu mint with difficulty epochs (it serves an epoch index). */
+    hasEpochs(mint): boolean {
+      return !!useEpochsStore().index(mint.url);
+    },
+    /** A click on a card makes it the active mint, and opens or closes
+     * its epoch breakdown (switching mints opens the new one's). */
+    async onCardClick(mint) {
+      const wasActive = mint.url === this.activeMintUrl;
+      if (!wasActive) await this.activateMintUrlInternal(mint.url);
+      if (!this.hasEpochs(mint)) return;
+      this.expandedMintUrl =
+        wasActive && this.expandedMintUrl === mint.url ? "" : mint.url;
+    },
+    messageUnread(mint): number {
+      const t = this.messageTargetFor(mint);
+      return t ? useMintMessagesStore().unread(t.pubkey) : 0;
+    },
+    openMessages(mint) {
+      this.messageMint = mint;
+      this.showMessages = false;
+      this.$nextTick(() => (this.showMessages = true));
     },
     /** How long redeeming the wallet's whole TiH balance here would take now. */
     mintEta(mint) {
@@ -754,6 +895,15 @@ export default defineComponent({
 
 <style>
 @import "src/css/mintlist.css";
+.mint-card-expand {
+  margin-top: -12px;
+  padding-bottom: 2px;
+}
+@media (max-width: 599.98px) {
+  .mint-card-actions {
+    padding-top: 8px;
+  }
+}
 .hashrate-icon {
   vertical-align: -2px;
 }

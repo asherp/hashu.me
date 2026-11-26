@@ -141,3 +141,33 @@ export async function verifyNip05(
 export function njumpUrl(npub: string): string {
   return `https://njump.me/${npub}`;
 }
+
+/**
+ * Whom "Message" writes to (NIP-17) for a mint. A Hashu mint names it in
+ * its reliability index (`messages`): the operator mint's own key, or a
+ * supplier's own npub (null = it takes no messages, e.g. a supplier
+ * without one). Any other mint: its NUT-06 Nostr contact. null = no
+ * Message button.
+ */
+export function mintMessageTarget(
+  info: { contact?: { method: string; info: string }[] } | undefined | null,
+  reliability: any
+): MintNostrIdentity | null {
+  const contact = (info?.contact || []).find((c) => c.method === "nostr");
+  const nostr = contact ? parseMintNostrContact(contact.info) : null;
+  const announced = reliability?.announcement?.relays;
+  const relays = [
+    ...(nostr?.relays || []),
+    ...(Array.isArray(announced) ? announced : []),
+  ];
+  if (reliability) {
+    const m = reliability.messages;
+    if (!m?.pubkey || !m?.npub) return null;
+    return {
+      pubkey: m.pubkey,
+      npub: m.npub,
+      relays: [...(Array.isArray(m.relays) ? m.relays : []), ...relays],
+    };
+  }
+  return nostr ? { ...nostr, relays } : null;
+}

@@ -1,5 +1,10 @@
 <template>
-  <div v-if="show" class="epoch-balances q-mt-md" data-testid="epoch-balances">
+  <div
+    v-if="show"
+    class="epoch-balances"
+    :class="embedded ? 'epoch-balances--embedded' : 'q-mt-md'"
+    data-testid="epoch-balances"
+  >
     <div
       v-for="row in rows"
       :key="`${row.status}:${row.epoch}`"
@@ -21,7 +26,30 @@
         :color="row.status === 'expired' ? 'warning' : 'grey-6'"
       />
       <div class="col text-left">
-        <div class="text-weight-medium">{{ title(row) }}</div>
+        <div class="text-weight-medium row items-center no-wrap">
+          {{ title(row) }}
+          <!-- hashu.me: block height within the epoch, 11 bits, bit 0 first -->
+          <span
+            v-if="row.status === 'current' && tipHeight !== null"
+            class="epoch-pixels q-ml-sm"
+            data-testid="epoch-pixels"
+            :data-height="tipHeight"
+          >
+            <span
+              v-for="(bit, i) in pixels"
+              :key="i"
+              class="epoch-pixel"
+              :class="{ 'epoch-pixel--on': bit }"
+            />
+            <q-tooltip>{{
+              $t("Epochs.pixels", {
+                height: tipHeight.toLocaleString(),
+                block: (tipHeight % epochSize).toLocaleString(),
+                size: epochSize.toLocaleString(),
+              })
+            }}</q-tooltip>
+          </span>
+        </div>
         <div class="text-caption text-grey-6">{{ subtitle(row) }}</div>
       </div>
       <div class="text-right q-ml-sm">
@@ -63,6 +91,8 @@ import { useUiStore } from "src/stores/ui";
 import { useSettingsStore } from "src/stores/settings";
 import { formatTih } from "src/js/hashu";
 import {
+  EPOCH_SIZE,
+  epochPixels,
   buyableEpochs,
   formatEpochDate,
   type EpochBalanceRow,
@@ -76,10 +106,14 @@ export default defineComponent({
   components: { HashuLogoIcon },
   props: {
     mintUrl: { type: String, required: true },
+    /** Inside a mint card: no frame, and shown even when every voucher
+     * is in the current epoch (the card was opened to see this). */
+    embedded: { type: Boolean, default: false },
   },
   data() {
     return {
       converting: null as number | null,
+      epochSize: EPOCH_SIZE,
       timer: null as ReturnType<typeof setInterval> | null,
     };
   },
@@ -87,6 +121,13 @@ export default defineComponent({
     ...mapWritableState(useUiStore, ["showCreateInvoiceDialog"]),
     index() {
       return useEpochsStore().index(this.mintUrl);
+    },
+    tipHeight(): number | null {
+      const h = this.index?.tip_height;
+      return typeof h === "number" && h >= 0 ? h : null;
+    },
+    pixels(): number[] {
+      return this.tipHeight === null ? [] : epochPixels(this.tipHeight);
     },
     rows(): EpochBalanceRow[] {
       return useEpochsStore().balances(this.mintUrl);
@@ -96,6 +137,7 @@ export default defineComponent({
     },
     show(): boolean {
       if (!this.index) return false;
+      if (this.embedded) return true;
       // Nothing to explain when everything is in the current epoch.
       return this.rows.some((r) => r.status !== "current") || this.canBuy;
     },
@@ -180,6 +222,28 @@ export default defineComponent({
   border-radius: 12px;
   border: 1px solid rgba(128, 128, 128, 0.25);
   padding: 6px 0;
+}
+.epoch-balances--embedded {
+  max-width: none;
+  width: 100%;
+  border: none;
+  border-top: 1px solid rgba(128, 128, 128, 0.2);
+  border-radius: 0;
+}
+.epoch-pixels {
+  display: inline-flex;
+  gap: 2px;
+  cursor: default;
+}
+.epoch-pixel {
+  width: 5px;
+  height: 5px;
+  border-radius: 1px;
+  border: 1px solid rgba(128, 128, 128, 0.55);
+}
+.epoch-pixel--on {
+  background: var(--q-primary);
+  border-color: var(--q-primary);
 }
 .epoch-row--future {
   opacity: 0.8;

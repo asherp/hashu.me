@@ -6,6 +6,7 @@ import {
   displayNip05,
   nip05LookupUrl,
   verifyNip05,
+  mintMessageTarget,
 } from "src/js/mint-nostr";
 
 const HEX = "3bf0c63fcb93463407af97a5e5ee64fa883d107ef9e558472c4eb9aaaefa459d";
@@ -87,5 +88,30 @@ describe("nip05", () => {
     expect(await verifyNip05("_@hashu.io", "00".repeat(32), fetcher)).toBe(
       false
     );
+  });
+});
+
+describe("mintMessageTarget", () => {
+  const info = { contact: [{ method: "nostr", info: NPUB }] };
+  const OTHER = "11".repeat(32);
+  it("uses the Nostr contact when the mint has no reliability index", () => {
+    expect(mintMessageTarget(info, null)?.pubkey).toBe(HEX);
+    expect(mintMessageTarget({ contact: [] }, null)).toBeNull();
+    expect(mintMessageTarget(undefined, null)).toBeNull();
+  });
+  it("prefers the reliability index's DM target, with its relays first", () => {
+    const t = mintMessageTarget(info, {
+      totals: {},
+      messages: { pubkey: OTHER, npub: "npub1x", relays: ["wss://a"] },
+      announcement: { relays: ["wss://b"] },
+    });
+    expect(t).toEqual({
+      pubkey: OTHER,
+      npub: "npub1x",
+      relays: ["wss://a", "wss://b"],
+    });
+  });
+  it("hides Message when a Hashu mint takes no messages", () => {
+    expect(mintMessageTarget(info, { totals: {}, messages: null })).toBeNull();
   });
 });

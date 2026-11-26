@@ -689,7 +689,10 @@ import {
 import MintNostrProfile from "src/components/MintNostrProfile.vue";
 import MintMessagesDialog from "src/components/MintMessagesDialog.vue";
 import { useMintMessagesStore } from "src/stores/mintMessages";
-import { parseMintNostrContact } from "src/js/mint-nostr";
+import {
+  mintMessageTarget,
+  parseMintNostrContact,
+} from "src/js/mint-nostr";
 import { usePriceStore } from "src/stores/price";
 import { useMintRecommendationsStore } from "src/stores/mintRecommendations";
 
@@ -785,24 +788,8 @@ export default defineComponent({
     // own npub (null = it takes no messages, e.g. a supplier without one).
     // Any other mint: its Nostr contact.
     messageTarget() {
-      const r = this.reliability;
-      if (r) {
-        const m = r.messages;
-        if (!m?.pubkey || !m?.npub) return null;
-        return {
-          pubkey: m.pubkey,
-          npub: m.npub,
-          relays: [
-            ...(Array.isArray(m.relays) ? m.relays : []),
-            ...this.mintNostrRelays,
-          ],
-        };
-      }
-      return this.mintNostr
-        ? { ...this.mintNostr, relays: this.mintNostrRelays }
-        : null;
+      return mintMessageTarget(this.mintData?.info, this.reliability);
     },
-    // hashu.me: unread replies from this mint (NIP-17)
     messageUnread() {
       return this.messageTarget
         ? useMintMessagesStore().unread(this.messageTarget.pubkey)

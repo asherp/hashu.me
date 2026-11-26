@@ -19,6 +19,20 @@
 /** NUT-05 melt method that converts vouchers between epochs. */
 export const EPOCH_METHOD = "epoch";
 
+/** Blocks in a Bitcoin difficulty epoch. */
+export const EPOCH_SIZE = 2016;
+/** Pixels in the block-height indicator: 2^11 = 2048 covers 2,016. */
+export const EPOCH_PIXELS = 11;
+
+/**
+ * The tiny block-height indicator: how far into its epoch a block is, as
+ * 11 bits, least significant first (pixel i = bit i).
+ */
+export function epochPixels(blockHeight: number): number[] {
+  const n = ((blockHeight % EPOCH_SIZE) + EPOCH_SIZE) % EPOCH_SIZE;
+  return Array.from({ length: EPOCH_PIXELS }, (_, i) => (n >> i) & 1);
+}
+
 /** One epoch the mint sells, from `GET /v1/hashu/epochs`. */
 export type HashuEpochRow = {
   epoch: number;
