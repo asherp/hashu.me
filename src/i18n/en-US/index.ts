@@ -749,7 +749,7 @@ export default {
       label: "Difficulty epoch",
       now: "Current epoch {epoch}",
       range: "{start} – {end}",
-      left: "{free} left",
+      left: "{free} available",
       future_note:
         "These vouchers can be spent or redeemed from about {date}, when the epoch starts.",
     },
