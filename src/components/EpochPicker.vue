@@ -4,27 +4,40 @@
     class="epoch-picker"
     data-testid="epoch-picker"
   >
-    <div class="text-caption text-grey-6 q-mb-xs">
-      {{ $t("Epochs.picker.label") }}
-    </div>
-    <div class="row q-gutter-xs">
-      <q-chip
-        v-for="opt in options"
-        :key="String(opt.value)"
-        clickable
-        :outline="modelValue !== opt.value"
-        :color="modelValue === opt.value ? 'primary' : undefined"
-        :text-color="modelValue === opt.value ? 'black' : undefined"
-        class="q-ma-none q-mr-xs q-mb-xs"
-        :data-testid="`epoch-option-${opt.value ?? 'now'}`"
-        @click="$emit('update:modelValue', opt.value)"
-      >
-        <div class="column">
-          <span class="text-weight-medium">{{ opt.label }}</span>
-          <span class="text-caption epoch-picker-sub">{{ opt.sub }}</span>
+    <q-select
+      :model-value="selectValue"
+      :options="options"
+      option-value="key"
+      emit-value
+      map-options
+      outlined
+      dense
+      options-dense
+      :label="$t('Epochs.picker.label')"
+      popup-content-class="epoch-picker-popup"
+      data-testid="epoch-select"
+      @update:model-value="onSelect"
+    >
+      <template #selected-item="scope">
+        <div class="column q-py-xs ellipsis">
+          <span class="text-weight-medium">{{ scope.opt.label }}</span>
+          <span class="text-caption epoch-picker-sub">{{ scope.opt.sub }}</span>
         </div>
-      </q-chip>
-    </div>
+      </template>
+      <template #option="scope">
+        <q-item
+          v-bind="scope.itemProps"
+          :data-testid="`epoch-option-${scope.opt.key}`"
+        >
+          <q-item-section>
+            <q-item-label class="text-weight-medium">{{
+              scope.opt.label
+            }}</q-item-label>
+            <q-item-label caption>{{ scope.opt.sub }}</q-item-label>
+          </q-item-section>
+        </q-item>
+      </template>
+    </q-select>
     <div
       v-if="modelValue !== null"
       class="text-caption text-grey-6 q-mt-xs"
@@ -38,6 +51,7 @@
 import { defineComponent } from "vue";
 import { useEpochsStore } from "src/stores/epochs";
 import { useSettingsStore } from "src/stores/settings";
+import { usePriceStore } from "src/stores/price";
 import { formatTih } from "src/js/hashu";
 import {
   buyableEpochs,
@@ -56,24 +70,40 @@ export default defineComponent({
     index() {
       return useEpochsStore().index(this.mintUrl);
     },
-    options(): { value: number | null; label: string; sub: string }[] {
+    selectValue(): string {
+      return this.modelValue == null ? "now" : String(this.modelValue);
+    },
+    options(): {
+      key: string;
+      value: number | null;
+      label: string;
+      sub: string;
+    }[] {
       const index = this.index;
       if (!index) return [];
       const unit = useSettingsStore().hashuUnit;
+      const fmt = (tih: number) => formatTih(tih, navigator.language, unit);
+      const left = usePriceStore().hashuStock[this.mintUrl]?.availableTih;
+      const ends = formatEpochDate(index.ends_at);
       const now = {
+        key: "now",
         value: null,
-        label: this.$t("Epochs.picker.now"),
-        sub: this.$t("Epochs.picker.now_sub", {
-          epoch: index.epoch,
-          date: formatEpochDate(index.ends_at),
-        }),
+        label: this.$t("Epochs.picker.now", { epoch: index.epoch }),
+        sub:
+          left == null
+            ? this.$t("Epochs.picker.now_sub", { date: ends })
+            : this.$t("Epochs.picker.now_sub_left", {
+                date: ends,
+                free: fmt(left),
+              }),
       };
       const future = buyableEpochs(index).map((e: HashuEpochRow) => ({
+        key: String(e.epoch),
         value: e.epoch,
         label: this.$t("Epochs.epoch", { epoch: e.epoch }),
         sub: this.$t("Epochs.picker.future_sub", {
           date: formatEpochDate(e.starts_at),
-          free: formatTih(e.free_tih ?? 0, navigator.language, unit),
+          free: fmt(e.free_tih ?? 0),
         }),
       }));
       return [now, ...future];
@@ -81,6 +111,12 @@ export default defineComponent({
     selectedDate(): string {
       const row = this.index?.epochs.find((e) => e.epoch === this.modelValue);
       return formatEpochDate(row?.starts_at);
+    },
+  },
+  methods: {
+    onSelect(key: string) {
+      const opt = this.options.find((o) => o.key === key);
+      this.$emit("update:modelValue", opt ? opt.value : null);
     },
   },
   watch: {
@@ -99,9 +135,11 @@ export default defineComponent({
   opacity: 0.75;
   line-height: 1.1;
 }
-.epoch-picker :deep(.q-chip) {
-  height: auto;
-  padding-top: 4px;
-  padding-bottom: 4px;
+.epoch-picker :deep(.q-field__control),
+.epoch-picker :deep(.q-field__control:before) {
+  border-radius: 16px;
+}
+.epoch-picker :deep(.q-field__native) {
+  min-height: 44px;
 }
 </style>
