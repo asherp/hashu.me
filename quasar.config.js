@@ -31,6 +31,19 @@ function resolveGitCommit() {
 const HASHU_APP = process.env.HASHU_APP === "operator" ? "operator" : "wallet";
 const OPERATOR = HASHU_APP === "operator";
 
+// Hashu Operator has its own icons (dark badge, orange ring and cup; see
+// scripts/render-operator-icons.mjs). The operator build serves public/ with
+// public-operator/ laid over it, staged in node_modules/.cache.
+function operatorPublicDir() {
+  const fs = require("fs");
+  const path = require("path");
+  const dir = path.join(__dirname, "node_modules/.cache/hashu-operator-public");
+  fs.rmSync(dir, { recursive: true, force: true });
+  fs.cpSync(path.join(__dirname, "public"), dir, { recursive: true });
+  fs.cpSync(path.join(__dirname, "public-operator"), dir, { recursive: true });
+  return dir;
+}
+
 module.exports = configure(function (/* ctx */) {
   return {
     eslint: {
@@ -102,6 +115,7 @@ module.exports = configure(function (/* ctx */) {
       extendViteConf(viteConf) {
         viteConf.define = viteConf.define || {};
         viteConf.define.GIT_COMMIT = JSON.stringify(resolveGitCommit());
+        if (OPERATOR) viteConf.publicDir = operatorPublicDir();
         // cashu-ts v4 ships ESM with BigInt — Vite's dep optimizer can mangle it
         viteConf.optimizeDeps = viteConf.optimizeDeps || {};
         viteConf.optimizeDeps.exclude = [
@@ -203,6 +217,12 @@ module.exports = configure(function (/* ctx */) {
         json.start_url = "/";
         delete json.protocol_handlers;
         delete json.screenshots;
+        // The maskable icons are full-bleed squares; "any" gets the round badge.
+        json.icons = json.icons.map((icon) =>
+          icon.purpose === "any"
+            ? { ...icon, src: "icons/icon-round-512x512.png" }
+            : icon
+        );
       },
       // extendPWACustomSWConf (esbuildConf) {}
     },
