@@ -25,6 +25,12 @@ function resolveGitCommit() {
   }
 }
 
+// HASHU_APP=operator builds Hashu Operator (issue #42) from this repo: its
+// own routes, manifest and output folder (dist/operator), served on its own
+// origin so its storage and sign-ins stay apart from the wallet's.
+const HASHU_APP = process.env.HASHU_APP === "operator" ? "operator" : "wallet";
+const OPERATOR = HASHU_APP === "operator";
+
 module.exports = configure(function (/* ctx */) {
   return {
     eslint: {
@@ -43,6 +49,11 @@ module.exports = configure(function (/* ctx */) {
     // --> boot files are part of "main.js"
     // https://v2.quasar.dev/quasar-cli/boot-files
     boot: ["base", "global-components", "i18n"],
+
+    // index.html: the installed app's name (Hashu or Hashu Operator).
+    htmlVariables: OPERATOR
+      ? { productName: "Hashu Operator", appName: "Hashu Operator" }
+      : { appName: "Hashu" },
 
     // https://v2.quasar.dev/quasar-cli-vite/quasar-config-js#css
     css: ["app.scss", "base.scss", "settings.scss"],
@@ -69,6 +80,10 @@ module.exports = configure(function (/* ctx */) {
       },
 
       vueRouterMode: "history", // available values: 'hash', 'history'
+
+      // Which app this build is (see HASHU_APP above).
+      env: { HASHU_APP },
+      ...(OPERATOR ? { distDir: "dist/operator" } : {}),
       // vueRouterBase,
       // vueDevtools,
       // vueOptionsAPI: false,
@@ -106,7 +121,7 @@ module.exports = configure(function (/* ctx */) {
     devServer: {
       https: process.env.E2E !== "true",
       open: process.env.E2E !== "true", // keep automated runs headless
-      port: 8080,
+      port: OPERATOR ? 8081 : 8080,
     },
 
     // https://v2.quasar.dev/quasar-cli-vite/quasar-config-js#framework
@@ -124,7 +139,7 @@ module.exports = configure(function (/* ctx */) {
       // directives: [],
 
       // Quasar plugins
-      plugins: ["LocalStorage", "Notify", "Loading"],
+      plugins: ["LocalStorage", "Notify", "Loading", "Dialog"],
     },
 
     animations: "all", // --- includes all animations
@@ -178,7 +193,17 @@ module.exports = configure(function (/* ctx */) {
       // useFilenameHashes: true,
       // extendGenerateSWOptions (cfg) {}
       // extendInjectManifestOptions (cfg) {},
-      // extendManifestJson (json) {}
+      extendManifestJson(json) {
+        if (!OPERATOR) return;
+        json.name = "Hashu Operator";
+        json.short_name = "Operator";
+        json.description =
+          "Run your Hashu mint: rigs, stock, redemptions, prices and messages.";
+        json.id = "/";
+        json.start_url = "/";
+        delete json.protocol_handlers;
+        delete json.screenshots;
+      },
       // extendPWACustomSWConf (esbuildConf) {}
     },
 

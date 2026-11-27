@@ -195,3 +195,20 @@ To report a vulnerability, please email **cashu-security@pm.me** — see [SECURI
 ## License
 
 [MIT](LICENSE.md) &copy; Cashu
+
+## Hashu Operator (second app)
+
+The same repo also builds **Hashu Operator**, a separate PWA for mint
+operators and supplier mints (issue #42). It has its own routes
+(`src/operator/`), manifest and output folder, and is served on its own
+origin, so operator sign-ins never share storage with the wallet's vouchers.
+
+```bash
+npm run dev:operator      # http(s)://localhost:8081
+npm run build:operator    # dist/operator
+```
+
+Operator mints sign in with the mint's operator user and password
+(`POST <mint>/operator/api/session`, a bearer token); supplier mints with
+their dashboard key. The hashu caddy image serves it at
+`HASHU_OPERATOR_APP_DOMAIN`.
