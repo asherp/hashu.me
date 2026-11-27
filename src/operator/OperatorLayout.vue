@@ -1,6 +1,6 @@
 <template>
   <q-layout view="hHh lpR fFf" class="operator-app">
-    <q-header class="bg-transparent operator-header">
+    <q-header class="operator-header">
       <q-toolbar class="operator-toolbar">
         <q-btn
           v-if="$route.path !== '/'"
@@ -79,6 +79,14 @@ export default defineComponent({
 
 <style lang="scss">
 .operator-app {
+  // Solid (frosted) bar so scrolled content does not show through the title.
+  .operator-header {
+    color: inherit;
+    background: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-bottom: 1px solid rgba(128, 128, 128, 0.15);
+  }
   .operator-toolbar {
     max-width: 960px;
     margin: 0 auto;
@@ -136,5 +144,10 @@ export default defineComponent({
     font-size: 12px;
     word-break: break-all;
   }
+}
+</style>
+<style lang="scss">
+body.body--dark .operator-app .operator-header {
+  background: rgba(0, 0, 0, 0.8);
 }
 </style>

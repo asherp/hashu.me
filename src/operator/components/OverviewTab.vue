@@ -60,10 +60,27 @@
 
     <div class="op-section-title">Mint</div>
     <q-list class="op-card" dense separator>
-      <q-item v-for="row in facts" :key="row[0]">
-        <q-item-section class="op-muted">{{ row[0] }}</q-item-section>
-        <q-item-section side class="text-right" style="max-width: 65%">
-          <span :class="row[2] ? 'op-mono' : ''">{{ row[1] }}</span>
+      <q-item
+        v-for="row in facts"
+        :key="row.label"
+        :clickable="!!row.copy"
+        :data-testid="row.copy ? `copy-${row.key}` : undefined"
+        @click="row.copy && copy(row.copy, row.label)"
+      >
+        <q-item-section class="op-muted col-auto q-pr-md">{{
+          row.label
+        }}</q-item-section>
+        <q-item-section class="text-right items-end">
+          <span :class="row.mono ? 'op-mono op-fact-mono' : ''">{{
+            row.mono ? breakable(row.value) : row.value
+          }}</span>
+        </q-item-section>
+        <q-item-section v-if="row.copy" side class="q-pl-sm">
+          <q-icon
+            name="content_copy"
+            size="16px"
+            :aria-label="`Copy ${row.label}`"
+          />
         </q-item-section>
       </q-item>
     </q-list>
@@ -87,6 +104,16 @@ import {
   rigName,
 } from "../format";
 import { isOpen } from "../redemptions";
+import { copyToClipboard } from "quasar";
+
+/** One row of the Mint section; rows with `copy` copy on tap. */
+interface Fact {
+  label: string;
+  key?: string;
+  value: string;
+  mono?: boolean;
+  copy?: string;
+}
 
 /** Samples the chart keeps: an hour at one a second. */
 const KEEP_MS = 60 * 60_000;
@@ -185,22 +212,41 @@ export default defineComponent({
         },
       ];
     },
-    facts(): [string, string, boolean?][] {
+    facts(): Fact[] {
       const op = this.op;
       if (!op) return [];
       const m = op.proxy?.metrics || {};
+      const mintUrl = op.mint?.url || this.mint.mintUrl;
       return [
-        ["Mint URL", op.mint?.url || this.mint.mintUrl, true],
-        ["Stratum", this.stratum || "–", true],
-        ["Payment rails", (op.mint?.rails || []).join(", ") || "–"],
-        [
-          "Shares accepted",
-          `${(m.shares_accepted ?? 0).toLocaleString()} (${(
+        {
+          label: "Mint URL",
+          key: "mint-url",
+          value: mintUrl,
+          mono: true,
+          copy: mintUrl,
+        },
+        {
+          label: "Stratum",
+          key: "stratum",
+          value: this.stratum || "–",
+          mono: true,
+          copy: this.stratum,
+        },
+        {
+          label: "Payment rails",
+          value: (op.mint?.rails || []).join(", ") || "–",
+        },
+        {
+          label: "Shares accepted",
+          value: `${(m.shares_accepted ?? 0).toLocaleString()} (${(
             m.shares_rejected ?? 0
           ).toLocaleString()} rejected)`,
-        ],
-        ["Running for", fmtDuration((op.now_ms - op.started_ms) / 1000)],
-        ["Signed in as", this.mint.user || "operator"],
+        },
+        {
+          label: "Running for",
+          value: fmtDuration((op.now_ms - op.started_ms) / 1000),
+        },
+        { label: "Signed in as", value: this.mint.user || "operator" },
       ];
     },
   },
@@ -213,6 +259,23 @@ export default defineComponent({
   },
   methods: {
     fmtRate,
+    /** Copy a value (Mint URL, Stratum) and say so. */
+    copy(text: string, label: string) {
+      copyToClipboard(text)
+        .then(() =>
+          this.$q.notify({ message: `${label} copied`, timeout: 1500 })
+        )
+        .catch(() =>
+          this.$q.notify({
+            type: "negative",
+            message: `Could not copy ${label}`,
+          })
+        );
+    },
+    /** Let a long URL wrap after its scheme and before its port, not mid-word. */
+    breakable(v: string): string {
+      return v.replace("://", "://\u200b").replace(/:(\d+)$/, "\u200b:$1");
+    },
     ago(ms?: number) {
       return fmtAgo(ms);
     },
@@ -258,5 +321,9 @@ export default defineComponent({
 }
 .op-dot-off {
   background: #9e9e9e;
+}
+.operator-app .op-fact-mono {
+  word-break: normal;
+  overflow-wrap: anywhere;
 }
 </style>
