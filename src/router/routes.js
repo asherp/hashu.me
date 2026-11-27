@@ -1,4 +1,6 @@
-const routes = [
+import operatorRoutes from "src/operator/routes";
+
+const walletRoutes = [
   {
     path: "/",
     component: () => import("layouts/MainLayout.vue"),
@@ -143,5 +145,10 @@ const routes = [
     component: () => import("src/pages/ErrorNotFound.vue"),
   },
 ];
+
+// Hashu Operator (HASHU_APP=operator) is a separate app built from this repo
+// with its own routes; the wallet's pages are left out of its bundle.
+const routes =
+  process.env.HASHU_APP === "operator" ? operatorRoutes : walletRoutes;
 
 export default routes;

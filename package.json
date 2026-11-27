@@ -11,6 +11,8 @@
     "dev": "quasar dev",
     "build": "quasar build",
     "build:pwa": "quasar build -m pwa",
+    "dev:operator": "HASHU_APP=operator quasar dev",
+    "build:operator": "HASHU_APP=operator quasar build -m pwa",
     "build:electron": "quasar build -m electron",
     "quasar": "quasar",
     "lint": "eslint --ext .js,.vue,.ts ./",
