@@ -41,30 +41,9 @@
 <script lang="ts">
 import { defineComponent, type PropType } from "vue";
 import { fmtRate } from "../format";
+import { slotRates, type WorkSample } from "../hashrate";
 
-type Sample = { t_ms: number; total_hashes: number };
-
-/** Rate per slot from the cumulative work, then a 1 min moving average. */
-function rates(samples: Sample[], slotMs: number): [number, number][] {
-  if (samples.length < 2) return [];
-  const out: [number, number][] = [];
-  let prev = samples[0];
-  for (const s of samples) {
-    if (s.t_ms - prev.t_ms >= slotMs) {
-      const r = Math.max(
-        0,
-        (s.total_hashes - prev.total_hashes) / ((s.t_ms - prev.t_ms) / 1000)
-      );
-      out.push([(s.t_ms + prev.t_ms) / 2, r]);
-      prev = s;
-    }
-  }
-  const k = Math.max(1, Math.round(60_000 / slotMs));
-  return out.map(([t], i) => {
-    const w = out.slice(Math.max(0, i - k + 1), i + 1);
-    return [t, w.reduce((a, [, r]) => a + r, 0) / w.length];
-  });
-}
+type Sample = WorkSample;
 
 export default defineComponent({
   name: "HashrateChart",
@@ -82,11 +61,9 @@ export default defineComponent({
     points(): [number, number][] {
       const last = this.samples[this.samples.length - 1];
       if (!last) return [];
-      const from = last.t_ms - this.spanMs;
-      return rates(
-        this.samples.filter((s) => s.t_ms >= from),
-        15_000
-      );
+      // Fixed 15 s slots with a trailing 1 min average: drawn points
+      // never move when new shares come in.
+      return slotRates(this.samples, 15_000, 60_000, last.t_ms - this.spanMs);
     },
     max(): number {
       const m = Math.max(0, ...this.points.map(([, r]) => r));
