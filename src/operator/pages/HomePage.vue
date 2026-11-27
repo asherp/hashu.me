@@ -141,7 +141,7 @@ export default defineComponent({
           { label: "For sale", value: fmtHashes(st?.capacity?.available_tih) },
           {
             label: "Live hashrate",
-            value: fmtThs(st?.capacity?.live?.measured_ths),
+            value: fmtThs(st?.capacity?.hashrate_ths),
           },
           {
             label: "Ask",

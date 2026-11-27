@@ -6,9 +6,11 @@
     </div>
     <template v-else>
       <div class="text-body2 op-muted q-mb-md">
-        The hashrate you plan to run in each coming difficulty epoch (2,016
-        blocks, about two weeks). Future epochs sell against the plan; the
-        current one sells on what your rigs measure. Your rigs measure
+        Plan the hashrate you will run in each coming difficulty epoch (2,016
+        blocks, about two weeks): a build-out, rigs coming online or going away.
+        Future epochs sell against the plan; the current one sells on what your
+        rigs measure. The plan is public next to what each epoch delivered, so
+        buyers price your promise by how well you keep it. Your rigs measure
         {{ fmtThs(plan.measured_ths) }} now.
       </div>
       <q-list class="op-card" separator>
