@@ -163,8 +163,8 @@ export default defineComponent({
           sub: cap.live?.on
             ? `Live stock, ${cap.live.horizon_hours} h horizon`
             : cap.limit
-              ? "Capped by capacity"
-              : "No cap",
+            ? "Capped by capacity"
+            : "No cap",
         },
         {
           key: "owed",
@@ -172,7 +172,7 @@ export default defineComponent({
           label: "Owed",
           value: fmtHashes(op?.obligations?.total_tih_owed),
           sub: `${fmtHashes(
-            op?.obligations?.tih_in_circulation,
+            op?.obligations?.tih_in_circulation
           )} in circulation`,
         },
         {
@@ -183,8 +183,8 @@ export default defineComponent({
             ? `${fmtHashes(
                 this.open.reduce(
                   (a: number, r: any) => a + (r.remaining_tih || 0),
-                  0,
-                ),
+                  0
+                )
               )} left to deliver`
             : "None",
         },
@@ -198,7 +198,7 @@ export default defineComponent({
           sub:
             price.msat_per_pih != null
               ? `${new Intl.NumberFormat().format(
-                  price.msat_per_pih,
+                  price.msat_per_pih
                 )} msat per PiH`
               : undefined,
         },
@@ -263,13 +263,13 @@ export default defineComponent({
     copy(text: string, label: string) {
       copyToClipboard(text)
         .then(() =>
-          this.$q.notify({ message: `${label} copied`, timeout: 1500 }),
+          this.$q.notify({ message: `${label} copied`, timeout: 1500 })
         )
         .catch(() =>
           this.$q.notify({
             type: "negative",
             message: `Could not copy ${label}`,
-          }),
+          })
         );
     },
     /** Let a long URL wrap after its scheme and before its port, not mid-word. */
@@ -281,7 +281,7 @@ export default defineComponent({
     },
     servingOf(name: string): boolean {
       return this.open.some((r: any) =>
-        (r.rigs || []).some((g: any) => rigName(g.rig) === name),
+        (r.rigs || []).some((g: any) => rigName(g.rig) === name)
       );
     },
     /** Append new samples to the chart's own series. */
@@ -293,7 +293,7 @@ export default defineComponent({
         const since = last ? last.t_ms + 1 : Date.now() - 31 * 60_000;
         const h = await call(this.mint, `/api/hashrate?since=${since}`);
         const add = (h?.samples || []).filter(
-          (s: any) => !last || s.t_ms > last.t_ms,
+          (s: any) => !last || s.t_ms > last.t_ms
         );
         const all = this.series.concat(add);
         const end = all.length ? all[all.length - 1].t_ms : 0;
