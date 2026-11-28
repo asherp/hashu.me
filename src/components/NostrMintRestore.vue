@@ -170,7 +170,7 @@
                   spinner-color="white"
                   spinner-size="xs"
                   :src="getMintIconUrl(mint.url)"
-                  alt="Mint Icon"
+                  alt="Mine Icon"
                   style="height: 34px; max-width: 34px; font-size: 12px"
                 />
               </q-avatar>

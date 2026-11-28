@@ -78,7 +78,7 @@ export async function call<T = any>(
     if (e?.name === "AbortError") throw e;
     throw new ApiError(
       0,
-      "Can't reach the mint. Check the address and your connection."
+      "Can't reach the mine. Check the address and your connection."
     );
   }
   if (!r.ok) throw new ApiError(r.status, await errorText(r));
@@ -125,7 +125,7 @@ export async function signInOperator(
       if (session && typeof session === "object" && session.token) {
         return { api, session };
       }
-      last = new ApiError(0, "That address answered, but not as a Hashu mint.");
+      last = new ApiError(0, "That address answered, but not as a Hashu mine.");
     } catch (e: any) {
       // 404/405: not the operator API at this base; try the next one.
       // 403 too: a control port reached directly refuses the cross-site
@@ -136,7 +136,7 @@ export async function signInOperator(
       ) {
         last = new ApiError(
           e.status,
-          "No operator sign-in here. The mint may be on an older version, or its login is off."
+          "No operator sign-in here. The mine may be on an older version, or its login is off."
         );
         continue;
       }

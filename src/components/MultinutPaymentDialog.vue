@@ -39,7 +39,7 @@
               v-if="!isPaymentInProgress"
               class="multinut-description q-mt-sm"
             >
-              Pay using multiple mints
+              Pay using multiple mines
             </div>
           </div>
 
@@ -81,7 +81,7 @@
             class="mint-selection-description q-mb-md"
             v-if="multinutExperimentalWarningDismissed && !isPaymentInProgress"
           >
-            Select funds from multiple mints to execute the payment.
+            Select funds from multiple mines to execute the payment.
           </div>
 
           <div class="mints-container">
@@ -132,7 +132,7 @@
                             spinner-color="white"
                             spinner-size="xs"
                             :src="getMintIconUrl(mint)"
-                            alt="Mint Icon"
+                            alt="Mine Icon"
                             style="
                               height: 34px;
                               max-width: 34px;

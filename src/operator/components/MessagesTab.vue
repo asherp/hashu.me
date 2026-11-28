@@ -1,11 +1,11 @@
 <template>
   <div>
     <div v-if="!inbox" class="op-card q-pa-md op-muted">
-      Messages aren't available on this mint.
+      Messages aren't available on this mine.
     </div>
     <template v-else>
       <div v-if="!inbox.on" class="op-card q-pa-md op-muted q-mb-md">
-        Direct messages are off: set HASHU_NOSTR_RELAYS on the mint so people
+        Direct messages are off: set HASHU_NOSTR_RELAYS on the mine so people
         can message it at its npub.
       </div>
       <div class="text-caption op-muted q-mb-sm ellipsis">
@@ -113,7 +113,7 @@
         </q-card-section>
         <q-card-section class="column q-gutter-y-md q-pt-none">
           <div class="text-body2 op-muted">
-            The mint issues new hashes and sends them in a direct message. They
+            The mine issues new hashes and sends them in a direct message. They
             count as owed, like any sale.
           </div>
           <q-input

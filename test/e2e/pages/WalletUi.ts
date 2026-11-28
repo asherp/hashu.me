@@ -7,7 +7,7 @@ export class WalletUi extends WalletPage {
     super(page);
   }
 
-  async home(tab?: "Mints" | "History") {
+  async home(tab?: "Mines" | "History") {
     await this.page.goto("/");
     await expect(this.page.getByTestId("wallet-send")).toBeVisible();
     if (tab)
@@ -26,12 +26,12 @@ export class WalletUi extends WalletPage {
   }
 
   async addMint(url: string, nickname = "", confirm = true) {
-    await this.home("Mints");
+    await this.home("Mines");
     await this.page.getByTestId("add-mint-url").fill(url);
     await this.page.getByTestId("add-mint-nickname").fill(nickname);
     await this.page
       .locator(".add-mint-container")
-      .getByRole("button", { name: "Add mint", exact: true })
+      .getByRole("button", { name: "Add mine", exact: true })
       .click();
     if (confirm) {
       await this.page.getByTestId("confirm-add-mint").click();
@@ -43,13 +43,13 @@ export class WalletUi extends WalletPage {
   }
 
   async activateMint(url: string) {
-    await this.home("Mints");
+    await this.home("Mines");
     await this.mintCard(url).click();
     await expect(this.mintCard(url)).toHaveClass(/q-item--active/);
   }
 
   async details(url: string) {
-    await this.home("Mints");
+    await this.home("Mines");
     await this.mintCard(url).getByTestId("mint-details").click();
     await expect(this.page).toHaveURL(/mintdetails/);
   }
@@ -75,7 +75,7 @@ export class WalletUi extends WalletPage {
     save = true
   ) {
     await this.details(url);
-    await this.page.getByText("Edit mint", { exact: true }).click();
+    await this.page.getByText("Edit mine", { exact: true }).click();
     const dialog = this.page.locator(".edit-mint-dialog");
     await dialog.locator("textarea").nth(0).fill(replacementUrl);
     await dialog.locator("textarea").nth(1).fill(nickname);

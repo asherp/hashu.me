@@ -9,7 +9,7 @@
               <img
                 v-if="mintInfo?.icon_url"
                 :src="mintInfo.icon_url"
-                alt="Mint Profile"
+                alt="Mine Profile"
               />
               <q-icon
                 v-else
@@ -59,7 +59,7 @@
               type="textarea"
               autogrow
               outlined
-              placeholder="Share your experience with this mint..."
+              placeholder="Share your experience with this mine..."
               :disable="prefilling || submitting"
               class="review-input"
               :input-style="{ minHeight: '120px' }"

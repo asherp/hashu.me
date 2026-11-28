@@ -1,13 +1,13 @@
 <template>
   <q-page class="op-page">
     <div v-if="!mint" class="text-center q-py-xl">
-      <div class="text-h6">Not signed into this mint</div>
-      <q-btn flat no-caps label="Back to mints" to="/" class="q-mt-md" />
+      <div class="text-h6">Not signed into this mine</div>
+      <q-btn flat no-caps label="Back to mines" to="/" class="q-mt-md" />
     </div>
     <template v-else>
       <div class="row items-center q-mb-sm q-gutter-x-sm">
         <div class="col text-caption op-muted ellipsis">
-          {{ mint.kind === "operator" ? "Operator mint" : "Supplier mint" }} ·
+          {{ mint.kind === "operator" ? "Operator mine" : "Supplier mine" }} ·
           {{ mint.mintUrl }}
           <span v-if="snap?.updatedMs"> · updated {{ ago }}</span>
         </div>
@@ -158,8 +158,8 @@ export default defineComponent({
     signOut() {
       this.$q
         .dialog({
-          title: "Sign out of this mint?",
-          message: "It is removed from this app. The mint keeps running.",
+          title: "Sign out of this mine?",
+          message: "It is removed from this app. The mine keeps running.",
           cancel: { flat: true, noCaps: true },
           ok: {
             label: "Sign out",

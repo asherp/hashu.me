@@ -130,18 +130,18 @@ test("reveals and copies a seed and restores spendable funds in a fresh wallet",
     await restored.page.goto("/restore");
     await restored.page.locator("textarea").fill("invalid seed phrase");
     await expect(
-      restored.page.getByRole("button", { name: /Restore.*mint/i }).first()
+      restored.page.getByRole("button", { name: /Restore.*mine/i }).first()
     ).toBeDisabled();
     await restored.page.locator("textarea").fill(mnemonic);
     await restored.page
       .getByRole("button", { name: "Select All", exact: true })
       .click();
     await restored.page
-      .getByRole("button", { name: /Restore.*mint/i })
+      .getByRole("button", { name: /Restore.*mine/i })
       .first()
       .click();
     await expect(
-      restored.page.getByText("Successfully restored 1 mint(s)", {
+      restored.page.getByText("Successfully restored 1 mine(s)", {
         exact: true,
       })
     ).toBeVisible({ timeout: 60000 });

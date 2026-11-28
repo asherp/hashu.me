@@ -16,7 +16,7 @@ test("removing an inactive mint preserves the active mint", async ({
   await wallet.addMint(MINT_C_URL);
   await expect(wallet.mintCard(MINT_C_URL)).toHaveClass(/q-item--active/);
   await wallet.removeMint(MINT_B_URL);
-  await wallet.home("Mints");
+  await wallet.home("Mines");
   await expect(wallet.mintCard(MINT_B_URL)).toHaveCount(0);
   test.fail(true, "UI-001: removing an inactive mint resets the active mint");
   await expect(wallet.mintCard(MINT_C_URL)).toHaveClass(/q-item--active/, {

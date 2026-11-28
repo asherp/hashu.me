@@ -359,7 +359,7 @@ export const useNpubCashStore = defineStore("npubCash", {
       if (!mintsStore.mints.find((mint) => mint.url === mintUrl)) {
         notifyError(
           `Please make sure ${mintUrl} is added to your wallet first!`,
-          "Could not update npub.cash mint"
+          "Could not update npub.cash mine"
         );
         return;
       }

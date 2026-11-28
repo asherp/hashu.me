@@ -71,7 +71,7 @@
       Rate per rig over the last 5 min, from accepted shares.
     </div>
 
-    <div class="op-section-title">Mint</div>
+    <div class="op-section-title">Mine</div>
     <q-list class="op-card" dense separator>
       <q-item
         v-for="row in facts"
@@ -251,7 +251,7 @@ export default defineComponent({
       const mintUrl = op.mint?.url || this.mint.mintUrl;
       return [
         {
-          label: "Mint URL",
+          label: "Mine URL",
           key: "mint-url",
           value: mintUrl,
           mono: true,

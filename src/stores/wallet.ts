@@ -1526,7 +1526,7 @@ export const useWalletStore = defineStore("wallet", {
       );
       if (!mintResult.ok) {
         this.payInvoiceData.meltQuote.error =
-          "None of your mints support on-chain payments";
+          "None of your mines support on-chain payments";
         this.payInvoiceData.invoice = Object.freeze(cleanAddress);
         return;
       }

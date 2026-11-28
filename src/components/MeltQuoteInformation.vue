@@ -121,7 +121,7 @@
     <div v-if="mintDisplay" class="detail-item">
       <div class="detail-label">
         <BuildingIcon :size="20" :color="iconColor" class="detail-icon" />
-        <div class="detail-name">Mint</div>
+        <div class="detail-name">Mine</div>
       </div>
       <div class="detail-value">{{ mintDisplay }}</div>
     </div>

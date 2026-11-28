@@ -207,7 +207,7 @@ export const useNostrMintBackupStore = defineStore("nostrMintBackup", {
 
         this.lastBackupTimestamp = backupData.timestamp;
         if (verbose) {
-          notifySuccess("Mint list backed up to Nostr successfully");
+          notifySuccess("Mine list backed up to Nostr successfully");
         }
 
         console.log("Mint backup published to Nostr:", event.id);
@@ -217,7 +217,7 @@ export const useNostrMintBackupStore = defineStore("nostrMintBackup", {
         // This prevents showing errors for automatic backups that fail silently
         if (verbose) {
           notifyError(
-            "Failed to backup mint list to Nostr: " + (error as Error).message
+            "Failed to backup mine list to Nostr: " + (error as Error).message
           );
         }
         throw error;
@@ -303,14 +303,14 @@ export const useNostrMintBackupStore = defineStore("nostrMintBackup", {
         if (allDiscoveredMints.length > 0) {
           notify(`Found ${allDiscoveredMints.length} mint(s) in Nostr backups`);
         } else {
-          notify("No mint backups found on Nostr for this seed phrase");
+          notify("No mine backups found on Nostr for this seed phrase");
         }
 
         return allDiscoveredMints;
       } catch (error) {
         console.error("Failed to search mints on Nostr:", error);
         notifyError(
-          "Failed to search for mint backups: " + (error as Error).message
+          "Failed to search for mine backups: " + (error as Error).message
         );
         throw error;
       } finally {
@@ -352,12 +352,12 @@ export const useNostrMintBackupStore = defineStore("nostrMintBackup", {
         if (addedCount > 0) {
           notifySuccess(`Added ${addedCount} mint(s) to your wallet`);
         } else {
-          notify("No new mints were added");
+          notify("No new mines were added");
         }
       } catch (error) {
         console.error("Failed to add selected mints:", error);
         notifyError(
-          "Failed to add selected mints: " + (error as Error).message
+          "Failed to add selected mines: " + (error as Error).message
         );
         throw error;
       }

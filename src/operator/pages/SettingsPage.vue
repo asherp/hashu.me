@@ -52,7 +52,7 @@
       <q-item>
         <q-item-section class="op-muted">Signed into</q-item-section>
         <q-item-section side
-          >{{ store.mints.length }} mint{{
+          >{{ store.mints.length }} mine{{
             store.mints.length === 1 ? "" : "s"
           }}</q-item-section
         >

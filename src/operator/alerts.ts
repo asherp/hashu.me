@@ -90,7 +90,7 @@ export function alertsFor(m: OperatorMint, s?: MintSnapshot): Alert[] {
     out.push({
       id: "unreachable",
       level: "error",
-      title: "Can't reach the mint",
+      title: "Can't reach the mine",
       detail: s.error,
     });
     return out;

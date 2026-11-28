@@ -22,7 +22,7 @@
               <img
                 v-if="mintData.info?.icon_url"
                 :src="mintData.info.icon_url"
-                alt="Mint Profile"
+                alt="Mine Profile"
               />
               <building-icon v-else size="36" />
             </q-avatar>
@@ -637,7 +637,7 @@
               @click="openCreateReviewDialog"
             >
               <q-icon name="rate_review" size="20px" class="action-icon" />
-              <div class="action-label">Review Mint</div>
+              <div class="action-label">Review Mine</div>
             </div>
 
             <div
@@ -762,7 +762,7 @@ export default defineComponent({
         17: "WebSocket subscriptions",
         18: "Payment requests",
         19: "Cached Responses",
-        20: "Signature on Mint Quote",
+        20: "Signature on purchase quote",
         21: "Clear authentication",
         22: "Blind authentication",
       },
