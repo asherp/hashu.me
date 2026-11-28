@@ -102,3 +102,19 @@ export function rigName(user: string): string {
   const i = user.indexOf(".");
   return i >= 0 && i < user.length - 1 ? user.slice(i + 1) : user;
 }
+
+/** A rig name as the mint keeps it: no spaces, only safe characters. */
+export function cleanRigName(raw: string): string {
+  return raw
+    .trim()
+    .replace(/\s+/g, "-")
+    .replace(/[^A-Za-z0-9._-]/g, "")
+    .replace(/^\.+/, "")
+    .slice(0, 64);
+}
+
+/** The Stratum user for `rig` under `prefix` (or the account typed). */
+export function workerName(prefix: string | null | undefined, rig: string) {
+  const p = (prefix || "").trim().replace(/\.+$/, "");
+  return p ? `${p}.${rig}` : rig;
+}
