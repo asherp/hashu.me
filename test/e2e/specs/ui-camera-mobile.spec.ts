@@ -86,7 +86,7 @@ test.describe("touch viewport", () => {
     await wallet.addMint(MINT_C_URL, "Mobile mint");
     await expect(wallet.mintCard(MINT_C_URL)).toContainText("Mobile mint");
     await wallet.removeMint(MINT_C_URL);
-    await wallet.home("Mints");
+    await wallet.home("Mines");
     await expect(wallet.mintCard(MINT_C_URL)).toHaveCount(0);
     await expect(wallet.mintCard(MINT_A_URL)).toBeVisible();
   });

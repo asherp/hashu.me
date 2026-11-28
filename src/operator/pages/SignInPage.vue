@@ -9,26 +9,26 @@
       active-color="primary"
       indicator-color="primary"
     >
-      <q-tab name="operator" label="Operator mint" />
-      <q-tab name="supplier" label="Supplier mint" />
+      <q-tab name="operator" label="Operator mine" />
+      <q-tab name="supplier" label="Supplier mine" />
     </q-tabs>
 
     <q-form @submit.prevent="submit" class="column q-gutter-y-md">
       <div class="op-muted text-body2">
         <template v-if="kind === 'operator'">
-          The mint you run, with the operator user and password from its
+          The mine you run, with the operator user and password from its
           <span class="op-mono">.env</span> (the same login as its
           <span class="op-mono">/operator/</span> dashboard).
         </template>
         <template v-else>
-          A hosted supplier mint (<span class="op-mono">name.hashu.io</span>),
+          A hosted supplier mine (<span class="op-mono">name.hashu.io</span>),
           with the dashboard key you got at sign-up.
         </template>
       </div>
       <q-input
         v-model="url"
         outlined
-        label="Mint address"
+        label="Mine address"
         placeholder="https://mint.example.com"
         autocapitalize="off"
         autocorrect="off"
@@ -96,7 +96,7 @@
         data-testid="signin-submit"
       />
       <div class="text-caption op-muted">
-        The sign-in lasts up to 7 days, and ends when the mint restarts. Nothing
+        The sign-in lasts up to 7 days, and ends when the mine restarts. Nothing
         here can spend vouchers: those stay in your wallet.
       </div>
     </q-form>

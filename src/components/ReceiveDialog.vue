@@ -263,7 +263,7 @@ export default defineComponent({
         this.activeUnit as string
       );
       if (!mintResult.ok) {
-        notifyWarning("No mints available");
+        notifyWarning("No mines available");
         this.showReceiveDialog = false;
         return;
       }

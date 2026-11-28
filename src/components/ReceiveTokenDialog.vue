@@ -743,7 +743,7 @@ export default defineComponent({
         this.swapError = false;
         const targetMint = this.swapTargetMint;
         if (!targetMint) {
-          throw new Error("No target mint selected");
+          throw new Error("No target mine selected");
         }
         await useReceiveTokensStore().meltTokenToMint(
           this.receiveData.tokensBase64,

@@ -37,7 +37,7 @@
         <p>
           <strong>This software is in BETA!</strong> We hold no responsibility
           for people losing access to funds. Use at your own risk! This wallet
-          is not affiliated with any mint. This code is open-source and licensed
+          is not affiliated with any mine. This code is open-source and licensed
           under the MIT license.
         </p>
         <!-- wallet backup restore -->

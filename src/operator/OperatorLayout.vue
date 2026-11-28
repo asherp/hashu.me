@@ -53,7 +53,7 @@ export default defineComponent({
   computed: {
     title(): string {
       const p = this.$route.path;
-      if (p === "/add") return "Sign into a mint";
+      if (p === "/add") return "Sign into a mine";
       if (p === "/settings") return "Settings";
       const id = this.$route.params.id as string | undefined;
       return (id && useOperatorStore().byId(id)?.label) || "";

@@ -44,7 +44,7 @@ test("closes and reopens drafts without submitting or retaining an old amount", 
   await wallet.openReceive("lightning");
   await expect(page.getByTestId("create-payment-request")).toBeDisabled();
   await wallet.closeFullscreenDialog();
-  await wallet.home("Mints");
+  await wallet.home("Mines");
   await page.getByRole("tab", { name: "History", exact: true }).click();
   await expect(page.getByText("No history yet", { exact: true })).toBeVisible();
   expect(submissions).toBe(0);
@@ -117,7 +117,7 @@ test("switching the mint in a payment dialog replaces the old quote", async ({
   await paid;
   await expect(page.getByText("Paid", { exact: false })).toBeVisible();
   await expect(page.locator(".pay-fullscreen")).toBeHidden();
-  await wallet.home("Mints");
+  await wallet.home("Mines");
   await expect(wallet.mintCard(MINT_A_URL)).toContainText("100");
   await expect(wallet.mintCard(MINT_B_URL)).toContainText("34");
 });

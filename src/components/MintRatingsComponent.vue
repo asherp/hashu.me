@@ -11,7 +11,7 @@
             <img
               v-if="mintInfo?.icon_url"
               :src="mintInfo.icon_url"
-              alt="Mint Profile"
+              alt="Mine Profile"
             />
             <q-icon v-else name="account_balance" size="36px" color="grey-7" />
           </q-avatar>

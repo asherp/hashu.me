@@ -110,7 +110,7 @@
           v-model="form.npub"
           outlined
           dense
-          label="Your npub (messages to your mint)"
+          label="Your npub (messages to your mine)"
           autocapitalize="off"
         />
         <div class="row q-gutter-sm">

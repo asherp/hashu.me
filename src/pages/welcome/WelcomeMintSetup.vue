@@ -45,7 +45,7 @@
                 spinner-color="white"
                 spinner-size="xs"
                 :src="getMintIconUrlExisting(mint)"
-                alt="Mint Icon"
+                alt="Mine Icon"
                 style="height: 34px; max-width: 34px; font-size: 12px"
               />
             </q-avatar>

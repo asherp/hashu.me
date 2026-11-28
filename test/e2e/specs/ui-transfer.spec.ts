@@ -31,7 +31,7 @@ async function chooseSwap(
   to: string,
   amount: string
 ) {
-  await wallet.home("Mints");
+  await wallet.home("Mines");
   await wallet.page
     .getByRole("combobox", { name: "From", exact: true })
     .click();
@@ -122,13 +122,13 @@ test("receives an unknown-mint token through a deep link after the receive-and-t
     ).toBeVisible();
     await expect(receiver.page.getByTestId("receive-ecash")).toBeVisible();
     await receiver.closeFullscreenDialog();
-    await receiver.home("Mints");
+    await receiver.home("Mines");
     await expect(receiver.mintCard(MINT_B_URL)).toHaveCount(0);
     await expect.poll(() => receiver.balanceSats()).toBe(0);
     await receiver.page.goto(`/?token=${encodeURIComponent(token)}`);
     await receiver.page.getByTestId("receive-ecash").click();
     await expect.poll(() => receiver.balanceSats()).toBe(20);
-    await receiver.home("Mints");
+    await receiver.home("Mines");
     await expect(receiver.mintCard(MINT_B_URL)).toBeVisible();
     await receiver.page.reload();
     await expect.poll(() => receiver.balanceSats()).toBe(20);

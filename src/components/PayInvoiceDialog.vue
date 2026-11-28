@@ -579,7 +579,7 @@
                   color="primary"
                   rounded
                   @click="openMultinutDialog"
-                  label="Pay with multiple mints"
+                  label="Pay with multiple mines"
                 />
               </template>
               <!-- Balance too low -->

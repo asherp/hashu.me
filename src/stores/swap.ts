@@ -46,7 +46,7 @@ export const useSwapStore = defineStore("swap", {
       // hashu.me: Hashu mints never melt to Lightning, so a swap would fail
       // after the melt attempt. Refuse up front (see MULTI_MINT_SWAPS_ENABLED).
       if (!MULTI_MINT_SWAPS_ENABLED) {
-        throw new Error("Swaps between mints are not supported on Hashu.");
+        throw new Error("Swaps between mines are not supported on Hashu.");
       }
       const walletStore = useWalletStore();
       const mintStore = useMintsStore();
@@ -121,7 +121,7 @@ export const useSwapStore = defineStore("swap", {
       // hashu.me: Hashu mints never melt to Lightning, so a swap would fail
       // after the melt attempt. Refuse up front (see MULTI_MINT_SWAPS_ENABLED).
       if (!MULTI_MINT_SWAPS_ENABLED) {
-        throw new Error("Swaps between mints are not supported on Hashu.");
+        throw new Error("Swaps between mines are not supported on Hashu.");
       }
       const proofsStore = useProofsStore();
       const walletStore = useWalletStore();

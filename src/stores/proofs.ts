@@ -174,7 +174,7 @@ export const useProofsStore = defineStore("proofs", {
         m.keysets.some((k) => uniqueIds.includes(k.id))
       );
       if (mints.length === 0) {
-        throw new Error("No mints found for proofs");
+        throw new Error("No mines found for proofs");
       }
       // unit of keysets
       const unit = keysets[0].unit;

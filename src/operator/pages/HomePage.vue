@@ -2,9 +2,9 @@
   <q-page class="op-page">
     <div v-if="!store.mints.length" class="text-center q-py-xl">
       <HashuLogoIcon :size="56" class="q-mb-md" />
-      <div class="text-h6">Run your Hashu mint from here</div>
+      <div class="text-h6">Run your Hashu mine from here</div>
       <div class="op-muted q-mt-sm q-mx-auto" style="max-width: 420px">
-        Sign in with your mint's operator password, or a supplier mint's
+        Sign in with your mine's operator password, or a supplier mine's
         dashboard key. Your vouchers stay in the wallet: this app never holds
         any.
       </div>
@@ -15,7 +15,7 @@
         color="primary"
         class="q-mt-lg"
         icon="add"
-        label="Sign into a mint"
+        label="Sign into a mine"
         to="/add"
         data-testid="add-first-mint"
       />
@@ -48,7 +48,7 @@
                 </div>
                 <div class="text-caption op-muted ellipsis">
                   {{
-                    m.kind === "operator" ? "Operator mint" : "Supplier mint"
+                    m.kind === "operator" ? "Operator mine" : "Supplier mine"
                   }}
                   · {{ host(m.mintUrl) }}
                 </div>
@@ -93,7 +93,7 @@
           rounded
           no-caps
           icon="add"
-          label="Sign into another mint"
+          label="Sign into another mine"
           to="/add"
         />
       </div>

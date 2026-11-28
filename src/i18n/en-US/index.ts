@@ -5,7 +5,7 @@ export default {
     },
     actions: {
       add_mint: {
-        label: "Add mint",
+        label: "Add mine",
       },
       cancel: {
         label: "Cancel",
@@ -46,7 +46,7 @@ export default {
     },
     inputs: {
       mint_url: {
-        label: "Mint URL",
+        label: "Mine URL",
       },
     },
   },
@@ -55,10 +55,10 @@ export default {
   },
   MultinutPicker: {
     payment: "Multinut payment",
-    selectMints: "Select one or multiple mints to execute a payment from.",
+    selectMints: "Select one or multiple mines to execute a payment from.",
     totalSelectedBalance: "Total Selected Balance",
-    multiMintPay: "Multi-Mint Pay",
-    balanceNotEnough: "Multi-mint balance not enough to satisfy this invoice",
+    multiMintPay: "Multi-Mine Pay",
+    balanceNotEnough: "Multi-mine balance not enough to satisfy this invoice",
     failed: "Failed to process: {error}",
     paid: "Paid {amount} via Lightning",
   },
@@ -67,7 +67,7 @@ export default {
       balance_too_low: "Balance is too low",
       received: "Received {amount}",
       fee: " (fee: {fee})",
-      could_not_request_mint: "Could not request mint",
+      could_not_request_mint: "Could not request vouchers",
       invoice_still_pending: "Invoice still pending",
       paid_lightning: "Paid {amount} via Lightning",
       payment_pending_refresh: "Payment pending. Refresh invoice manually.",
@@ -86,26 +86,26 @@ export default {
       no_price_data: "No price data.",
       please_try_again: "Please try again.",
       trying_again: "Trying again...",
-      no_bolt12_mint: "None of your mints support BOLT12 offers",
-      no_bolt11_mint: "None of your mints support BOLT11 invoices",
+      no_bolt12_mint: "None of your mines support BOLT12 offers",
+      no_bolt11_mint: "None of your mines support BOLT11 invoices",
     },
     mint: {
       notifications: {
-        already_added: "Mint already added",
-        added: "Mint added",
-        not_found: "Mint not found",
-        activation_failed: "Mint activation failed",
-        no_active_mint: "No active mint",
+        already_added: "Mine already added",
+        added: "Mine added",
+        not_found: "Mine not found",
+        activation_failed: "Mine activation failed",
+        no_active_mint: "No active mine",
         unit_activation_failed: "Unit activation failed",
-        unit_not_supported: "Unit not supported by mint",
-        activated: "Mint activated",
-        could_not_connect: "Could not connect to mint",
-        could_not_get_info: "Could not get mint info",
-        could_not_get_keys: "Could not get mint keys",
-        could_not_get_keysets: "Could not get mint keysets",
-        mint_validation_error: "Mint validation error",
-        removed: "Mint removed",
-        error: "Mint error",
+        unit_not_supported: "Unit not supported by mine",
+        activated: "Mine activated",
+        could_not_connect: "Could not connect to mine",
+        could_not_get_info: "Could not get mine info",
+        could_not_get_keys: "Could not get mine keys",
+        could_not_get_keysets: "Could not get mine keysets",
+        mint_validation_error: "Mine validation error",
+        removed: "Mine removed",
+        error: "Mine error",
       },
     },
   },
@@ -307,15 +307,15 @@ export default {
         description: "Receive incoming payments automatically.",
       },
       mint: {
-        label: "npub.cash mint",
-        choose_title: "Choose mint for npub.cash",
-        choose_placeholder: "Select a mint...",
+        label: "npub.cash mine",
+        choose_title: "Choose mine for npub.cash",
+        choose_placeholder: "Select a mine...",
       },
     },
     nostr_profile: {
       title: "Your Nostr profile",
       description:
-        "The name and picture people see when this wallet messages a mint or appears on Nostr.",
+        "The name and picture people see when this wallet messages a mine or appears on Nostr.",
       edit: "Edit profile",
       create: "Set up profile",
       none: "No profile yet",
@@ -394,7 +394,7 @@ export default {
       description: "Use NWC to control your wallet from any other application.",
       enable_toggle: "Enable NWC",
       payments_note:
-        "You can only use NWC for payments from your Bitcoin balance. Payments will be made from your active mint.",
+        "You can only use NWC for payments from your Bitcoin balance. Payments will be made from your active mine.",
       connection: {
         copy_tooltip: "Copy connection string",
         qr_tooltip: "Show QR code",
@@ -466,7 +466,7 @@ export default {
       websockets: {
         toggle: "Use WebSockets",
         description:
-          "If enabled, the wallet will use long-lived WebSocket connections to receive updates on paid invoices and spent tokens from mints. This increases the wallet's responsiveness but also makes fingerprinting easier.",
+          "If enabled, the wallet will use long-lived WebSocket connections to receive updates on paid invoices and spent tokens from mines. This increases the wallet's responsiveness but also makes fingerprinting easier.",
       },
       bitcoin_price: {
         toggle: "Get exchange rate from Coinbase",
@@ -485,7 +485,7 @@ export default {
         toggle: "Receive swaps",
         badge: "Beta",
         description:
-          "Option to swap received Vouchers to your active mint in the Receive Vouchers dialog.",
+          "Option to swap received Vouchers to your active mine in the Receive Vouchers dialog.",
       },
       auto_paste: {
         toggle: "Paste Vouchers automatically",
@@ -496,23 +496,23 @@ export default {
         toggle: "Enable auditor",
         badge: "Beta",
         description:
-          "If enabled, the wallet will display auditor information in the mint details dialog. The auditor is a third party service that monitors the reliability of mints.",
+          "If enabled, the wallet will display auditor information in the mine details dialog. The auditor is a third party service that monitors the reliability of mines.",
         url_label: "Auditor URL",
         api_url_label: "Auditor API URL",
       },
       multinut: {
         toggle: "Enable Multinut",
         description:
-          "If enabled, the wallet will use Multinut to pay invoices from multiple mints at once.",
+          "If enabled, the wallet will use Multinut to pay invoices from multiple mines at once.",
       },
       nostr_mint_backup: {
-        toggle: "Backup mint list on Nostr",
+        toggle: "Backup mine list on Nostr",
         description:
-          "If enabled, your mint list will be automatically backed up to Nostr relays using your configured Nostr keys. This allows you to restore your mint list across devices.",
+          "If enabled, your mine list will be automatically backed up to Nostr relays using your configured Nostr keys. This allows you to restore your mine list across devices.",
         notifications: {
-          enabled: "Nostr mint backup enabled",
-          disabled: "Nostr mint backup disabled",
-          failed: "Failed to enable Nostr mint backup",
+          enabled: "Nostr mine backup enabled",
+          disabled: "Nostr mine backup disabled",
+          failed: "Failed to enable Nostr mine backup",
         },
       },
     },
@@ -534,7 +534,7 @@ export default {
           freedom: "freedom",
           nostr: "nostr",
           bitcoin: "bitcoin",
-          mint: "mint",
+          mint: "mine",
           nut: "nut",
           blu: "blu",
           flamingo: "flamingo",
@@ -557,7 +557,7 @@ export default {
           usd: "US dollars ($)",
         },
         usd_source:
-          "Dollar amounts use the BTC price from Coinbase (Privacy > Get exchange rate from Coinbase). Prices use the mint's own USDT price when it sells for USDT.",
+          "Dollar amounts use the BTC price from Coinbase (Privacy > Get exchange rate from Coinbase). Prices use the mine's own USDT price when it sells for USDT.",
       },
       hashu_unit: {
         title: "Hash unit",
@@ -615,7 +615,7 @@ export default {
         remove_spent: {
           button: "Remove spent proofs",
           description:
-            "Check if the vouchers from your active mints are spent and remove the spent ones from your wallet. Only use this if your wallet is stuck.",
+            "Check if the vouchers from your active mines are spent and remove the spent ones from your wallet. Only use this if your wallet is stuck.",
         },
         debug_console: {
           button: "Toggle Debug Console",
@@ -625,7 +625,7 @@ export default {
         export_proofs: {
           button: "Export active proofs",
           description:
-            "Copy your entire balance from the active mint as a Cashu token into your clipboard. This will only export the tokens from the selected mint and unit. For a full export, select a different mint and unit and export again.",
+            "Copy your entire balance from the active mine as a Cashu token into your clipboard. This will only export the tokens from the selected mine and unit. For a full export, select a different mine and unit and export again.",
         },
         keyset_counters: {
           title: "Increment keyset counters",
@@ -668,9 +668,9 @@ export default {
     },
   },
   NoMintWarnBanner: {
-    title: "Join a mint",
+    title: "Connect a mine",
     subtitle:
-      "You haven't joined a Hashu mint yet. Add https://mint.hashu.io in the settings or receive vouchers from a mint to get started.",
+      "You haven't connected a Hashu mine yet. Add https://mint.hashu.io in the settings or receive vouchers from a mine to get started.",
     actions: {
       add_mint: {
         label: "@:global.actions.add_mint.label",
@@ -700,7 +700,7 @@ export default {
         label: "Redemptions",
       },
       mints: {
-        label: "Mints",
+        label: "Mines",
       },
     },
     install: {
@@ -758,13 +758,13 @@ export default {
     tih_value: "≈ {amount} sat | ≈ {amount} sats",
     tih_price: "Hashprice {price} · 1 PiH = {msat} msat",
     mintUrl: {
-      label: "Mint",
+      label: "Mine",
     },
     mintBalance: {
       label: "Balance",
     },
     mintError: {
-      label: "Mint error",
+      label: "Mine error",
     },
     pending: {
       label: "Pending",
@@ -796,7 +796,7 @@ export default {
       },
     },
     p2: {
-      text: "Vouchers are issued by Hashu mints, which sell hashrate from their miners. Connect to the mints you trust; mint.hashu.io is added by default.",
+      text: "Vouchers are issued by Hashu mines, which sell hashrate from their miners. Connect to the mines you trust; mint.hashu.io is added by default.",
     },
     p3: {
       text: "This wallet stores vouchers that only you have access to. If you delete your browser data without a seed phrase backup, you will lose your vouchers.",
@@ -892,25 +892,25 @@ export default {
     options: {
       new: {
         title: "Create new wallet",
-        subtitle: "Generate a new seed and add mints.",
+        subtitle: "Generate a new seed and add mines.",
       },
       recover: {
         title: "Recover wallet",
-        subtitle: "Enter your seed phrase, restore mints and vouchers.",
+        subtitle: "Enter your seed phrase, restore mines and vouchers.",
       },
     },
   },
   WelcomePoolSetup: {
     title: "Choose your pool",
-    text: "When you redeem vouchers, the mint points hashrate at your pool account and the pool pays you. Pick your pool and enter the worker name it expects. You can skip this and set it later in Settings > Pool.",
+    text: "When you redeem vouchers, the mine points hashrate at your pool account and the pool pays you. Pick your pool and enter the worker name it expects. You can skip this and set it later in Settings > Pool.",
   },
   WelcomeMintSetup: {
-    title: "Add mints",
-    text: "Mints issue hashrate vouchers and route hashrate to your pool when you redeem them. Hashu's own mint is added for you; you can add other Hashu mints below.",
+    title: "Add mines",
+    text: "Mines issue hashrate vouchers and route hashrate to your pool when you redeem them. Hashu's own mine is added for you; you can add other Hashu mines below.",
     sections: {
-      your_mints: "Your mints",
+      your_mints: "Connected mines",
     },
-    restoring: "Restoring mints…",
+    restoring: "Restoring mines…",
     placeholder: {
       mint_url: "https://",
     },
@@ -929,10 +929,10 @@ export default {
   },
   WelcomeRestoreEcash: {
     title: "Restore your vouchers",
-    text: "Scan for unspent proofs on your configured mints and add them to your wallet.",
+    text: "Scan for unspent proofs on your configured mines and add them to your wallet.",
   },
   MintRatings: {
-    title: "Mint Reviews",
+    title: "Mine Reviews",
     reviews: "reviews",
     ratings: "Ratings",
     no_reviews: "No reviews found",
@@ -952,10 +952,10 @@ export default {
       write_review: "Write a review",
     },
     empty_state_subtitle:
-      "Help by leaving a review. Share your experience with this mint and help others by leaving a review.",
+      "Help by leaving a review. Share your experience with this mine and help others by leaving a review.",
   },
   CreateMintReview: {
-    title: "Review Mint",
+    title: "Review Mine",
     publishing_as: "Publishing as",
     inputs: {
       rating: { label: "Rating" },
@@ -969,7 +969,7 @@ export default {
     seed_phrase: {
       label: "Restore from Seed Phrase",
       caption:
-        "Enter your seed phrase to restore your wallet. Before you restore, make sure you have added all the mints that you have used before.",
+        "Enter your seed phrase to restore your wallet. Before you restore, make sure you have added all the mines that you have used before.",
       inputs: {
         seed_phrase: {
           label: "Seed phrase",
@@ -983,9 +983,9 @@ export default {
         "The wizard will only restore vouchers from another seed phrase, you will not be able to use this seed phrase or change the seed phrase of the wallet that you're currently using. This means that restored vouchers will not be protected by your current seed phrase as long as you don't send the vouchers to yourself once.",
     },
     restore_mints: {
-      label: "Restore Mints",
+      label: "Restore Mines",
       caption:
-        'Select the mint to restore. You can add more mints in the main screen under "Mints" and restore them here.',
+        'Select the mine to restore. You can add more mines in the main screen under "Mines" and restore them here.',
     },
     actions: {
       paste: {
@@ -1002,60 +1002,60 @@ export default {
       },
       restore: {
         label: "Restore",
-        in_progress: "Restoring mint …",
-        error: "Error restoring mint: { error }",
+        in_progress: "Restoring mine …",
+        error: "Error restoring mine: { error }",
       },
       restore_all_mints: {
-        label: "Restore All Mints",
-        in_progress: "Restoring mint { index } of { length } …",
+        label: "Restore All Mines",
+        in_progress: "Restoring mine { index } of { length } …",
         success: "Restore finished successfully",
-        error: "Error restoring mints: { error }",
+        error: "Error restoring mines: { error }",
       },
       restore_selected_mints: {
-        label: "Restore Selected Mints ({count})",
-        in_progress: "Restoring mint { index } of { length } …",
-        success: "Successfully restored {count} mint(s)",
-        error: "Error restoring selected mints: { error }",
+        label: "Restore Selected Mines ({count})",
+        in_progress: "Restoring mine { index } of { length } …",
+        success: "Successfully restored {count} mine(s)",
+        error: "Error restoring selected mines: { error }",
       },
     },
     nostr_mints: {
-      label: "Restore Mints from Nostr",
+      label: "Restore Mines from Nostr",
       caption:
-        "Search for mint backups stored on Nostr relays using your seed phrase. This will help you discover mints you previously used.",
-      search_button: "Search for Mint Backups",
+        "Search for mine backups stored on Nostr relays using your seed phrase. This will help you discover mines you previously used.",
+      search_button: "Search for Mine Backups",
       select_all: "Select All",
       deselect_all: "Deselect All",
       backed_up: "Backed up",
       already_added: "Already Added",
       add_selected: "Add Selected ({count})",
-      no_backups_found: "No mint backups found",
+      no_backups_found: "No mine backups found",
       no_backups_hint:
-        "Make sure Nostr mint backup is enabled in settings to automatically backup your mint list.",
+        "Make sure Nostr mine backup is enabled in settings to automatically backup your mine list.",
       invalid_mnemonic: "Please enter a valid seed phrase before searching.",
-      search_error: "Failed to search for mint backups.",
-      add_error: "Failed to add selected mints.",
+      search_error: "Failed to search for mine backups.",
+      add_error: "Failed to add selected mines.",
     },
   },
   MintSettings: {
     redeem: {
       label: "Redeem",
-      tooltip: "Redeem this mint's vouchers as hashrate to your pool",
+      tooltip: "Redeem this mine's vouchers as hashrate to your pool",
     },
     message: {
       label: "Message",
-      tooltip: "Send this mint a private message over Nostr",
+      tooltip: "Send this mine a private message over Nostr",
     },
     eta_label: "ETA",
     eta_tooltip:
       "About how long redeeming your whole balance here would take at this hashrate, after redemptions already queued.",
     price_tooltip:
-      "The mint's hashprice: what vouchers cost here. THd is 1 TH/s for a day.",
+      "The mine's hashprice: what vouchers cost here. THd is 1 TH/s for a day.",
     hashrate_tooltip:
-      "Hashrate this mint's rigs are delivering right now, measured over the last few minutes. Redemptions share it.",
+      "Hashrate this mine's rigs are delivering right now, measured over the last few minutes. Redemptions share it.",
     add: {
-      title: "Add mint",
+      title: "Add mine",
       description:
-        "Enter the URL of a Cashu mint to connect to it. This wallet is not affiliated with any mint.",
+        "Enter the URL of a Hashu mine (any Cashu mint works) to connect to it. This wallet is not affiliated with any mine.",
       inputs: {
         nickname: {
           placeholder: "Nickname (e.g. Testnet)",
@@ -1072,24 +1072,24 @@ export default {
       },
     },
     discover: {
-      title: "Discover mints",
+      title: "Discover mines",
       overline: "Discover",
-      caption: "Discover mints other users have recommended on nostr.",
+      caption: "Discover mines other users have recommended on nostr.",
       actions: {
         discover: {
-          label: "Discover mints",
+          label: "Discover mines",
           in_progress: "Loading…",
-          error_no_mints: "No mints found",
-          success: "Found { length } mints",
+          error_no_mints: "No mines found",
+          success: "Found { length } mines",
         },
       },
       recommendations: {
-        overline: "Found { length } mints",
+        overline: "Found { length } mines",
         caption:
-          "These mints were recommended by other Nostr users. Be careful and do your own research before using a mint.",
+          "These mines were recommended by other Nostr users. Be careful and do your own research before using a mine.",
         actions: {
           browse: {
-            label: "Click to browse mints",
+            label: "Click to browse mines",
           },
         },
       },
@@ -1099,7 +1099,7 @@ export default {
       overline: "Multimint Swaps",
       actions: {
         receove_to_trusted_mint: {
-          label: "Receive to trusted mint",
+          label: "Receive to trusted mine",
         },
         swap: {
           label: "@:global.actions.swap.label",
@@ -1107,7 +1107,7 @@ export default {
         },
       },
       caption:
-        "Swap funds between mints via Lightning. Note: Leave room for potential Lightning fees. If the incoming payment does not succeed, check the invoice manually.",
+        "Swap funds between mines via Lightning. Note: Leave room for potential Lightning fees. If the incoming payment does not succeed, check the invoice manually.",
       inputs: {
         from: {
           label: "From",
@@ -1123,7 +1123,7 @@ export default {
     error_badge: "Error",
     reviews_text: "reviews",
     no_reviews_yet: "No reviews yet",
-    discover_mints_button: "Discover mints",
+    discover_mints_button: "Discover mines",
   },
   QrcodeReader: {
     progress: {
@@ -1188,11 +1188,11 @@ export default {
       ecash: {
         label: "Hashes",
         other_label: "Ecash",
-        error_no_mints: "No mints available",
+        error_no_mints: "No mines available",
       },
       lightning: {
         label: "Lightning",
-        error_no_mints: "No mints available",
+        error_no_mints: "No mines available",
       },
       hashrate: {
         label: "Redeem to pool",
@@ -1203,14 +1203,14 @@ export default {
     title: "Backup pools",
     description:
       "Where hashrate goes if your pool is down. Tried in order, up to three.",
-    text: "If your pool can't be reached or refuses the work, the mint's miners switch to the next backup and keep filling the same redemption. They go back to your pool once it answers again.",
+    text: "If your pool can't be reached or refuses the work, the mine's miners switch to the next backup and keep filling the same redemption. They go back to your pool once it answers again.",
     item: "Backup { n }",
     add: "Add a backup pool",
     remove: "Remove",
     summary: "Backup pools ({ n })",
     summary_none: "Add a backup pool (optional)",
     unsupported:
-      "This mint doesn't take backup pools yet, so this redemption uses only your main pool.",
+      "This mine doesn't take backup pools yet, so this redemption uses only your main pool.",
     on_backup:
       "Your pool isn't taking the work right now, so hashrate is going to your backup { pool }.",
   },
@@ -1249,17 +1249,17 @@ export default {
     },
     guide: "Pool setup guide",
     estimate: {
-      time: "Estimated time to redeem: about { time } at the mint's current { rate }.",
+      time: "Estimated time to redeem: about { time } at the mine's current { rate }.",
       queue:
         "That includes { queue } still owed to earlier redemptions, which go first.",
       past_rental:
-        "That runs past the mint's current hashrate rental, so it may take longer.",
+        "That runs past the mine's current hashrate rental, so it may take longer.",
       no_hashrate:
-        "The mint has no hashrate right now, so delivery starts when its miners are back.",
+        "The mine has no hashrate right now, so delivery starts when its miners are back.",
       short: {
         rigs_busy: "All rigs busy · starts in about { time }",
         queue: "{ queue } queued ahead",
-        no_hashrate: "Starts when the mint's miners are back",
+        no_hashrate: "Starts when the mine's miners are back",
       },
     },
     actions: {
@@ -1296,12 +1296,12 @@ export default {
       paused:
         "Paused by you. No hashrate is going to your pool. Resume when you're ready; nothing is charged while paused.",
       paused_operator:
-        "Paused by the mint operator. No hashrate is going to your pool until they resume it, and nothing is charged meanwhile. You can stop now and get the rest back.",
-      failed: "The mint didn't accept that: { error }",
+        "Paused by the mine operator. No hashrate is going to your pool until they resume it, and nothing is charged meanwhile. You can stop now and get the rest back.",
+      failed: "The mine didn't accept that: { error }",
       change_pool:
         "Send the rest of this redemption to another pool. What's delivered so far stays counted, and nothing extra is charged. This also becomes your saved pool.",
       unsupported:
-        "This mint doesn't offer stop or pause yet. Redemptions from it run to the end.",
+        "This mine doesn't offer stop or pause yet. Redemptions from it run to the end.",
     },
     status: {
       opened: "Redemption open. Hashrate is going to { worker }.",
@@ -1317,7 +1317,7 @@ export default {
       rig_wait_unknown:
         "Waiting for a rig. Every rig is busy with earlier redemptions; this starts once one frees up.",
       no_progress:
-        "Progress isn't available from this mint. The wallet checks the redemption in the background and adds the change when it ends.",
+        "Progress isn't available from this mine. The wallet checks the redemption in the background and adds the change when it ends.",
       background:
         "You can close this. The wallet keeps checking and adds the change when delivery ends.",
     },
@@ -1384,7 +1384,7 @@ export default {
       amount_required: "Enter an amount first.",
       serialization_failed: "Could not prepare the voucher.",
       mint_not_allowed_by_request:
-        "The selected mint is not accepted by this payment request.",
+        "The selected mine is not accepted by this payment request.",
     },
   },
   SendPaymentRequest: {
@@ -1414,13 +1414,13 @@ export default {
       ecash: {
         label: "Hashes",
         other_label: "Ecash",
-        error_no_mints: "No mints available",
+        error_no_mints: "No mines available",
       },
       lightning: {
         label: "Lightning",
         buy_label: "Buy with Lightning",
         error_no_mints:
-          "You need to connect to a mint to receive via Lightning",
+          "You need to connect to a mine to receive via Lightning",
       },
     },
   },
@@ -1479,7 +1479,7 @@ export default {
       },
     },
     unknown_mint_info_text:
-      "Unknown mint. It will be added after you receive this token.",
+      "Unknown mine. It will be added after you receive this token.",
     swap_section: {
       title: "Swap",
       source_label: "From",
@@ -1499,11 +1499,11 @@ export default {
       receive: {
         label: "@:global.actions.receive.label",
         label_known_mint: "@:ReceiveTokenDialog.actions.receive.label",
-        label_adding_mint: "Adding mint…",
+        label_adding_mint: "Adding mine…",
       },
       swap: {
-        label: "Receive to trusted mint",
-        tooltip_text: "Swap to a trusted mint",
+        label: "Receive to trusted mine",
+        tooltip_text: "Swap to a trusted mine",
         caption: "Swap { value }",
         processing: "Processing swap...",
         failed: "Swap failed",
@@ -1518,7 +1518,7 @@ export default {
         in_progress: "@:ReceiveTokenDialog.actions.confirm_swap.label",
       },
       receive_to_selected_mint: {
-        label: "Receive to selected mint",
+        label: "Receive to selected mine",
       },
       later: {
         label: "Receive later",
@@ -1579,7 +1579,7 @@ export default {
         label: "Add amount",
       },
       use_active_mint: {
-        label: "Any mint",
+        label: "Any mine",
       },
     },
     inputs: {
@@ -1618,7 +1618,7 @@ export default {
     },
   },
   MintMotdMessage: {
-    title: "Mint Message",
+    title: "Mine Message",
   },
   MintDetailsDialog: {
     reliability: {
@@ -1641,25 +1641,25 @@ export default {
         since: "Since { date }",
         check: "Check the record",
         explain:
-          "Hashu mints will publish a signed record every hour: their hardest shares, which anyone can check against Bitcoin's proof of work, how much work they delivered, redemptions finished on time, and any blocks found. Each hour is timestamped on Bitcoin with OpenTimestamps, so the history can't be rewritten later. This mint hasn't started publishing it yet.",
+          "Hashu mines will publish a signed record every hour: their hardest shares, which anyone can check against Bitcoin's proof of work, how much work they delivered, redemptions finished on time, and any blocks found. Each hour is timestamped on Bitcoin with OpenTimestamps, so the history can't be rewritten later. This mine hasn't started publishing it yet.",
       },
     },
     contact: {
       title: "Contact",
       nostr: {
-        loading: "Looking up the mint's Nostr profile…",
-        none: "This mint hasn't published a Nostr profile yet.",
+        loading: "Looking up the mine's Nostr profile…",
+        none: "This mine hasn't published a Nostr profile yet.",
         open: "Open in Nostr",
-        nip05_verified: "Verified: this address points to the mint's key",
+        nip05_verified: "Verified: this address points to the mine's key",
         nip05_unverified:
-          "Not verified: this address doesn't point to the mint's key",
+          "Not verified: this address doesn't point to the mine's key",
         message: "Message",
       },
       messages: {
-        title: "Message the mint",
+        title: "Message the mine",
         empty:
-          "Ask the mint anything. Messages are private (NIP-17): only the mint can read them, and it answers here.",
-        who: "Sent from your wallet's Nostr key. A Hashu supplier mint's messages go to its miner.",
+          "Ask the mine anything. Messages are private (NIP-17): only the mine can read them, and it answers here.",
+        who: "Sent from your wallet's Nostr key. A Hashu supplier mine's messages go to its miner.",
         placeholder: "Write a message",
         send: "Send",
         sending: "Sending…",
@@ -1672,7 +1672,7 @@ export default {
       },
     },
     details: {
-      title: "Mint details",
+      title: "Mine details",
       url: {
         label: "URL",
       },
@@ -1720,21 +1720,21 @@ export default {
     actions: {
       title: "Actions",
       copy_mint_url: {
-        label: "Copy mint URL",
+        label: "Copy mine URL",
       },
       delete: {
-        label: "Delete mint",
+        label: "Delete mine",
       },
       edit: {
-        label: "Edit mint",
+        label: "Edit mine",
       },
     },
   },
   ChooseMint: {
-    title: "Select a mint",
-    placeholder: "Select a mint",
+    title: "Select a mine",
+    placeholder: "Select a mine",
     available_text: "available",
-    sheet_title: "Select Mint",
+    sheet_title: "Select Mine",
     badge_mint_error_text: "Error",
     badge_option_mint_error_text: "@:ChooseMint.badge_mint_error_text",
   },
@@ -1746,14 +1746,14 @@ export default {
     past: "Past",
     show_more: "Show more",
     waiting: "Waiting for the first shares",
-    no_progress: "Progress isn't available from this mint",
+    no_progress: "Progress isn't available from this mine",
     progress: "{ filled } of { amount } delivered",
     left: "about { time } left",
     started: "Started { date }",
     finished: "{ start } to { end }",
     charged: "Charged { spent } · { change } back",
     paused_redeemer: "Paused by you",
-    paused_operator: "Paused by the mint",
+    paused_operator: "Paused by the mine",
     rig_wait: "Waiting for a rig",
     starts_in: "starts in about { time }",
     more_pools: "{ pool } and { count } more",
@@ -1807,7 +1807,7 @@ export default {
     },
   },
   RemoveMintDialog: {
-    title: "Are you sure you want to delete this mint?",
+    title: "Are you sure you want to delete this mine?",
     nickname: {
       label: "Nickname",
     },
@@ -1815,7 +1815,7 @@ export default {
       label: "Balances",
     },
     warning_text:
-      "Note: Because this wallet is paranoid, your vouchers from this mint will not be actually deleted but will remain stored on your device. You will see it reappear if you re-add this mint later again.",
+      "Note: Because this wallet is paranoid, your vouchers from this mine will not be actually deleted but will remain stored on your device. You will see it reappear if you re-add this mine later again.",
     inputs: {
       mint_url: {
         label: "@:global.inputs.mint_url.label",
@@ -1823,7 +1823,7 @@ export default {
     },
     actions: {
       confirm: {
-        label: "Remove mint",
+        label: "Remove mine",
       },
       cancel: {
         label: "@:global.actions.cancel.label",
@@ -1914,7 +1914,7 @@ export default {
     },
   },
   EditMintDialog: {
-    title: "Edit mint",
+    title: "Edit mine",
     inputs: {
       nickname: {
         label: "Nickname",
@@ -1933,11 +1933,11 @@ export default {
     },
   },
   AddMintDialog: {
-    title: "Do you trust this mint?",
+    title: "Do you trust this mine?",
     description:
-      "Join this mint only if you trust it. Mints can cease operations at any time.",
+      "Connect to this mine only if you trust it. Mines can stop running at any time.",
     unreachable_error_text:
-      "This mint is not reachable. Check the URL and your connection, then try again.",
+      "This mine is not reachable. Check the URL and your connection, then try again.",
     inputs: {
       mint_url: {
         label: "@:global.inputs.mint_url.label",
@@ -1949,7 +1949,7 @@ export default {
       },
       add_mint: {
         label: "@:global.actions.add_mint.label",
-        in_progress: "Adding mint",
+        in_progress: "Adding mine",
       },
     },
     audit_info: {
@@ -1966,7 +1966,7 @@ export default {
   },
   restore: {
     mnemonic_error_text: "Please enter a mnemonic",
-    restore_mint_error_text: "Error restoring mint: { error }",
+    restore_mint_error_text: "Error restoring mine: { error }",
     prepare_info_text: "Preparing restore process …",
     restored_proofs_for_keyset_info_text:
       "Restored { restoreCounter } proofs for keyset { keysetId }",
@@ -1987,7 +1987,7 @@ export default {
     p2pk: "P2PK",
     locked: "Locked",
     locked_to_you: "Locked to you",
-    mint: "Mint",
+    mint: "Mine",
     memo: "Memo",
     payment_request: "Payment request",
     nostr: "Nostr",

@@ -143,7 +143,7 @@ export const useOperatorStore = defineStore("operator", {
           snap.signedOut = true;
           snap.error =
             m.kind === "operator"
-              ? "Signed out (the mint restarted or the sign-in expired). Sign in again."
+              ? "Signed out (the mine restarted or the sign-in expired). Sign in again."
               : "The dashboard key was refused.";
         } else {
           snap.error = e?.message || String(e);

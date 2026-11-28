@@ -19,7 +19,7 @@ export const DEFAULT_MINT_URL = "https://mint.hashu.io";
 
 /**
  * Cashu.me's multi-mint swaps (Settings > Mints "Swap", and the Receive
- * dialog's "Swap to a trusted mint") melt vouchers to Lightning at one mint
+ * dialog's "Swap to a trusted mine") melt vouchers to Lightning at one mint
  * and pay a mint quote at another. Hashu mints never melt to Lightning and
  * vouchers are not fungible across suppliers, so these swaps cannot work:
  * every entry point is hidden while this is false. Flip it to restore them.

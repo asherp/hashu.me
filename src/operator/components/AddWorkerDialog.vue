@@ -33,7 +33,7 @@
           autocapitalize="off"
           autocomplete="off"
           spellcheck="false"
-          hint="Your account at the mint's default pool, if it needs one"
+          hint="Your account at the mine's default pool, if it needs one"
           data-testid="add-worker-account"
         />
         <q-input
@@ -221,9 +221,9 @@ export default defineComponent({
         return `Workers named ${this.fixedPrefix}.<rig> mine for this mint. The rig shows up under Rigs once it sends shares.`;
       }
       if (this.needsSecret) {
-        return "The pw= rig secret makes this one of the mint's own rigs. The rig shows up under Rigs once it sends shares.";
+        return "The pw= rig secret makes this one of the mine's own rigs. The rig shows up under Rigs once it sends shares.";
       }
-      return "Any rig on this Stratum mines for the mint. It shows up under Rigs once it sends shares.";
+      return "Any rig on this Stratum mines for the mine. It shows up under Rigs once it sends shares.";
     },
   },
   watch: {

@@ -129,7 +129,7 @@ export default defineComponent({
         }
       } else if (props.mint.state === "UNKNOWN") {
         messages.push(
-          "The auditor was not able to determine the quality of this mint yet."
+          "The auditor was not able to determine the quality of this mine yet."
         );
       } else if (props.mint.state === "OK") {
         // Add warnings for OK state mints with not enough successful swaps or low success rate
@@ -205,7 +205,7 @@ export default defineComponent({
       } else if (props.swaps.length > 0) {
         // If there are swaps but none are successful
         messages.push(
-          "No successful swaps recorded for this mint. It might be unreachable."
+          "No successful swaps recorded for this mine. It might be unreachable."
         );
       }
 

@@ -298,12 +298,12 @@ export const useMintsStore = defineStore("mints", {
       } else {
         if (this.mints.length) {
           console.error(
-            "No active mint. This should not happen. switching to first one."
+            "No active mine. This should not happen. switching to first one."
           );
           this.activateMintUrl(this.mints[0].url, false, true);
           return new MintClass(this.mints[0]);
         }
-        throw new Error("No active mint");
+        throw new Error("No active mine");
       }
     },
     mintUnitProofs(mint: StoredMint, unit: string): WalletProof[] {
@@ -354,7 +354,7 @@ export const useMintsStore = defineStore("mints", {
           throw new Error("Keys not found");
         }
       } else {
-        throw new Error("Mint not found");
+        throw new Error("Mine not found");
       }
     },
     addMint: async function (

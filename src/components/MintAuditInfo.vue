@@ -12,7 +12,7 @@
         class="q-mr-sm"
         style="padding-bottom: 2px; margin-bottom: 2px"
       />
-      <span class="text-bold">This mint has not been audited yet.</span>
+      <span class="text-bold">This mine has not been audited yet.</span>
       <br />
       <span class="text-caption">
         To learn more about the auditor or support a future audit, visit
@@ -23,7 +23,7 @@
         >
           here
         </span>
-        to donate ecash and help initiate an audit of this mint.
+        to donate ecash and help initiate an audit of this mine.
       </span>
     </div>
     <div v-else-if="error" class="q-mx-sm text-bold">Error: {{ error }}</div>
@@ -70,16 +70,16 @@
       <!-- Disclaimer -->
       <div class="q-mt-md text-grey-6 text-caption">
         Audit data is provided by independent third parties to help assess a
-        mint’s reliability over time. However, these results are informational
+        mine’s reliability over time. However, these results are informational
         only and do not guarantee the safety, solvency, or trustworthiness of
-        any mint. Always conduct your own research and ensure you trust the mint
+        any mine. Always conduct your own research and ensure you trust the mine
         operator before using their services.
       </div>
       <!-- Donate ecash to the auditor -->
       <div class="q-mt-md text-grey-6 text-caption">
         Audit information is made available by
         <a :href="auditUrl">{{ auditUrlShort }}</a
-        >. The current balance held by the auditor for this mint is
+        >. The current balance held by the auditor for this mine is
         <span class="text-bold">{{ mintInfo.balance }} sats</span>, with a total
         of
         <span class="text-bold">{{ mintInfo.sum_donations }} sats</span>
@@ -192,7 +192,7 @@ export default {
         await this.getMintSwaps(this.mintInfo.id);
       }
     } catch (err: any) {
-      this.error = err.message || "Failed to load mint data";
+      this.error = err.message || "Failed to load mine data";
     } finally {
       this.loading = false;
     }

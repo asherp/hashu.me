@@ -99,9 +99,9 @@
                   class="mint-error-warning column items-center text-center q-pa-lg"
                 >
                   <q-icon name="warning" size="42px" color="warning" />
-                  <div class="mint-error-title q-mt-md">Mint unreachable</div>
+                  <div class="mint-error-title q-mt-md">Mine unreachable</div>
                   <div class="mint-error-text q-mt-sm">
-                    Reconnect to the mint to receive payments.
+                    Reconnect to the mine to receive payments.
                   </div>
                   <q-btn
                     flat
@@ -110,7 +110,7 @@
                     color="primary"
                     icon="refresh"
                     class="q-mt-md"
-                    label="Reconnect mint"
+                    label="Reconnect mine"
                     :loading="refreshingMint"
                     @click="refreshActiveMint"
                   />
@@ -916,7 +916,7 @@ export default defineComponent({
             )
           ) {
             notifyError(
-              "This mint does not support on-chain deposits in this unit."
+              "This mine does not support on-chain deposits in this unit."
             );
             return;
           }
