@@ -37,6 +37,18 @@
           data-testid="add-worker-account"
         />
         <q-input
+          v-model="poolPassword"
+          outlined
+          dense
+          label="Password (optional)"
+          placeholder="x"
+          autocapitalize="off"
+          autocomplete="off"
+          spellcheck="false"
+          hint="What the pool sees as the worker password. Empty means x."
+          data-testid="add-worker-password"
+        />
+        <q-input
           v-if="needsSecret"
           v-model="secret"
           outlined
@@ -100,7 +112,7 @@
 <script lang="ts">
 import { defineComponent, type PropType } from "vue";
 import { copyToClipboard } from "quasar";
-import { cleanRigName, workerName } from "../format";
+import { cleanRigName, poolPasswordFor, workerName } from "../format";
 
 /**
  * How the mint tells this app a new rig should name itself: the operator
@@ -129,7 +141,7 @@ export default defineComponent({
   },
   emits: ["update:modelValue"],
   data() {
-    return { rig: "", account: "", secret: "" };
+    return { rig: "", account: "", secret: "", poolPassword: "" };
   },
   computed: {
     fixedPrefix(): string {
@@ -157,12 +169,14 @@ export default defineComponent({
       const rig = this.cleanRig || "<rig>";
       return workerName(this.fixedPrefix || this.account, rig);
     },
+    /** The rig's password: what the user typed (the pool's worker
+     * password), plus `pw=<secret>` when the mint needs one. The mint takes
+     * `pw=` out before the pool sees it. */
     password(): { value: string; placeholder: boolean } {
-      if (!this.needsSecret) return { value: "x", placeholder: false };
-      const s = this.secret.trim();
-      return s
-        ? { value: `pw=${s}`, placeholder: false }
-        : { value: "pw=<rig secret>", placeholder: true };
+      return poolPasswordFor(
+        this.poolPassword,
+        this.needsSecret ? this.secret : null
+      );
     },
     rows(): any[] {
       const ready = !!this.cleanRig;
@@ -217,6 +231,7 @@ export default defineComponent({
       if (open) {
         this.rig = "";
         this.secret = "";
+        this.poolPassword = "";
       }
     },
   },

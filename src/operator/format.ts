@@ -118,3 +118,20 @@ export function workerName(prefix: string | null | undefined, rig: string) {
   const p = (prefix || "").trim().replace(/\.+$/, "");
   return p ? `${p}.${rig}` : rig;
 }
+
+/**
+ * A rig's Stratum password: `typed` (the pool's own worker password, `x`
+ * when empty) and, when `secret` is not null, `pw=<secret>` after it,
+ * comma-separated as the mint reads its options. `placeholder` while the
+ * needed secret is still empty.
+ */
+export function poolPasswordFor(
+  typed: string,
+  secret: string | null
+): { value: string; placeholder: boolean } {
+  const own = typed.trim();
+  if (secret === null) return { value: own || "x", placeholder: false };
+  const s = secret.trim();
+  const pw = s ? `pw=${s}` : "pw=<rig secret>";
+  return { value: own ? `${own},${pw}` : pw, placeholder: !s };
+}

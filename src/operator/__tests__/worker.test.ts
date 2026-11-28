@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { cleanRigName, rigName, workerName } from "../format";
+import { cleanRigName, poolPasswordFor, rigName, workerName } from "../format";
 
 describe("add worker names", () => {
   it("keeps rig names the mint can show", () => {
@@ -14,5 +14,20 @@ describe("add worker names", () => {
     expect(workerName(null, "bitaxe2")).toBe("bitaxe2");
     // The Rigs list shows what follows the first dot.
     expect(rigName(workerName("acct", "bitaxe2"))).toBe("bitaxe2");
+  });
+});
+
+describe("add worker password", () => {
+  it("is x unless one is typed", () => {
+    expect(poolPasswordFor("", null).value).toBe("x");
+    expect(poolPasswordFor(" d=4096 ", null).value).toBe("d=4096");
+  });
+  it("adds the rig secret after the typed password", () => {
+    expect(poolPasswordFor("", "s3")).toEqual({
+      value: "pw=s3",
+      placeholder: false,
+    });
+    expect(poolPasswordFor("d=4096", "s3").value).toBe("d=4096,pw=s3");
+    expect(poolPasswordFor("", "").placeholder).toBe(true);
   });
 });
