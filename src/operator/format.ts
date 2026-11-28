@@ -102,3 +102,36 @@ export function rigName(user: string): string {
   const i = user.indexOf(".");
   return i >= 0 && i < user.length - 1 ? user.slice(i + 1) : user;
 }
+
+/** A rig name as the mint keeps it: no spaces, only safe characters. */
+export function cleanRigName(raw: string): string {
+  return raw
+    .trim()
+    .replace(/\s+/g, "-")
+    .replace(/[^A-Za-z0-9._-]/g, "")
+    .replace(/^\.+/, "")
+    .slice(0, 64);
+}
+
+/** The Stratum user for `rig` under `prefix` (or the account typed). */
+export function workerName(prefix: string | null | undefined, rig: string) {
+  const p = (prefix || "").trim().replace(/\.+$/, "");
+  return p ? `${p}.${rig}` : rig;
+}
+
+/**
+ * A rig's Stratum password: `typed` (the pool's own worker password, `x`
+ * when empty) and, when `secret` is not null, `pw=<secret>` after it,
+ * comma-separated as the mint reads its options. `placeholder` while the
+ * needed secret is still empty.
+ */
+export function poolPasswordFor(
+  typed: string,
+  secret: string | null
+): { value: string; placeholder: boolean } {
+  const own = typed.trim();
+  if (secret === null) return { value: own || "x", placeholder: false };
+  const s = secret.trim();
+  const pw = s ? `pw=${s}` : "pw=<rig secret>";
+  return { value: own ? `${own},${pw}` : pw, placeholder: !s };
+}

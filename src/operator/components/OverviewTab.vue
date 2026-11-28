@@ -21,7 +21,20 @@
       <HashrateChart :samples="series" :span-ms="30 * 60_000" />
     </div>
 
-    <div class="op-section-title">Rigs</div>
+    <div class="row items-center no-wrap">
+      <div class="op-section-title col">Rigs</div>
+      <q-btn
+        flat
+        dense
+        no-caps
+        color="primary"
+        icon="add"
+        label="Add worker"
+        class="op-section-action"
+        data-testid="add-worker"
+        @click="addWorker = true"
+      />
+    </div>
     <q-list class="op-card" separator>
       <q-item v-if="!rigs.length">
         <q-item-section class="op-muted">
@@ -84,6 +97,7 @@
         </q-item-section>
       </q-item>
     </q-list>
+    <AddWorkerDialog v-model="addWorker" :rules="workerRules" />
   </div>
 </template>
 
@@ -91,6 +105,7 @@
 import { defineComponent, type PropType } from "vue";
 import HashuLogoIcon from "components/icons/HashuLogoIcon.vue";
 import HashrateChart from "./HashrateChart.vue";
+import AddWorkerDialog, { type WorkerRules } from "./AddWorkerDialog.vue";
 import type { OperatorMint } from "../api";
 import { call } from "../api";
 import type { MintSnapshot } from "../store";
@@ -120,13 +135,18 @@ const KEEP_MS = 60 * 60_000;
 
 export default defineComponent({
   name: "OverviewTab",
-  components: { HashuLogoIcon, HashrateChart },
+  components: { HashuLogoIcon, HashrateChart, AddWorkerDialog },
   props: {
     mint: { type: Object as PropType<OperatorMint>, required: true },
     snap: { type: Object as PropType<MintSnapshot>, required: true },
   },
   data() {
-    return { series: [] as any[], timer: 0 as number, busy: false };
+    return {
+      series: [] as any[],
+      timer: 0 as number,
+      busy: false,
+      addWorker: false,
+    };
   },
   computed: {
     op(): any {
@@ -137,6 +157,18 @@ export default defineComponent({
     },
     stratum(): string | undefined {
       return this.op?.proxy?.stratum?.url;
+    },
+    /** How a new rig names itself here (the mint's `proxy.workers`). */
+    workerRules(): WorkerRules {
+      const w = this.op?.proxy?.workers || {};
+      return {
+        kind: "operator",
+        stratum: this.stratum,
+        prefix: w.worker_prefix || null,
+        secret: !!w.secret,
+        secretLabel: "Operator rig secret",
+        open: !!w.open,
+      };
     },
     open(): any[] {
       return (this.op?.redemptions || []).filter(isOpen);

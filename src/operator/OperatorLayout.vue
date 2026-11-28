@@ -128,6 +128,10 @@ export default defineComponent({
       opacity: 0.6;
     }
   }
+  // A button on a section title's line, level with the title.
+  .op-section-action {
+    margin: 14px 0 0;
+  }
   .op-section-title {
     font-size: 13px;
     font-weight: 600;

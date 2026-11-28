@@ -53,6 +53,27 @@
         </div>
       </div>
 
+      <div class="row items-center no-wrap">
+        <div class="op-section-title col">Rigs</div>
+        <q-btn
+          flat
+          dense
+          no-caps
+          color="primary"
+          icon="add"
+          label="Add worker"
+          class="op-section-action"
+          data-testid="add-worker"
+          @click="addWorker = true"
+        />
+      </div>
+      <div class="op-card q-pa-md op-muted">
+        Rigs connect as
+        <span class="op-mono">{{ workerPattern }}</span>
+        with your rig secret as <span class="op-mono">pw=</span>.
+      </div>
+      <AddWorkerDialog v-model="addWorker" :rules="workerRules" />
+
       <div class="op-section-title">Settings</div>
       <q-form
         class="op-card q-pa-md column q-gutter-y-md"
@@ -118,6 +139,7 @@
 import { defineComponent, type PropType } from "vue";
 import HashuLogoIcon from "components/icons/HashuLogoIcon.vue";
 import PlannerTab from "./PlannerTab.vue";
+import AddWorkerDialog, { type WorkerRules } from "./AddWorkerDialog.vue";
 import { call, type OperatorMint } from "../api";
 import type { MintSnapshot } from "../store";
 import { fmtHashes, fmtSats, fmtThs } from "../format";
@@ -128,7 +150,7 @@ const TIH_PER_EIH = 1024 * 1024;
 
 export default defineComponent({
   name: "SupplierDashboard",
-  components: { HashuLogoIcon, PlannerTab },
+  components: { HashuLogoIcon, PlannerTab, AddWorkerDialog },
   props: {
     mint: { type: Object as PropType<OperatorMint>, required: true },
     snap: { type: Object as PropType<MintSnapshot>, required: true },
@@ -144,6 +166,7 @@ export default defineComponent({
         npub: s.npub ?? "",
       },
       busy: "",
+      addWorker: false,
       tab: (this.$route.query.tab === "planner" ? "planner" : "overview") as
         | "overview"
         | "planner",
@@ -155,6 +178,19 @@ export default defineComponent({
     },
     cap(): any {
       return this.st.capacity || {};
+    },
+    workerPattern(): string {
+      return `${this.st.name || "name"}.<rig>`;
+    },
+    /** Supplier rigs: `<name>.<rig>` with `pw=<secret>`. */
+    workerRules(): WorkerRules {
+      return {
+        kind: "supplier",
+        stratum: this.st.stratum?.url,
+        prefix: this.st.name || null,
+        secret: true,
+        secretLabel: "Your rig secret",
+      };
     },
     askHint(): string {
       const a = Number(this.form.ask_sats_per_eih);
